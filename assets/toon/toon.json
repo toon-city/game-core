@@ -2799,6 +2799,26 @@
 			"human_al_1_1.png",
 			"human_al_1_0.png",
 			"human_al_1_0.png"
+		],
+		"lg_wlk_3": [
+			"human_lg_1_1.png",
+			"human_lg_1_2.png",
+			"human_lg_1_3.png",
+			"human_lg_1_4.png",
+			"human_lg_1_5.png",
+			"human_lg_1_6.png",
+			"human_lg_1_7.png",
+			"human_lg_1_8.png"
+		],
+		"ar_wlk_3": [
+			"human_ar_1_0.png",
+			"human_ar_1_0.png",
+			"human_ar_1_1.png"
+		],
+		"al_wlk_3": [
+			"human_al_1_1.png",
+			"human_al_1_0.png",
+			"human_al_1_0.png"
 		]
 	},
 	"meta": {

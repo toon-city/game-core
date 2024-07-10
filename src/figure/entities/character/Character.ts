@@ -5,9 +5,12 @@ import { CharacterBody } from "./body_part/CharacterBody";
 import { CharacterHead } from "./body_part/CharacterHead";
 import { CharacterArmRight } from "./body_part/CharacterArmRight";
 import { CharacterArmLeft } from "./body_part/CharacterArmLeft";
+import { ICharacter } from "./ICharacter";
 
-export class Character extends Container {
+export class Character extends Container implements ICharacter {
     app: Application;
+
+    private _direction: number = 1;
 
     // SPRITES
     socle: Sprite|null = null;
@@ -25,6 +28,10 @@ export class Character extends Container {
         this.height = 120;
         this.width = 80;
         this.init();
+    }
+
+    public get direction() : number {
+        return this._direction;
     }
 
     /**
@@ -85,6 +92,37 @@ export class Character extends Container {
     public setSkinColor(color: number) {
         this.body.forEach((part) => {
             part.setTint(color);
+        });
+    }
+
+    public changeDirection(directions: number) {
+        if ((directions & 0b1000 && directions & 0b1100) || (directions & 0b0010 && directions & 0b0001)) {
+            console.log('stop');
+            return;
+        }
+
+        if (directions & 0b0100) {
+            this._direction = 1;
+        // } else if (directions & 0b0010) {
+        //     this._direction = 2;
+        } else if (directions & 0b0010) {
+            this._direction = 3;
+        } else if (directions & 0b1000) {
+            this._direction = 4;
+        } else if (directions & 0b0011) {
+            this._direction = 5;
+        } else if (directions & 0b0110) {
+            this._direction = 6;
+        } else if (directions & 0b1100) {
+            this._direction = 7;
+        } else if (directions & 0b1001) {
+            this._direction = 8;
+        }
+
+        console.log(this._direction);
+
+        this.body.forEach((part) => {
+            part.direction = this._direction;
         });
     }
 }

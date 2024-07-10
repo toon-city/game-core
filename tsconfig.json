@@ -2,11 +2,14 @@
   "compilerOptions": {
       // DO NOT EDIT
       "outDir": "./dist",
-      "target": "es6",
+      "target": "esnext",
       "module": "CommonJS",
       "sourceMap": true,
-      // Set your preferences here for TypeScript
+      "allowJs": true,
+      // Best practices
       "strict": true,
+      "skipLibCheck": true,
+      "noFallthroughCasesInSwitch": true,
       "esModuleInterop": true
   }
 }
