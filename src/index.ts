@@ -1,30 +1,37 @@
 import * as PIXI from 'pixi.js';
-import { Character } from './figure/entities/character/Character';
-import { BaseTextureLoader } from './figure/textures/BaseTextureLoader';
+import { Character } from './character/Character';
+import { BaseTextureLoader } from './character/textures/BaseTextureLoader';
+
+const left = 0b1000;
+const right = 0b0100;
+const up = 0b0010;
+const down = 0b0001;
 
 const main = async () => {
     // Main app
-    let app = new PIXI.Application({ background: '#1099bb' });
+    let app = new PIXI.Application();
+    
+    await app.init({ background: '#1099bb' });
 
     const size = 1;
 
     app.renderer.resize(800, 800);
 
-    document.body.appendChild(app.view as HTMLCanvasElement);
+    document.body.appendChild(app.canvas);
 
     await BaseTextureLoader.getInstance().load();
 
-    const character: Character = new Character(app, true);
+    const character: Character = new Character(app, {showSocle: true, direction: down});
     character.scale.set(size, size);
     app.stage.addChild(character);
 
     character.interactive = true;
 
-    let direction = 0b0000;
+    let direction = down;
 
     window.addEventListener('keydown', (event) => {
         if (event.key == "ArrowDown") {
-            direction |= 0b0100;
+            direction |= down;
             walk();
         }
         event.preventDefault();
@@ -32,7 +39,7 @@ const main = async () => {
 
     window.addEventListener('keyup', (event) => {
         if (event.key == "ArrowDown") {
-            direction &= 0b1011;
+            direction &= (~down & 0b1111);
             walk();
         }
         event.preventDefault();
@@ -40,7 +47,8 @@ const main = async () => {
 
     window.addEventListener('keydown', (event) => {
         if (event.key == "ArrowLeft") {
-            direction |= 0b0010;
+
+            direction |= left;
             walk();
         }
         event.preventDefault();
@@ -48,7 +56,7 @@ const main = async () => {
 
     window.addEventListener('keyup', (event) => {
         if (event.key == "ArrowLeft") {
-            direction &= 0b1101;
+            direction &= (~left & 0b1111);
             walk();
         }
         event.preventDefault();
@@ -56,13 +64,13 @@ const main = async () => {
 
     const walk = () => {
         character.changeDirection(direction);
-        if (direction > 0) {
-            console.log('walk');
-            character.walk();
-        } else {
-            console.log('stop walk');
-            character.stopWalk();
-        }
+        // if (direction > 0) {
+        //     console.log('walk');
+        //     character.walk();
+        // } else {
+        //     console.log('stop walk');
+        //     character.stopWalk();
+        // }
     };
 
     app.ticker.add((delta) => {
