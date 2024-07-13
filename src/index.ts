@@ -10,7 +10,7 @@ const down = 0b0001;
 const main = async () => {
     // Main app
     let app = new PIXI.Application();
-    
+
     await app.init({ background: '#1099bb' });
 
     const size = 1;
@@ -21,61 +21,72 @@ const main = async () => {
 
     await BaseTextureLoader.getInstance().load();
 
-    const character: Character = new Character(app, {showSocle: true, direction: down});
+    const character: Character = new Character(app, { showSocle: true, direction: down });
     character.scale.set(size, size);
+    character.position.set(600, 0);
     app.stage.addChild(character);
 
     character.interactive = true;
 
-    let direction = down;
+    let arrows = 0;
 
     window.addEventListener('keydown', (event) => {
         if (event.key == "ArrowDown") {
-            direction |= down;
-            walk();
+            changeArrows(down, true);
         }
         event.preventDefault();
     });
 
     window.addEventListener('keyup', (event) => {
         if (event.key == "ArrowDown") {
-            direction &= (~down & 0b1111);
-            walk();
+            changeArrows(down, false);
         }
         event.preventDefault();
     });
 
     window.addEventListener('keydown', (event) => {
         if (event.key == "ArrowLeft") {
-
-            direction |= left;
-            walk();
+            changeArrows(left, true);
         }
         event.preventDefault();
     });
 
     window.addEventListener('keyup', (event) => {
         if (event.key == "ArrowLeft") {
-            direction &= (~left & 0b1111);
-            walk();
+            changeArrows(left, false);
         }
         event.preventDefault();
     });
 
-    const walk = () => {
-        character.changeDirection(direction);
-        // if (direction > 0) {
-        //     console.log('walk');
-        //     character.walk();
-        // } else {
-        //     console.log('stop walk');
-        //     character.stopWalk();
-        // }
+    const changeArrows = (direction: number, active: boolean) => {
+        let lastArrows = arrows;
+        if (active) {
+            arrows |= direction;
+        } else {
+            arrows &= (~direction & 0b1111);
+        }
+
+        if (lastArrows != arrows) {
+            changeWalk(arrows > 0);
+        }
+    }
+
+    const changeWalk = (walk: boolean) => {
+        if (walk) {
+            character.changeDirection(arrows);
+            character.walk();
+        } else {
+            character.stopWalk();
+        }
     };
 
     app.ticker.add((delta) => {
         if (character.isWalking) {
-            character.y += 0.8;
+            let divider = character.direction & (left | right) && character.direction & (up | down) ? 1.4 : 1;
+            if (character.direction & down) character.y += (0.8 / divider);
+            if (character.direction & up) character.y -= (0.8 / divider);
+            if (character.direction & left) character.x -= (0.8 / divider);
+            if (character.direction & right) character.x += (0.8 / divider);
         }
     });
 };

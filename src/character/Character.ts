@@ -98,11 +98,10 @@ export class Character extends Container implements ICharacter {
     }
 
     public changeDirection(direction: number) {
-        console.log(direction)
-        if ((direction & 0b1000 && direction & 0b1100) || (direction & 0b0010 && direction & 0b0001)) {
+        if ((direction & 0b1000 && direction & 0b0100) || (direction & 0b0010 && direction & 0b0001)) {
             return;
         }
-
+        
         if (direction == 0) {
             this._direction = 1;
             return;

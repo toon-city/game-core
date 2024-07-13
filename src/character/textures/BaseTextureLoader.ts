@@ -41,31 +41,31 @@ export class BaseTextureLoader {
 
     private loadAnimations() {
         const animations = Object.values<string[]>(Assets.cache.get('assets/toon/toon.json').data.animations);
-        this._HUMAN_LEGS_ANIMATIONS = [[], [], []];
+        this._HUMAN_LEGS_ANIMATIONS = [[], [], [], [], [], [], [], [], [], [], [], []];
         for (const element of animations[0]) {
             this._HUMAN_LEGS_ANIMATIONS[0].push(Texture.from(element));
         }
 
-        this._HUMAN_ARM_R_ANIMATIONS = [[], [], []];
+        this._HUMAN_ARM_R_ANIMATIONS = [[], [], [], [], [], [], [], [], [], [], [], []];
         for (const element of animations[1]) {
             this._HUMAN_ARM_R_ANIMATIONS[0].push(Texture.from(element));
         }
 
-        this._HUMAN_ARM_L_ANIMATIONS = [[], [], []];
+        this._HUMAN_ARM_L_ANIMATIONS = [[], [], [], [], [], [], [], [], [], [], [], []];
         for (const element of animations[2]) {
             this._HUMAN_ARM_L_ANIMATIONS[0].push(Texture.from(element));
         }
 
         for (const element of animations[3]) {
-            this._HUMAN_LEGS_ANIMATIONS[2].push(Texture.from(element));
+            this._HUMAN_LEGS_ANIMATIONS[7].push(Texture.from(element));
         }
 
         for (const element of animations[4]) {
-            this._HUMAN_ARM_R_ANIMATIONS[2].push(Texture.from(element));
+            this._HUMAN_ARM_R_ANIMATIONS[7].push(Texture.from(element));
         }
 
         for (const element of animations[5]) {
-            this._HUMAN_ARM_L_ANIMATIONS[2].push(Texture.from(element));
+            this._HUMAN_ARM_L_ANIMATIONS[7].push(Texture.from(element));
         }
     }
 }
