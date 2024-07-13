@@ -52,9 +52,9 @@ export class Character extends Container implements ICharacter {
         }
 
         this.body = [
+            new CharacterArmRight(this._direction),
             new CharacterLegs(this._direction),
             new CharacterBody(this._direction),
-            new CharacterArmRight(this._direction),
             new CharacterArmLeft(this._direction),
             new CharacterHead(this._direction),
         ]
@@ -112,5 +112,7 @@ export class Character extends Container implements ICharacter {
         this.body.forEach((part) => {
             part.direction = this._direction;
         });
+        // this.body[1].texture = Texture.from(`human_lg_${this.direction}_0.png`)
+        // this.body[1].position.set(1, 0);
     }
 }

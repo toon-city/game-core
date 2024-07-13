@@ -69,15 +69,39 @@ export class BaseTextureLoader {
         }
 
         for (const element of animations[6]) {
-            this._HUMAN_LEGS_ANIMATIONS[7].push(Texture.from(element));
+            this._HUMAN_LEGS_ANIMATIONS[4].push(Texture.from(element));
         }
 
         for (const element of animations[7]) {
-            this._HUMAN_ARM_R_ANIMATIONS[7].push(Texture.from(element));
+            this._HUMAN_ARM_R_ANIMATIONS[4].push(Texture.from(element));
         }
 
         for (const element of animations[8]) {
+            this._HUMAN_ARM_L_ANIMATIONS[4].push(Texture.from(element));
+        }
+
+        for (const element of animations[9]) {
+            this._HUMAN_LEGS_ANIMATIONS[7].push(Texture.from(element));
+        }
+
+        for (const element of animations[10]) {
+            this._HUMAN_ARM_R_ANIMATIONS[7].push(Texture.from(element));
+        }
+
+        for (const element of animations[11]) {
             this._HUMAN_ARM_L_ANIMATIONS[7].push(Texture.from(element));
+        }
+
+        for (const element of animations[12]) {
+            this._HUMAN_LEGS_ANIMATIONS[8].push(Texture.from(element));
+        }
+
+        for (const element of animations[13]) {
+            this._HUMAN_ARM_R_ANIMATIONS[8].push(Texture.from(element));
+        }
+
+        for (const element of animations[14]) {
+            this._HUMAN_ARM_L_ANIMATIONS[8].push(Texture.from(element));
         }
     }
 }
