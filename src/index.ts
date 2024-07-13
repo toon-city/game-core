@@ -30,9 +30,6 @@ const main = async () => {
 
     let arrows = 0;
 
-    character.changeDirection(9);
-    // character.walk();
-
     window.addEventListener('keydown', (event) => {
         if (event.key == "ArrowDown") {
             changeArrows(down, true);
@@ -113,11 +110,11 @@ const main = async () => {
 
     app.ticker.add((delta) => {
         if (character.isWalking) {
-            // let divider = character.direction & (left | right) && character.direction & (up | down) ? 1.4 : 1;
-            // if (character.direction & down) character.y += (0.8 / divider);
-            // if (character.direction & up) character.y -= (0.8 / divider);
-            // if (character.direction & left) character.x -= (0.8 / divider);
-            // if (character.direction & right) character.x += (0.8 / divider);
+            let divider = character.direction & (left | right) && character.direction & (up | down) ? 1.4 : 1;
+            if (character.direction & down) character.y += (0.8 / divider);
+            if (character.direction & up) character.y -= (0.8 / divider);
+            if (character.direction & left) character.x -= (0.8 / divider);
+            if (character.direction & right) character.x += (0.8 / divider);
         }
     });
 };

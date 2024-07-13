@@ -112,7 +112,5 @@ export class Character extends Container implements ICharacter {
         this.body.forEach((part) => {
             part.direction = this._direction;
         });
-        // this.body[1].texture = Texture.from(`human_lg_${this.direction}_0.png`)
-        // this.body[1].position.set(1, 0);
     }
 }

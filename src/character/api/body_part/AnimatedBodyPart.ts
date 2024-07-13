@@ -48,5 +48,6 @@ export abstract class AnimatedBodyPart extends AnimatedSprite implements IBodyPa
 
     protected resetAnimationSpeed(): void
     {
+        return;
     }
 }
