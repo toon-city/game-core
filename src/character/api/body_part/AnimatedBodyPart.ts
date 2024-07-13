@@ -4,6 +4,10 @@ import { IBodyPart } from "./IBodyPart";
 export abstract class AnimatedBodyPart extends AnimatedSprite implements IBodyPart {
     private _direction: number;
 
+    public get animationFrameCount() : number {
+        return this.textures.length;
+    }
+
     public get direction() : number {
         return this._direction;
     }
@@ -12,6 +16,7 @@ export abstract class AnimatedBodyPart extends AnimatedSprite implements IBodyPa
         this._direction = dir;
         this.texture = Texture.from(`human_${this.bdPartId}_${this._direction}_0.png`);
         this.textures = this._animations[this._direction - 1];
+        this.resetAnimationSpeed();
     }
 
     constructor(private _animations: Texture[][], public bdPartId: string, direction: number|null) {
@@ -39,5 +44,9 @@ export abstract class AnimatedBodyPart extends AnimatedSprite implements IBodyPa
         this._walking = false;
         this.stop();
         this.texture = Texture.from(`human_${this.bdPartId}_${this._direction}_0.png`);
+    }
+
+    protected resetAnimationSpeed(): void
+    {
     }
 }

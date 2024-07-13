@@ -4,6 +4,9 @@ import { BaseTextureLoader } from "../textures/BaseTextureLoader";
 export class CharacterArmLeft extends AnimatedBodyPart {
     constructor(direction: number|null) {
         super(BaseTextureLoader.getInstance().HUMAN_ARM_L_ANIMATIONS, 'al', direction);
-        this.animationSpeed = 0.05;
+    }
+
+    public resetAnimationSpeed(): void {
+        this.animationSpeed = (0.05 * (this.animationFrameCount) - 0.15);
     }
 }

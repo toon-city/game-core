@@ -2833,7 +2833,12 @@
 			"human_ar_8_0.png"
 		],
 		"al_wlk_8": [
-			"human_al_8_0.png"
+			"human_al_8_0.png",
+			"human_al_8_1.png",
+			"human_al_8_2.png",
+			"human_al_8_3.png",
+			"human_al_8_4.png",
+			"human_al_8_5.png"
 		]
 	},
 	"meta": {
