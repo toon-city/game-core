@@ -58,6 +58,34 @@ const main = async () => {
         event.preventDefault();
     });
 
+    window.addEventListener('keydown', (event) => {
+        if (event.key == "ArrowRight") {
+            changeArrows(right, true);
+        }
+        event.preventDefault();
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.key == "ArrowRight") {
+            changeArrows(right, false);
+        }
+        event.preventDefault();
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key == "ArrowUp") {
+            changeArrows(up, true);
+        }
+        event.preventDefault();
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.key == "ArrowUp") {
+            changeArrows(up, false);
+        }
+        event.preventDefault();
+    });
+
     const changeArrows = (direction: number, active: boolean) => {
         let lastArrows = arrows;
         if (active) {
