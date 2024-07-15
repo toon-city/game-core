@@ -93,27 +93,51 @@ export class BaseTextureLoader {
         }
 
         for (const element of animations[12]) {
-            this._HUMAN_LEGS_ANIMATIONS[7].push(Texture.from(element));
+            this._HUMAN_LEGS_ANIMATIONS[5].push(Texture.from(element));
         }
 
         for (const element of animations[13]) {
-            this._HUMAN_ARM_R_ANIMATIONS[7].push(Texture.from(element));
+            this._HUMAN_ARM_R_ANIMATIONS[5].push(Texture.from(element));
         }
 
         for (const element of animations[14]) {
-            this._HUMAN_ARM_L_ANIMATIONS[7].push(Texture.from(element));
+            this._HUMAN_ARM_L_ANIMATIONS[5].push(Texture.from(element));
         }
 
         for (const element of animations[15]) {
-            this._HUMAN_LEGS_ANIMATIONS[8].push(Texture.from(element));
+            this._HUMAN_LEGS_ANIMATIONS[7].push(Texture.from(element));
         }
 
         for (const element of animations[16]) {
-            this._HUMAN_ARM_R_ANIMATIONS[8].push(Texture.from(element));
+            this._HUMAN_ARM_R_ANIMATIONS[7].push(Texture.from(element));
         }
 
         for (const element of animations[17]) {
+            this._HUMAN_ARM_L_ANIMATIONS[7].push(Texture.from(element));
+        }
+
+        for (const element of animations[18]) {
+            this._HUMAN_LEGS_ANIMATIONS[8].push(Texture.from(element));
+        }
+
+        for (const element of animations[19]) {
+            this._HUMAN_ARM_R_ANIMATIONS[8].push(Texture.from(element));
+        }
+
+        for (const element of animations[20]) {
             this._HUMAN_ARM_L_ANIMATIONS[8].push(Texture.from(element));
+        }
+        
+        for (const element of animations[21]) {
+            this._HUMAN_LEGS_ANIMATIONS[9].push(Texture.from(element));
+        }
+
+        for (const element of animations[22]) {
+            this._HUMAN_ARM_R_ANIMATIONS[9].push(Texture.from(element));
+        }
+
+        for (const element of animations[23]) {
+            this._HUMAN_ARM_L_ANIMATIONS[9].push(Texture.from(element));
         }
     }
 }
