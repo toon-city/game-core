@@ -30,6 +30,8 @@ const main = async () => {
 
     let arrows = 0;
 
+    character.changeDirection(8)
+
     window.addEventListener('keydown', (event) => {
         if (event.key == "ArrowDown") {
             changeArrows(down, true);

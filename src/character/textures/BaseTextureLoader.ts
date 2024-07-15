@@ -35,7 +35,8 @@ export class BaseTextureLoader {
 
     private async loadTextures() {
         await Assets.load([
-            'assets/toon/toon.json'
+            'assets/toon/toon.json',
+            'assets/clothes/hat/hat_april1.json'
         ]);
     }
 

@@ -6,6 +6,8 @@ import { CharacterArmRight } from "./body_part/CharacterArmRight";
 import { CharacterArmLeft } from "./body_part/CharacterArmLeft";
 import { ICharacter, ICharacterParams } from "./ICharacter";
 import { CharacterLegs } from "./body_part/CharacterLegs";
+import { Hat } from "./clothe/Hat";
+import { IClothe } from "./api/clothe/IClothe";
 
 export class Character extends Container implements ICharacter {
     app: Application;
@@ -13,12 +15,13 @@ export class Character extends Container implements ICharacter {
     private _direction: number = 1;
 
     // SPRITES
-    socle: Sprite|null = null;
-    legs: CharacterLegs|null = null;
-    leftArm: Sprite|null = null;
-    rightArm: Sprite|null = null;
-    head: Sprite|null = null;
+    socle: Sprite | null = null;
+    legs: CharacterLegs | null = null;
+    leftArm: Sprite | null = null;
+    rightArm: Sprite | null = null;
+    head: Sprite | null = null;
     body: IBodyPart[] = [];
+    clothes: IClothe[] = [];
 
     isWalking: boolean = false;
 
@@ -32,7 +35,7 @@ export class Character extends Container implements ICharacter {
         this.changeDirection(this._direction);
     }
 
-    public get direction() : number {
+    public get direction(): number {
         return this._direction;
     }
 
@@ -57,10 +60,18 @@ export class Character extends Container implements ICharacter {
             new CharacterBody(this._direction),
             new CharacterArmLeft(this._direction),
             new CharacterHead(this._direction),
-        ]
+        ];
+
+        this.clothes = [
+            new Hat('april1', this._direction),
+        ];
 
         this.body.forEach((part) => {
             this.addChild(part);
+        });
+
+        this.clothes.forEach((clothe) => {
+            this.addChild(clothe);
         });
 
         this.setSkinColor(0xf7ceaf);
@@ -74,6 +85,8 @@ export class Character extends Container implements ICharacter {
         this.body.forEach((part) => {
             part.walk();
         });
+
+        this.clothes.forEach((clothe) => { clothe.walk(); });
     }
 
     /**
@@ -84,6 +97,7 @@ export class Character extends Container implements ICharacter {
         this.body.forEach((part) => {
             part.stopWalk();
         });
+        this.clothes.forEach((clothe) => { clothe.stopWalk(); });
     }
 
     /**
@@ -101,7 +115,7 @@ export class Character extends Container implements ICharacter {
         if ((direction & 0b1000 && direction & 0b0100) || (direction & 0b0010 && direction & 0b0001)) {
             return;
         }
-        
+
         if (direction == 0) {
             this._direction = 1;
             return;
@@ -111,6 +125,10 @@ export class Character extends Container implements ICharacter {
 
         this.body.forEach((part) => {
             part.direction = this._direction;
+        });
+
+        this.clothes.forEach((clothe) => {
+            clothe.direction = this._direction;
         });
     }
 }
