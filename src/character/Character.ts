@@ -8,6 +8,7 @@ import { ICharacter, ICharacterParams } from "./ICharacter";
 import { CharacterLegs } from "./body_part/CharacterLegs";
 import { Hat } from "./clothe/Hat";
 import { IClothe } from "./api/clothe/IClothe";
+import { Tshirt } from "./clothe/Tshirt";
 
 export class Character extends Container implements ICharacter {
     app: Application;
@@ -21,7 +22,6 @@ export class Character extends Container implements ICharacter {
     rightArm: Sprite | null = null;
     head: Sprite | null = null;
     body: IBodyPart[] = [];
-    clothes: IClothe[] = [];
 
     isWalking: boolean = false;
 
@@ -58,20 +58,14 @@ export class Character extends Container implements ICharacter {
             new CharacterArmRight(this._direction),
             new CharacterLegs(this._direction),
             new CharacterBody(this._direction),
+            new Tshirt('april7', this._direction),
             new CharacterArmLeft(this._direction),
             new CharacterHead(this._direction),
-        ];
-
-        this.clothes = [
             new Hat('april1', this._direction),
         ];
 
         this.body.forEach((part) => {
             this.addChild(part);
-        });
-
-        this.clothes.forEach((clothe) => {
-            this.addChild(clothe);
         });
 
         this.setSkinColor(0xf7ceaf);
@@ -85,8 +79,6 @@ export class Character extends Container implements ICharacter {
         this.body.forEach((part) => {
             part.walk();
         });
-
-        this.clothes.forEach((clothe) => { clothe.walk(); });
     }
 
     /**
@@ -97,7 +89,6 @@ export class Character extends Container implements ICharacter {
         this.body.forEach((part) => {
             part.stopWalk();
         });
-        this.clothes.forEach((clothe) => { clothe.stopWalk(); });
     }
 
     /**
@@ -125,10 +116,6 @@ export class Character extends Container implements ICharacter {
 
         this.body.forEach((part) => {
             part.direction = this._direction;
-        });
-
-        this.clothes.forEach((clothe) => {
-            clothe.direction = this._direction;
         });
     }
 }

@@ -1,9 +1,11 @@
 import { Sprite, Texture } from "pixi.js";
 import { IClothe } from "./IClothe";
+import { IBodyPart } from "../body_part/IBodyPart";
 
-export abstract class Clothe extends Sprite implements IClothe {
+export abstract class Clothe extends Sprite implements IBodyPart {
     private _name: string;
     private _direction: number;
+    bdPartId: string = '';
 
     private get textureUrl(): string {
         return `${this.type}_${this._name}_${this._direction}.png`;
@@ -41,7 +43,7 @@ export abstract class Clothe extends Sprite implements IClothe {
     private _walking = false;
     
     setTint(tint: number) {
-        this.tint = tint;
+        return;
     }
  
     walk(): void {

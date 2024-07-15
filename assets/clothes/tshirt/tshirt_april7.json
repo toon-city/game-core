@@ -1,0 +1,175 @@
+{
+	"frames": {
+		"tshirt_april7_1.png": {
+			"frame": {
+				"x": 24,
+				"y": 30,
+				"w": 46,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 46,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 46,
+				"h": 33
+			}
+		},
+		"tshirt_april7_10.png": {
+			"frame": {
+				"x": 137,
+				"y": 32,
+				"w": 46,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 46,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 46,
+				"h": 33
+			}
+		},
+		"tshirt_april7_2.png": {
+			"frame": {
+				"x": 24,
+				"y": 123,
+				"w": 46,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 46,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 46,
+				"h": 33
+			}
+		},
+		"tshirt_april7_4.png": {
+			"frame": {
+				"x": 130,
+				"y": 128,
+				"w": 46,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 46,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 46,
+				"h": 33
+			}
+		},
+		"tshirt_april7_5.png": {
+			"frame": {
+				"x": 24,
+				"y": 218,
+				"w": 52,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 52,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 52,
+				"h": 33
+			}
+		},
+		"tshirt_april7_6.png": {
+			"frame": {
+				"x": 133,
+				"y": 218,
+				"w": 46,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 46,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 46,
+				"h": 33
+			}
+		},
+		"tshirt_april7_8.png": {
+			"frame": {
+				"x": 248,
+				"y": 35,
+				"w": 46,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 46,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 46,
+				"h": 33
+			}
+		},
+		"tshirt_april7_9.png": {
+			"frame": {
+				"x": 242,
+				"y": 124,
+				"w": 46,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 46,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 46,
+				"h": 33
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "tshirt_april7.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 318,
+			"h": 279
+		},
+		"scale": "1"
+	}
+}
