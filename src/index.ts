@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
-import { Character } from './character/Character';
-import { BaseTextureLoader } from './character/textures/BaseTextureLoader';
+import { BaseTextureLoader } from './game/textures/BaseTextureLoader';
+import { Avatar } from './game/Avatar';
 
 const left = 0b1000;
 const right = 0b0100;
@@ -21,17 +21,17 @@ const main = async () => {
 
     await BaseTextureLoader.getInstance().load();
 
-    const character: Character = new Character(app, { showSocle: true, direction: down });
-    character.scale.set(size, size);
-    character.position.set(600, 0);
-    app.stage.addChild(character);
+    const avatar: Avatar = new Avatar(app, { showSocle: true, direction: down });
+    avatar.scale.set(size, size);
+    avatar.position.set(600, 0);
+    app.stage.addChild(avatar);
 
-    character.interactive = true;
+    avatar.interactive = true;
 
     let arrows = 0;
 
-    character.scale.set(1);
-    character.changeDirection(6);
+    avatar.scale.set(1);
+    avatar.changeDirection(1);
 
     window.addEventListener('keydown', (event) => {
         if (event.key == "ArrowDown") {
@@ -104,20 +104,20 @@ const main = async () => {
 
     const changeWalk = (walk: boolean) => {
         if (walk) {
-            character.changeDirection(arrows);
-            character.walk();
+            avatar.changeDirection(arrows);
+            avatar.walk();
         } else {
-            character.stopWalk();
+            avatar.stopWalk();
         }
     };
 
     app.ticker.add((delta) => {
-        if (character.isWalking) {
-            let divider = character.direction & (left | right) && character.direction & (up | down) ? 1.4 : 1;
-            if (character.direction & down) character.y += (0.8 / divider);
-            if (character.direction & up) character.y -= (0.8 / divider);
-            if (character.direction & left) character.x -= (0.8 / divider);
-            if (character.direction & right) character.x += (0.8 / divider);
+        if (avatar.isWalking) {
+            let divider = avatar.direction & (left | right) && avatar.direction & (up | down) ? 1.4 : 1;
+            if (avatar.direction & down) avatar.y += (0.8 / divider);
+            if (avatar.direction & up) avatar.y -= (0.8 / divider);
+            if (avatar.direction & left) avatar.x -= (0.8 / divider);
+            if (avatar.direction & right) avatar.x += (0.8 / divider);
         }
     });
 };

@@ -1,31 +1,30 @@
 import { Application, Container, Sprite, Texture } from "pixi.js";
-import { IBodyPart } from "./api/body_part/IBodyPart";
-import { CharacterBody } from "./body_part/CharacterBody";
-import { CharacterHead } from "./body_part/CharacterHead";
-import { CharacterArmRight } from "./body_part/CharacterArmRight";
-import { CharacterArmLeft } from "./body_part/CharacterArmLeft";
-import { ICharacter, ICharacterParams } from "./ICharacter";
-import { CharacterLegs } from "./body_part/CharacterLegs";
-import { Hat } from "./clothe/Hat";
-import { IClothe } from "./api/clothe/IClothe";
-import { Tshirt } from "./clothe/Tshirt";
+import { AvatarLegs } from "./avatar/structure/parts/body/parts/AvatarLegs";
+import { IAvatarPart } from "./avatar/structure/parts/IAvatarPart";
+import { IAvatar, IAvatarParams } from "./IAvatar";
+import { AvatarBody } from "./avatar/structure/parts/body/parts/AvatarBody";
+import { Tshirt } from "./avatar/structure/parts/clothes/parts/Tshirt";
+import { AvatarHead } from "./avatar/structure/parts/body/parts/AvatarHead";
+import { Hat } from "./avatar/structure/parts/clothes/parts/Hat";
+import { AvatarRightArm } from "./avatar/structure/parts/body/parts/AvatarRightArm";
+import { AvatarLeftArm } from "./avatar/structure/parts/body/parts/AvatarLeftArm";
 
-export class Character extends Container implements ICharacter {
+export class Avatar extends Container implements IAvatar {
     app: Application;
 
     private _direction: number = 1;
 
     // SPRITES
     socle: Sprite | null = null;
-    legs: CharacterLegs | null = null;
+    legs: AvatarLegs | null = null;
     leftArm: Sprite | null = null;
     rightArm: Sprite | null = null;
     head: Sprite | null = null;
-    body: IBodyPart[] = [];
+    parts: IAvatarPart[] = [];
 
     isWalking: boolean = false;
 
-    constructor(app: Application, params: ICharacterParams) {
+    constructor(app: Application, params: IAvatarParams) {
         super();
         this.app = app;
         this.height = 120;
@@ -54,17 +53,17 @@ export class Character extends Container implements ICharacter {
             this.addChild(this.socle);
         }
 
-        this.body = [
-            new CharacterArmRight(this._direction),
-            new CharacterLegs(this._direction),
-            new CharacterBody(this._direction),
-            new Tshirt('april7', this._direction),
-            new CharacterArmLeft(this._direction),
-            new CharacterHead(this._direction),
-            new Hat('april1', this._direction),
+        this.parts = [
+            new AvatarRightArm(this._direction),
+            new AvatarLegs(this._direction),
+            new AvatarBody(this._direction),
+            new Tshirt('tshirt_april7', this._direction),
+            new AvatarLeftArm(this._direction),
+            new AvatarHead(this._direction),
+            new Hat('hat_april1', this._direction),
         ];
 
-        this.body.forEach((part) => {
+        this.parts.forEach((part) => {
             this.addChild(part);
         });
 
@@ -76,7 +75,7 @@ export class Character extends Container implements ICharacter {
      */
     public walk() {
         this.isWalking = true;
-        this.body.forEach((part) => {
+        this.parts.forEach((part) => {
             part.walk();
         });
     }
@@ -86,7 +85,7 @@ export class Character extends Container implements ICharacter {
      */
     public stopWalk() {
         this.isWalking = false;
-        this.body.forEach((part) => {
+        this.parts.forEach((part) => {
             part.stopWalk();
         });
     }
@@ -97,7 +96,7 @@ export class Character extends Container implements ICharacter {
      * @param color skin color
      */
     public setSkinColor(color: number) {
-        this.body.forEach((part) => {
+        this.parts.forEach((part) => {
             part.setTint(color);
         });
     }
@@ -114,7 +113,7 @@ export class Character extends Container implements ICharacter {
 
         this._direction = direction;
 
-        this.body.forEach((part) => {
+        this.parts.forEach((part) => {
             part.direction = this._direction;
         });
     }

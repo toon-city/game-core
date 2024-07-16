@@ -1,8 +1,8 @@
 import { Application, Sprite } from "pixi.js";
-import { IBodyPart } from "./api/body_part/IBodyPart";
-import { CharacterLegs } from "./body_part/CharacterLegs";
+import { IAvatarPart } from "./avatar/structure/parts/IAvatarPart";
+import { AvatarLegs } from "./avatar/structure/parts/body/parts/AvatarLegs";
 
-export interface ICharacterParams {
+export interface IAvatarParams {
     showSocle: boolean|null;
     direction: number|null;
 }
@@ -10,14 +10,14 @@ export interface ICharacterParams {
 /**
  * Represents a character in the game.
  */
-export interface ICharacter {
+export interface IAvatar {
     app: Application;
     socle: Sprite | null;
-    legs: CharacterLegs | null;
+    legs: AvatarLegs | null;
     leftArm: Sprite | null;
     rightArm: Sprite | null;
     head: Sprite | null;
-    body: IBodyPart[];
+    parts: IAvatarPart[];
     isWalking: boolean;
 
     /**

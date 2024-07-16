@@ -1,11 +1,16 @@
 import { Sprite, Texture } from "pixi.js";
-import { IBodyPart } from "./IBodyPart";
+import { IAvatarBodyPart } from "./IAvatarBodyPart";
 
-export abstract class BodyPart extends Sprite implements IBodyPart {
+export abstract class AvatarBodyPart extends Sprite implements IAvatarBodyPart {
     private _direction: number;
+    private _identifier: string;
+
+    public get identifier(): string {
+        return this._identifier;
+    }
 
     private get textureUrl(): string {
-        return `human_${this.bdPartId}_${this.direction}_0.png`;
+        return `${this._identifier}_${this.direction}_0.png`;
     }
 
     public get direction() : number {
@@ -17,8 +22,9 @@ export abstract class BodyPart extends Sprite implements IBodyPart {
         this.texture = Texture.from(this.textureUrl);
     }
 
-    constructor(public bdPartId: string, direction: number) {
-        super(Texture.from(`human_${bdPartId}_${direction}_0.png`));
+    constructor(identifier: string, direction: number) {
+        super(Texture.from(`${identifier}_${direction}_0.png`));
+        this._identifier = identifier;
         this._direction = 1;
     }
 

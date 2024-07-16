@@ -1,9 +1,10 @@
-import { Clothe } from "../api/clothe/Clothe";
+import { Clothe } from "../Clothe";
+
 
 
 export class Hat extends Clothe {
-    constructor(name: string, direction: number|null) {
-        super('hat', name, direction ?? 1);
+    constructor(identifier: string, direction: number|null) {
+        super(identifier, direction ?? 1);
         /* Corrections :
          - 1 : 9, 6
          - 2 : 10, 6
