@@ -1,13 +1,9 @@
 import { Application, Container, Sprite, Texture } from "pixi.js";
-import { AvatarLegs } from "./avatar/structure/parts/body/parts/AvatarLegs";
 import { IAvatarPart } from "./avatar/structure/parts/IAvatarPart";
 import { IAvatar, IAvatarParams } from "./IAvatar";
-import { AvatarBody } from "./avatar/structure/parts/body/parts/AvatarBody";
+import { AvatarBody, AvatarHead, AvatarLeftArm, AvatarLegs, AvatarRightArm } from "./avatar/structure/parts/body/parts";
 import { Tshirt } from "./avatar/structure/parts/clothes/parts/Tshirt";
-import { AvatarHead } from "./avatar/structure/parts/body/parts/AvatarHead";
 import { Hat } from "./avatar/structure/parts/clothes/parts/Hat";
-import { AvatarRightArm } from "./avatar/structure/parts/body/parts/AvatarRightArm";
-import { AvatarLeftArm } from "./avatar/structure/parts/body/parts/AvatarLeftArm";
 
 export class Avatar extends Container implements IAvatar {
     app: Application;
