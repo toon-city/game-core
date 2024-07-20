@@ -75,8 +75,8 @@ export class Avatar extends Container implements IAvatar {
       new Tshirt('tshirt_april7', this._direction),
       new AvatarLeftArm(this._direction),
       new AvatarHead(this._direction),
-      // new Hat('chapeau_paques4', this._direction),
-      new Hat('hat_april1', this._direction),
+      new Hat('chapeau_paques4', this._direction),
+      // new Hat('hat_april1', this._direction),
     ];
 
     this.directionText.x = 50;
