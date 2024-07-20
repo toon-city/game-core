@@ -1,145 +1,182 @@
-import { Assets, Texture } from "pixi.js";
+import {Assets, Texture} from 'pixi.js';
 
 export class BaseTextureLoader {
-    private static instance: BaseTextureLoader;
+  private static instance: BaseTextureLoader;
 
-    private _HUMAN_LEGS_ANIMATIONS: Texture[][] = [];
-    public get HUMAN_LEGS_ANIMATIONS(): Texture[][] {
-        return this._HUMAN_LEGS_ANIMATIONS;
+  private _HUMAN_LEGS_ANIMATIONS: Texture[][] = [];
+  public get HUMAN_LEGS_ANIMATIONS(): Texture[][] {
+    return this._HUMAN_LEGS_ANIMATIONS;
+  }
+
+  private _HUMAN_ARM_L_ANIMATIONS: Texture[][] = [];
+  public get HUMAN_ARM_L_ANIMATIONS(): Texture[][] {
+    return this._HUMAN_ARM_L_ANIMATIONS;
+  }
+
+  private _HUMAN_ARM_R_ANIMATIONS: Texture[][] = [];
+  public get HUMAN_ARM_R_ANIMATIONS(): Texture[][] {
+    return this._HUMAN_ARM_R_ANIMATIONS;
+  }
+
+  private constructor() {}
+
+  public static getInstance(): BaseTextureLoader {
+    if (!BaseTextureLoader.instance) {
+      BaseTextureLoader.instance = new BaseTextureLoader();
     }
 
-    private _HUMAN_ARM_L_ANIMATIONS: Texture[][] = [];
-    public get HUMAN_ARM_L_ANIMATIONS(): Texture[][] {
-        return this._HUMAN_ARM_L_ANIMATIONS;
+    return BaseTextureLoader.instance;
+  }
+
+  public async load() {
+    await this.loadTextures();
+    this.loadAnimations();
+  }
+
+  private async loadTextures() {
+    await Assets.load(['assets/toon/toon.json']);
+  }
+
+  private loadAnimations() {
+    const animations = Object.values<string[]>(
+      Assets.cache.get('assets/toon/toon.json').data.animations
+    );
+    this._HUMAN_LEGS_ANIMATIONS = [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+    ];
+    for (const element of animations[0]) {
+      this._HUMAN_LEGS_ANIMATIONS[0].push(Texture.from(element));
     }
 
-    private _HUMAN_ARM_R_ANIMATIONS: Texture[][] = [];
-    public get HUMAN_ARM_R_ANIMATIONS(): Texture[][] {
-        return this._HUMAN_ARM_R_ANIMATIONS;
+    this._HUMAN_ARM_R_ANIMATIONS = [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+    ];
+    for (const element of animations[1]) {
+      this._HUMAN_ARM_R_ANIMATIONS[0].push(Texture.from(element));
     }
 
-    private constructor() { }
-
-    public static getInstance(): BaseTextureLoader {
-        if (!BaseTextureLoader.instance) {
-            BaseTextureLoader.instance = new BaseTextureLoader();
-        }
-
-        return BaseTextureLoader.instance;
+    this._HUMAN_ARM_L_ANIMATIONS = [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+    ];
+    for (const element of animations[2]) {
+      this._HUMAN_ARM_L_ANIMATIONS[0].push(Texture.from(element));
     }
 
-    public async load() {
-        await this.loadTextures();
-        this.loadAnimations();
+    for (const element of animations[3]) {
+      this._HUMAN_LEGS_ANIMATIONS[1].push(Texture.from(element));
     }
 
-    private async loadTextures() {
-        await Assets.load([
-            'assets/toon/toon.json',
-            'assets/clothes/hat/hat_april1.json',
-            'assets/clothes/tshirt/tshirt_april7.json',
-        ]);
+    for (const element of animations[4]) {
+      this._HUMAN_ARM_R_ANIMATIONS[1].push(Texture.from(element));
     }
 
-    private loadAnimations() {
-        const animations = Object.values<string[]>(Assets.cache.get('assets/toon/toon.json').data.animations);
-        this._HUMAN_LEGS_ANIMATIONS = [[], [], [], [], [], [], [], [], [], [], [], []];
-        for (const element of animations[0]) {
-            this._HUMAN_LEGS_ANIMATIONS[0].push(Texture.from(element));
-        }
-
-        this._HUMAN_ARM_R_ANIMATIONS = [[], [], [], [], [], [], [], [], [], [], [], []];
-        for (const element of animations[1]) {
-            this._HUMAN_ARM_R_ANIMATIONS[0].push(Texture.from(element));
-        }
-
-        this._HUMAN_ARM_L_ANIMATIONS = [[], [], [], [], [], [], [], [], [], [], [], []];
-        for (const element of animations[2]) {
-            this._HUMAN_ARM_L_ANIMATIONS[0].push(Texture.from(element));
-        }
-
-        for (const element of animations[3]) {
-            this._HUMAN_LEGS_ANIMATIONS[1].push(Texture.from(element));
-        }
-
-        for (const element of animations[4]) {
-            this._HUMAN_ARM_R_ANIMATIONS[1].push(Texture.from(element));
-        }
-
-        for (const element of animations[5]) {
-            this._HUMAN_ARM_L_ANIMATIONS[1].push(Texture.from(element));
-        }
-
-        for (const element of animations[6]) {
-            this._HUMAN_LEGS_ANIMATIONS[3].push(Texture.from(element));
-        }
-
-        for (const element of animations[7]) {
-            this._HUMAN_ARM_R_ANIMATIONS[3].push(Texture.from(element));
-        }
-
-        for (const element of animations[8]) {
-            this._HUMAN_ARM_L_ANIMATIONS[3].push(Texture.from(element));
-        }
-
-        for (const element of animations[9]) {
-            this._HUMAN_LEGS_ANIMATIONS[4].push(Texture.from(element));
-        }
-
-        for (const element of animations[10]) {
-            this._HUMAN_ARM_R_ANIMATIONS[4].push(Texture.from(element));
-        }
-
-        for (const element of animations[11]) {
-            this._HUMAN_ARM_L_ANIMATIONS[4].push(Texture.from(element));
-        }
-
-        for (const element of animations[12]) {
-            this._HUMAN_LEGS_ANIMATIONS[5].push(Texture.from(element));
-        }
-
-        for (const element of animations[13]) {
-            this._HUMAN_ARM_R_ANIMATIONS[5].push(Texture.from(element));
-        }
-
-        for (const element of animations[14]) {
-            this._HUMAN_ARM_L_ANIMATIONS[5].push(Texture.from(element));
-        }
-
-        for (const element of animations[15]) {
-            this._HUMAN_LEGS_ANIMATIONS[7].push(Texture.from(element));
-        }
-
-        for (const element of animations[16]) {
-            this._HUMAN_ARM_R_ANIMATIONS[7].push(Texture.from(element));
-        }
-
-        for (const element of animations[17]) {
-            this._HUMAN_ARM_L_ANIMATIONS[7].push(Texture.from(element));
-        }
-
-        for (const element of animations[18]) {
-            this._HUMAN_LEGS_ANIMATIONS[8].push(Texture.from(element));
-        }
-
-        for (const element of animations[19]) {
-            this._HUMAN_ARM_R_ANIMATIONS[8].push(Texture.from(element));
-        }
-
-        for (const element of animations[20]) {
-            this._HUMAN_ARM_L_ANIMATIONS[8].push(Texture.from(element));
-        }
-        
-        for (const element of animations[21]) {
-            this._HUMAN_LEGS_ANIMATIONS[9].push(Texture.from(element));
-        }
-
-        for (const element of animations[22]) {
-            this._HUMAN_ARM_R_ANIMATIONS[9].push(Texture.from(element));
-        }
-
-        for (const element of animations[23]) {
-            this._HUMAN_ARM_L_ANIMATIONS[9].push(Texture.from(element));
-        }
+    for (const element of animations[5]) {
+      this._HUMAN_ARM_L_ANIMATIONS[1].push(Texture.from(element));
     }
+
+    for (const element of animations[6]) {
+      this._HUMAN_LEGS_ANIMATIONS[3].push(Texture.from(element));
+    }
+
+    for (const element of animations[7]) {
+      this._HUMAN_ARM_R_ANIMATIONS[3].push(Texture.from(element));
+    }
+
+    for (const element of animations[8]) {
+      this._HUMAN_ARM_L_ANIMATIONS[3].push(Texture.from(element));
+    }
+
+    for (const element of animations[9]) {
+      this._HUMAN_LEGS_ANIMATIONS[4].push(Texture.from(element));
+    }
+
+    for (const element of animations[10]) {
+      this._HUMAN_ARM_R_ANIMATIONS[4].push(Texture.from(element));
+    }
+
+    for (const element of animations[11]) {
+      this._HUMAN_ARM_L_ANIMATIONS[4].push(Texture.from(element));
+    }
+
+    for (const element of animations[12]) {
+      this._HUMAN_LEGS_ANIMATIONS[5].push(Texture.from(element));
+    }
+
+    for (const element of animations[13]) {
+      this._HUMAN_ARM_R_ANIMATIONS[5].push(Texture.from(element));
+    }
+
+    for (const element of animations[14]) {
+      this._HUMAN_ARM_L_ANIMATIONS[5].push(Texture.from(element));
+    }
+
+    for (const element of animations[15]) {
+      this._HUMAN_LEGS_ANIMATIONS[7].push(Texture.from(element));
+    }
+
+    for (const element of animations[16]) {
+      this._HUMAN_ARM_R_ANIMATIONS[7].push(Texture.from(element));
+    }
+
+    for (const element of animations[17]) {
+      this._HUMAN_ARM_L_ANIMATIONS[7].push(Texture.from(element));
+    }
+
+    for (const element of animations[18]) {
+      this._HUMAN_LEGS_ANIMATIONS[8].push(Texture.from(element));
+    }
+
+    for (const element of animations[19]) {
+      this._HUMAN_ARM_R_ANIMATIONS[8].push(Texture.from(element));
+    }
+
+    for (const element of animations[20]) {
+      this._HUMAN_ARM_L_ANIMATIONS[8].push(Texture.from(element));
+    }
+
+    for (const element of animations[21]) {
+      this._HUMAN_LEGS_ANIMATIONS[9].push(Texture.from(element));
+    }
+
+    for (const element of animations[22]) {
+      this._HUMAN_ARM_R_ANIMATIONS[9].push(Texture.from(element));
+    }
+
+    for (const element of animations[23]) {
+      this._HUMAN_ARM_L_ANIMATIONS[9].push(Texture.from(element));
+    }
+  }
 }

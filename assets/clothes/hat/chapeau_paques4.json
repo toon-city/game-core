@@ -1,200 +1,196 @@
 {
 	"frames": {
-		"hat_april1_1.png": {
+		"chapeau_paques4_1.png": {
 			"frame": {
 				"x": 30,
 				"y": 30,
-				"w": 57,
-				"h": 57
+				"w": 47,
+				"h": 43
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 57,
-				"h": 57
+				"w": 47,
+				"h": 43
 			},
 			"sourceSize": {
-				"w": 57,
-				"h": 57
+				"w": 47,
+				"h": 43
 			}
 		},
-		"hat_april1_10.png": {
+		"chapeau_paques4_10.png": {
 			"frame": {
-				"x": 147,
+				"x": 137,
 				"y": 30,
-				"w": 53,
-				"h": 54
+				"w": 35,
+				"h": 59
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 53,
-				"h": 54
+				"w": 35,
+				"h": 59
 			},
 			"sourceSize": {
-				"w": 53,
-				"h": 54
+				"w": 35,
+				"h": 59
 			}
 		},
-		"hat_april1_2.png": {
-			"frame": {
-				"x": 147,
-				"y": 144,
-				"w": 56,
-				"h": 56
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 56,
-				"h": 56
-			},
-			"sourceSize": {
-				"w": 56,
-				"h": 56
-			}
-		},
-		"hat_april1_4.png": {
-			"frame": {
-				"x": 263,
-				"y": 30,
-				"w": 56,
-				"h": 56
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 56,
-				"h": 56
-			},
-			"sourceSize": {
-				"w": 56,
-				"h": 56
-			}
-		},
-		"hat_april1_5.png": {
-			"frame": {
-				"x": 263,
-				"y": 146,
-				"w": 52,
-				"h": 57
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 52,
-				"h": 57
-			},
-			"sourceSize": {
-				"w": 52,
-				"h": 57
-			}
-		},
-		"hat_april1_6.png": {
+		"chapeau_paques4_2.png": {
 			"frame": {
 				"x": 30,
-				"y": 263,
-				"w": 53,
-				"h": 54
+				"y": 149,
+				"w": 47,
+				"h": 43
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 53,
-				"h": 54
+				"w": 47,
+				"h": 43
 			},
 			"sourceSize": {
-				"w": 53,
-				"h": 54
+				"w": 47,
+				"h": 43
 			}
 		},
-		"hat_april1_8.png": {
+		"chapeau_paques4_4.png": {
 			"frame": {
-				"x": 143,
-				"y": 263,
-				"w": 56,
-				"h": 56
+				"x": 232,
+				"y": 30,
+				"w": 30,
+				"h": 58
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 56,
-				"h": 56
+				"w": 30,
+				"h": 58
 			},
 			"sourceSize": {
-				"w": 56,
-				"h": 56
+				"w": 30,
+				"h": 58
 			}
 		},
-		"hat_april1_9.png": {
+		"chapeau_paques4_5.png": {
 			"frame": {
-				"x": 259,
-				"y": 263,
-				"w": 52,
-				"h": 57
+				"x": 232,
+				"y": 148,
+				"w": 33,
+				"h": 59
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 52,
-				"h": 57
+				"w": 33,
+				"h": 59
 			},
 			"sourceSize": {
-				"w": 52,
-				"h": 57
+				"w": 33,
+				"h": 59
+			}
+		},
+		"chapeau_paques4_6.png": {
+			"frame": {
+				"x": 325,
+				"y": 30,
+				"w": 35,
+				"h": 59
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 35,
+				"h": 59
+			},
+			"sourceSize": {
+				"w": 35,
+				"h": 59
+			}
+		},
+		"chapeau_paques4_8.png": {
+			"frame": {
+				"x": 137,
+				"y": 149,
+				"w": 30,
+				"h": 58
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 58
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 58
+			}
+		},
+		"chapeau_paques4_9.png": {
+			"frame": {
+				"x": 325,
+				"y": 149,
+				"w": 33,
+				"h": 59
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 33,
+				"h": 59
+			},
+			"sourceSize": {
+				"w": 33,
+				"h": 59
 			}
 		}
 	},
 	"position": {
 		"1": {
-			"x": 9,
-			"y": 10
+			"x": 13,
+			"y": -7
 		},
 		"4": {
-			"x": 11,
-			"y": 10
+			"x": 35,
+			"y": -7
 		},
 		"5": {
-			"x": 2,
-			"y": 10
+			"x": 20,
+			"y": -7
 		},
 		"6": {
-			"x": 5,
-			"y": 10
+			"x": 23,
+			"y": -7
 		},
 		"9": {
-			"x": 20,
-			"y": 10
-		},
-		"10": {
-			"x": 14,
-			"y": 11
+			"x": 23,
+			"y": -7
 		}
 	},
 	"meta": {
 		"app": "http://www.codeandweb.com/texturepacker",
 		"version": "1.0",
-		"image": "hat_april1.png",
+		"image": "chapeau_paques4.png",
 		"format": "RGBA8888",
 		"size": {
-			"w": 349,
-			"h": 350
+			"w": 390,
+			"h": 238
 		},
 		"scale": "1"
 	}

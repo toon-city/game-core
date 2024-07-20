@@ -1,5 +1,3 @@
-import { IAvatarPart } from "../IAvatarPart";
+import {IAvatarPart} from '../IAvatarPart';
 
-export interface IAvatarBodyPart extends IAvatarPart {
-
-}
+export interface IAvatarBodyPart extends IAvatarPart {}
