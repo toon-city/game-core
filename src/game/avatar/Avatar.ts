@@ -92,6 +92,8 @@ export class Avatar extends Container implements IAvatar {
     this.directionText.x = 50;
     this.directionText.y = 120;
 
+    this.hair.tint = 0x000000;
+
     this.addChild(this.directionText);
 
     this.renderParts();
