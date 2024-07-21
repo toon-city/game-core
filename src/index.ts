@@ -33,7 +33,6 @@ const main = async () => {
     newAvatar.position.set(80 + 80 * index, 40);
     app.stage.addChild(newAvatar);
     newAvatar.changeDirection(direction);
-    console.log('Direction:', direction);
   });
 
   avatar.interactive = true;

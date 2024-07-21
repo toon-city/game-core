@@ -10,6 +10,11 @@ import {
 } from './structure/parts/body/parts';
 import {Tshirt} from './structure/parts/clothes/parts/Tshirt';
 import {Hat} from './structure/parts/clothes/parts/Hat';
+import {Hair} from './structure/parts/clothes/parts/Hair';
+
+// 10	2	6
+// 8	1	4
+// 9	1	5
 
 export class Avatar extends Container implements IAvatar {
   app: Application;
@@ -22,6 +27,7 @@ export class Avatar extends Container implements IAvatar {
   leftArm: Sprite | null = null;
   rightArm: Sprite | null = null;
   head: Sprite | null = null;
+  hair: Hair | null = null;
   parts: IAvatarPart[] = [];
 
   isWalking: boolean = false;
@@ -68,6 +74,8 @@ export class Avatar extends Container implements IAvatar {
       this.addChild(this.socle);
     }
 
+    this.hair = new Hair('hair7', this._direction);
+
     this.parts = [
       new AvatarRightArm(this._direction),
       new AvatarLegs(this._direction),
@@ -75,6 +83,7 @@ export class Avatar extends Container implements IAvatar {
       new Tshirt('tshirt_april7', this._direction),
       new AvatarLeftArm(this._direction),
       new AvatarHead(this._direction),
+      this.hair,
       new Hat('chapeau_paques4', this._direction),
       // new Hat('hat_april1', this._direction),
     ];

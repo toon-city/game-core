@@ -20,7 +20,7 @@ export abstract class Clothe extends Sprite implements IClothe {
   }
 
   // Get the URL of the texture based on the identifier and direction
-  private get textureUrl(): string {
+  protected get textureUrl(): string {
     return `${this._identifier}_${this._direction}.png`;
   }
 

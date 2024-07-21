@@ -5,4 +5,9 @@ export class Tshirt extends Clothe {
     super('tshirt', `${identifier}`, direction ?? 1);
     this.position.set(20, 63);
   }
+
+  // Get the URL of the texture based on the identifier and direction
+  protected get textureUrl(): string {
+    return `${this.identifier}_bd_${this.direction}.png`;
+  }
 }

@@ -1,0 +1,205 @@
+{
+	"frames": {
+		"hair7_1.png": {
+			"frame": {
+				"x": 30,
+				"y": 30,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		},
+		"hair7_10.png": {
+			"frame": {
+				"x": 141,
+				"y": 30,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		},
+		"hair7_2.png": {
+			"frame": {
+				"x": 30,
+				"y": 134,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		},
+		"hair7_4.png": {
+			"frame": {
+				"x": 141,
+				"y": 134,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		},
+		"hair7_5.png": {
+			"frame": {
+				"x": 252,
+				"y": 30,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		},
+		"hair7_6.png": {
+			"frame": {
+				"x": 252,
+				"y": 134,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		},
+		"hair7_8.png": {
+			"frame": {
+				"x": 30,
+				"y": 238,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		},
+		"hair7_9.png": {
+			"frame": {
+				"x": 141,
+				"y": 238,
+				"w": 51,
+				"h": 44
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 51,
+				"h": 44
+			},
+			"sourceSize": {
+				"w": 51,
+				"h": 44
+			}
+		}
+	},
+	"position": {
+		"1": {
+			"x": 17,
+			"y": 16
+		},
+		"4": {
+			"x": 19,
+			"y": 16
+		},
+		"5": {
+			"x": 16,
+			"y": 16
+		},
+		"6": {
+			"x": 16,
+			"y": 16
+		},
+		"8": {
+			"x": 4,
+			"y": 16
+		},
+		"9": {
+			"x": 11,
+			"y": 16
+		},
+		"10": {
+			"x": 8,
+			"y": 16
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "hair7.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 333,
+			"h": 312
+		},
+		"scale": "1"
+	}
+}
