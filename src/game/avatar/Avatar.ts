@@ -1,6 +1,7 @@
 import {Application, Container, Sprite, Texture, Text} from 'pixi.js';
 import {IAvatarPart} from './structure/parts/IAvatarPart';
 import {IAvatar, IAvatarParams} from './IAvatar';
+import {IAvatarBodyPart} from './structure/parts/body/IAvatarBodyPart';
 import {
   AvatarBody,
   AvatarHead,
@@ -124,6 +125,10 @@ export class Avatar extends Container implements IAvatar {
     });
   }
 
+  private partIsSkin(part: any): part is IAvatarBodyPart {
+    return 'isSkin' in part;
+  }
+
   /**
    * Set the skin color.
    *
@@ -131,7 +136,9 @@ export class Avatar extends Container implements IAvatar {
    */
   public setSkinColor(color: number) {
     this.parts.forEach((part) => {
-      part.setTint(color);
+      if (this.partIsSkin(part)) {
+        part.setTint(color);
+      }
     });
   }
 

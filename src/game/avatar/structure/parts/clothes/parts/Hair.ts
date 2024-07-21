@@ -6,6 +6,6 @@ export class Hair extends Clothe {
   }
 
   public setTint(tint: number) {
-    this.tint = tint & 0xfbc200;
+    this.tint = tint;
   }
 }

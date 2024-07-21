@@ -15,6 +15,10 @@ export abstract class AvatarAnimatedBodyPart
   private _direction: number;
   private _identifier: string;
 
+  public get isSkin() {
+    return true;
+  }
+
   /**
    * Gets the identifier of the body part.
    * @public

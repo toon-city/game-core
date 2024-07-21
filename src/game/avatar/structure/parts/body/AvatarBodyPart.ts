@@ -5,6 +5,10 @@ export abstract class AvatarBodyPart extends Sprite implements IAvatarBodyPart {
   private _direction: number;
   private _identifier: string;
 
+  public get isSkin() {
+    return true;
+  }
+
   public get identifier(): string {
     return this._identifier;
   }
