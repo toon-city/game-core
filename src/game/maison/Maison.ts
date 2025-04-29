@@ -1,5 +1,45 @@
 import * as PIXI from 'pixi.js';
 
+// Fonction pour appliquer une projection à une texture
+function applyProjectionToTexture(
+    texture: PIXI.Texture,
+    x: number,
+    y: number,
+    z: number,
+    width: number,
+    height: number
+): PIXI.Sprite {
+    const sprite = new PIXI.Sprite(texture);
+
+    // Projeter les coins de la texture
+    const topLeft = project(x, y, z);
+    const topRight = project(x + width, y, z);
+    const bottomLeft = project(x, y + height, z);
+    const bottomRight = project(x + width, y + height, z);
+
+    // Calculer la position et la transformation
+    sprite.x = topLeft.x;
+    sprite.y = topLeft.y;
+
+    const scaleX = Math.sqrt(
+        Math.pow(topRight.x - topLeft.x, 2) + Math.pow(topRight.y - topLeft.y, 2)
+    ) / texture.width;
+    const scaleY = Math.sqrt(
+        Math.pow(bottomLeft.x - topLeft.x, 2) + Math.pow(bottomLeft.y - topLeft.y, 2)
+    ) / texture.height;
+
+    sprite.scale.set(scaleX, scaleY);
+
+    // Rotation approximative (si nécessaire)
+    const angle = Math.atan2(
+        topRight.y - topLeft.y,
+        topRight.x - topLeft.x
+    );
+    sprite.rotation = angle;
+
+    return sprite;
+}
+
 // Fonction de projection cavalière avec diagonales de droite à gauche
 function project(x: number, y: number, z: number): {x: number; y: number} {
   const angle = -Math.PI / 4; // -45°
