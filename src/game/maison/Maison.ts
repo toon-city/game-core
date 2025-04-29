@@ -70,18 +70,18 @@ class Wall {
     const p1Top = project(this.x1, this.y1, this.height);
     const p2Top = project(this.x2, this.y2, this.height);
 
-    // Dessiner les lignes du mur (bas et haut)
+    // Remplir le mur avec une couleur grise
     graphics.moveTo(p1.x, p1.y);
     graphics.lineTo(p2.x, p2.y);
-    graphics.moveTo(p1Top.x, p1Top.y);
     graphics.lineTo(p2Top.x, p2Top.y);
-
-    // Relier les coins pour former un mur en 3D
-    graphics.moveTo(p1.x, p1.y);
     graphics.lineTo(p1Top.x, p1Top.y);
-    graphics.moveTo(p2.x, p2.y);
-    graphics.lineTo(p2Top.x, p2Top.y);
-    graphics.stroke({color: 0xffffff, width: 1});
+    graphics.closePath();
+
+    if (this.height == 10) {
+        graphics.fill(0xb9b39c);
+    } else {
+        graphics.fill(0xfefaf9);
+    }
   }
 }
 
@@ -120,7 +120,7 @@ export class House {
         floor.moveTo(projectedPoints[0].x, projectedPoints[0].y);
         projectedPoints.forEach((p) => floor.lineTo(p.x, p.y));
         floor.closePath();
-        floor.fill(0xc2b280);
+        floor.fill(0x949295);
       }
       container.addChild(floor);
     });
