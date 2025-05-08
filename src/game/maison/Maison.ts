@@ -2,6 +2,8 @@ import * as PIXI from 'pixi.js';
 
 type Point = {x: number; y: number};
 
+const scale = 1;
+
 interface WallPlaneOptions {
   scaleFactor?: number;
   repeatX?: boolean;
@@ -12,7 +14,6 @@ interface WallPlaneOptions {
 // Fonction de projection caZvalière avec diagonales de droite à gauche
 function project(x: number, y: number, z: number): Point {
   const angle = -Math.PI / 4; // -45°
-  const scale = 2.5;
   const xStretch = 1.25;
   const depthFactor = 1.6; // Augmenter ce facteur pour plus de profondeur
 
@@ -31,7 +32,7 @@ function createWallPlane(
   options: WallPlaneOptions = {}
 ): PIXI.MeshPlane {
   const {
-    scaleFactor = 2.5,
+    scaleFactor = scale,
     repeatX: enableRepeatX = true,
     repeatY: enableRepeatY = true,
     fitHeight = false,
@@ -164,6 +165,10 @@ function createWallPlane(
 function createFloorMesh(
   texture: PIXI.Texture,
   floorPoints: {x: number; y: number}[],
+  maxX: number,
+  maxY: number,
+  minX: number,
+  minY: number,
   options: {
     scaleFactor?: number;
     repeatX?: boolean;
@@ -174,7 +179,7 @@ function createFloorMesh(
   const container = new PIXI.Container();
 
   const {
-    scaleFactor = 2.5,
+    scaleFactor = scale,
     repeatX: enableRepeatX = true,
     repeatY: enableRepeatY = true,
     rotationAngleDeg = 45,        // <— angle de rotation en degrés
@@ -184,12 +189,8 @@ function createFloorMesh(
 
   // 1) Construire la géométrie du sol
   const projected = floorPoints.map(p => project(p.x, p.y, 0));
-  const minX = Math.min(...projected.map(p => p.x));
-  const minY = Math.min(...projected.map(p => p.y));
-  const maxX = Math.max(...projected.map(p => p.x));
-  const maxY = Math.max(...projected.map(p => p.y));
 
-  const normalPoints = [{x: minX, y: minY}, {x: maxX, y: minY}, {x: maxX, y: maxY}, {x: minX, y: maxY}];
+  const normalPoints = [{x: minX, y: minY}, {x: maxX, y: minY}, {x: maxX, y: maxY}, {x: minX, y: maxY}].map(p => project(p.x, p.y, 0));
 
   const path = new PIXI.GraphicsPath();
   path.moveTo(normalPoints[0].x, normalPoints[0].y);
@@ -209,12 +210,12 @@ function createFloorMesh(
   // Trouver le x et y les plus grands dans les points projetés
 
   // 2) Calcul de combien de fois répéter la texture
-  const dx1 = floorPoints[1].x - floorPoints[0].x;
-  const dy1 = floorPoints[1].y - floorPoints[0].y;
+  const dx1 = normalPoints[1].x - normalPoints[0].x;
+  const dy1 = normalPoints[1].y - normalPoints[0].y;
   const len1 = Math.hypot(dx1, dy1);
 
-  const dx2 = floorPoints[2].x - floorPoints[1].x;
-  const dy2 = floorPoints[2].y - floorPoints[1].y;
+  const dx2 = normalPoints[2].x - normalPoints[1].x;
+  const dy2 = normalPoints[2].y - normalPoints[1].y;
   const len2 = Math.hypot(dx2, dy2);
 
   const brickW = texture.width  / scaleFactor;
@@ -237,16 +238,13 @@ function createFloorMesh(
     uvBuf[2*i+1] = initialUV[i][1];
   }
 
-  // 4) Rotation des UV autour de leur centre
-  const θ = rotationAngleDeg * Math.PI / 180;
-  const cos = Math.cos(θ), sin = Math.sin(θ);
   const uC = repeatX / 2, vC = repeatY / 2;
 
   for (let i = 0; i < uvBuf.length; i += 2) {
     const u = uvBuf[i]   - uC;
     const v = uvBuf[i+1] - vC;
-    uvBuf[i]   =  u * cos - v * sin + uC;
-    uvBuf[i+1] =  u * sin + v * cos + vC;
+    uvBuf[i]   =  u + uC;
+    uvBuf[i+1] =  v + vC;
   }
 
   mesh.geometry.getBuffer('aUV').update();
@@ -296,7 +294,7 @@ class Wall {
           p1Top,
           p2Top,
           {
-            scaleFactor: 2.5,
+            scaleFactor: scale,
             repeatX: true,
             repeatY: true,
           }
@@ -324,6 +322,7 @@ class Door {
     const g = new PIXI.Graphics();
 
     const p1 = project(this.x1, this.y1, 0);
+
     const p2 = project(this.x2, this.y2, 0);
     const p1Top = project(this.x1, this.y1, 225);
     const p2Top = project(this.x2, this.y2, 225);
@@ -396,23 +395,15 @@ export class House {
   draw(): PIXI.Container {
     const container = new PIXI.Container();
 
-    // testFloors.forEach((floorPoints) => {
-    //   const floor = new PIXI.Graphics();
-    //   if (floorPoints.length > 0) {
-    //     const projectedPoints = floorPoints.map((p) => project(p.x, p.y, 0));
-    //     floor.moveTo(projectedPoints[0].x, projectedPoints[0].y);
-    //     projectedPoints.forEach((p) => floor.lineTo(p.x, p.y));
-    //     floor.closePath();
-    //     // floor.fill(0x949295);
-    //     floor.fill(0xffffff);
-    //   }
-    //   container.addChild(floor);
-    // });
+    let minX = this.floors.flatMap((floor) => floor.map((p) => p.x)).reduce((a, b) => Math.min(a, b));
+    let minY = this.floors.flatMap((floor) => floor.map((p) => p.y)).reduce((a, b) => Math.min(a, b));
+    let maxX = this.floors.flatMap((floor) => floor.map((p) => p.x)).reduce((a, b) => Math.max(a, b));
+    let maxY = this.floors.flatMap((floor) => floor.map((p) => p.y)).reduce((a, b) => Math.max(a, b));
 
     this.floors.forEach((floorPoints, index) => {
       const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/quizz_sol.jpg' : 'assets/house/base_floor.png');
-      const floor = createFloorMesh(floorTexture, floorPoints, {
-        scaleFactor: 1,
+      const floor = createFloorMesh(floorTexture, floorPoints, minX, minY, maxX, maxY, {
+        scaleFactor: scale,
         repeatX: true,
         repeatY: true,
       });
@@ -428,42 +419,6 @@ export class House {
     const doorsGraphics = new PIXI.Graphics();
     this.doors.forEach((door) => door.draw(doorsGraphics));
     container.addChild(doorsGraphics);
-
-    let rectPoints = [{x: 0, y: 0}, {x: 0, y: 1000}, {x: 1000, y: 1000}, {x: 1000, y: 0}];
-    let LPoints = [{x: 0, y: 0}, {x: 0, y: 250,}, {x: 150, y: 250}, {x: 150, y: 210}, {x: 100, y: 210}, {x: 100, y: 0}];
-
-    let container2 = new PIXI.Container();
-    container2.x = 400;
-    container2.y = 400;
-
-    let L = new PIXI.Graphics();
-    L.moveTo(LPoints[0].x, LPoints[0].y);
-    LPoints.forEach((point, index) => {
-        if (index > 0) {
-            L.lineTo(point.x, point.y);
-        }
-    });
-
-    L.fill(0xFF0000);
-
-    let rect = new PIXI.Graphics();
-    rect.moveTo(rectPoints[0].x, rectPoints[0].y);
-    rectPoints.forEach((point, index) => {
-        rect.lineTo(point.x, point.y);
-    });
-    rect.fill(0x00FF00);
-
-    container2.addChild(rect, L);
-
-    L.x = 100;
-    L.y = 100;
-
-    rect.setMask({
-      mask: L,
-      inverse: false,
-    });
-
-    container.addChild(container2);
 
     return container;
   }
