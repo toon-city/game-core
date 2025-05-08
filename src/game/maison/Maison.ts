@@ -39,14 +39,18 @@ function createWallPlane(
 
   texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
 
-  const plane = new PIXI.MeshPlane({ texture, verticesX: 2, verticesY: 2 });
+  const plane = new PIXI.MeshPlane({texture, verticesX: 2, verticesY: 2});
 
   // --- Positions projetées (aPosition) ---
   const posBuffer = plane.geometry.getBuffer('aPosition').data;
-  posBuffer[0] = p1.x;     posBuffer[1] = p1.y;
-  posBuffer[2] = p2.x;     posBuffer[3] = p2.y;
-  posBuffer[4] = p1Top.x;  posBuffer[5] = p1Top.y;
-  posBuffer[6] = p2Top.x;  posBuffer[7] = p2Top.y;
+  posBuffer[0] = p1.x;
+  posBuffer[1] = p1.y;
+  posBuffer[2] = p2.x;
+  posBuffer[3] = p2.y;
+  posBuffer[4] = p1Top.x;
+  posBuffer[5] = p1Top.y;
+  posBuffer[6] = p2Top.x;
+  posBuffer[7] = p2Top.y;
   plane.geometry.getBuffer('aPosition').update();
 
   // --- Dimensions projetées (écran) ---
@@ -69,13 +73,79 @@ function createWallPlane(
 
   // --- UVs (aUV) ---
   const uvBuffer = plane.geometry.getBuffer('aUV').data;
-  uvBuffer[0] = 0;        uvBuffer[1] = 0;
-  uvBuffer[2] = repeatX;  uvBuffer[3] = 0;
-  uvBuffer[4] = 0;        uvBuffer[5] = -repeatY;
-  uvBuffer[6] = repeatX;  uvBuffer[7] = -repeatY;
+  uvBuffer[0] = 0;
+  uvBuffer[1] = 0;
+  uvBuffer[2] = repeatX;
+  uvBuffer[3] = 0;
+  uvBuffer[4] = 0;
+  uvBuffer[5] = -repeatY;
+  uvBuffer[6] = repeatX;
+  uvBuffer[7] = -repeatY;
   plane.geometry.getBuffer('aUV').update();
 
   return plane;
+}
+
+function createFloorMesh(
+  texture: PIXI.Texture,
+  floorPoints: {x: number; y: number}[],
+  options: WallPlaneOptions = {}
+): PIXI.Mesh {
+  const {
+    scaleFactor = 2.5,
+    repeatX: enableRepeatX = true,
+    repeatY: enableRepeatY = true,
+    fitHeight = false,
+  } = options;
+
+  texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
+
+  const projectedPoints = floorPoints.map((p) => project(p.x, p.y, 0));
+  const path = new PIXI.GraphicsPath();
+  path.moveTo(projectedPoints[0].x, projectedPoints[0].y);
+  projectedPoints.forEach((p) => path.lineTo(p.x, p.y));
+  path.closePath();
+
+  const geometry = PIXI.buildGeometryFromPath(path);
+
+  const mesh = new PIXI.Mesh({geometry, texture, x: 0, y: 0});
+  
+  // Mettre à jour le buffer des positions
+  // mesh.geometry.getBuffer('aPosition').update();
+
+  // Calcul des dimensions du sol projeté
+  const dx1 = floorPoints[1].x - floorPoints[0].x;
+  const dy1 = floorPoints[1].y - floorPoints[0].y;
+  const projectedLength = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+
+  const dx2 = floorPoints[2].x - floorPoints[1].x;
+  const dy2 = floorPoints[2].y - floorPoints[1].y;
+  const projectedWidth = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+  const brickScreenWidth = texture.width / scaleFactor;
+  const brickScreenHeight = texture.height / scaleFactor;
+
+  // Calcul des répétitions de texture (UVs)
+  const repeatX = enableRepeatX ? projectedLength / brickScreenWidth : 1;
+  const repeatY = enableRepeatY ? projectedWidth / brickScreenHeight : 1;
+
+  // Calcul des UVs pour chaque point (texture appliquée sur le MeshPlane)
+  const uvBuffer = mesh.geometry.getBuffer('aUV').data;
+
+  // Appliquer les UVs
+  uvBuffer[0] = 0;
+  uvBuffer[1] = 0;
+  uvBuffer[2] = repeatX;
+  uvBuffer[3] = 0;
+  uvBuffer[4] = 0;
+  uvBuffer[5] = repeatY;
+  uvBuffer[6] = repeatX;
+  uvBuffer[7] = repeatY;
+
+  mesh.geometry.getBuffer('aUV').update();
+
+  // Retourner le plane et les graphiques de texte pour afficher les indices
+  return mesh;
 }
 
 // Classe représentant un mur intérieur
@@ -213,19 +283,36 @@ export class House {
   draw(): PIXI.Container {
     const container = new PIXI.Container();
 
-    // Dessiner le sol
-    this.floors.forEach((floorPoints) => {
-      const floor = new PIXI.Graphics();
-      if (floorPoints.length > 0) {
-        const projectedPoints = floorPoints.map((p) => project(p.x, p.y, 0));
-        console.log(projectedPoints);
-        floor.moveTo(projectedPoints[0].x, projectedPoints[0].y);
-        projectedPoints.forEach((p) => floor.lineTo(p.x, p.y));
-        floor.closePath();
-        floor.fill(0x949295);
-      }
-      container.addChild(floor);
+    // testFloors.forEach((floorPoints) => {
+    //   const floor = new PIXI.Graphics();
+    //   if (floorPoints.length > 0) {
+    //     const projectedPoints = floorPoints.map((p) => project(p.x, p.y, 0));
+    //     floor.moveTo(projectedPoints[0].x, projectedPoints[0].y);
+    //     projectedPoints.forEach((p) => floor.lineTo(p.x, p.y));
+    //     floor.closePath();
+    //     // floor.fill(0x949295);
+    //     floor.fill(0xffffff);
+    //   }
+    //   container.addChild(floor);
+    // });
+
+    // this.floors.forEach((floorPoints, index) => {
+    //   const floorTexture = PIXI.Texture.from('assets/house/base_floor.png');
+    //   const floor = createFloorPlane(floorTexture, floorPoints, {
+    //     scaleFactor: 2.5,
+    //     repeatX: true,
+    //     repeatY: true,
+    //   });
+    //   container.addChild(floor);
+    // });
+
+    const floorTexture = PIXI.Texture.from('assets/house/quizz_sol.jpg');
+    const mesh = createFloorMesh(floorTexture, this.floors[0], {
+      scaleFactor: 1,
+      repeatX: true,
+      repeatY: true,
     });
+    container.addChild(mesh);
 
     // Dessiner les murs
     const wallsGraphics = new PIXI.Graphics();
