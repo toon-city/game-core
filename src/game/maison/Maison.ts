@@ -410,9 +410,9 @@ export class House {
     // });
 
     this.floors.forEach((floorPoints, index) => {
-      const floorTexture = PIXI.Texture.from('assets/house/quizz_sol.jpg');
+      const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/quizz_sol.jpg' : 'assets/house/base_floor.png');
       const floor = createFloorMesh(floorTexture, floorPoints, {
-        scaleFactor: 2.5,
+        scaleFactor: 1,
         repeatX: true,
         repeatY: true,
       });
