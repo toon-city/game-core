@@ -34,7 +34,15 @@ export class BaseTextureLoader {
   }
 
   private async loadTextures() {
-    await Assets.load(['assets/toon/toon.json', 'assets/house/baseboard.png']);
+    await Assets.load([
+      'assets/toon/toon.json',
+      'assets/house/baseboard.png',
+      'assets/house/quizz_tapisserie.jpg',
+      'assets/house/ha_mur1.jpg',
+      'assets/house/base_wall.png',
+      'assets/house/base_floor.png',
+      'assets/house/quizz_sol.jpg',
+    ]);
   }
 
   private loadAnimations() {

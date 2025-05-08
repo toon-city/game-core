@@ -217,16 +217,16 @@ const main = async () => {
         <F PT3="7" PT2="5" PT1="3" PT0="4" SF="0"  />
     </MAP>`;
 
-    xmlString = `
-    <MAP>
-        <P YPOS="-220" XPOS="-1040" />
-        <P YPOS="280" XPOS="-1040" />
-        <P YPOS="280" XPOS="-180" />
-        <P YPOS="-220" XPOS="-180" />
-        <W ENTER="0" D0="64" SF="6.25" H="250" PTB="0" PTA="1" />
-        <W SF="10.75" H="250" PTB="3" PTA="0" />
-        <F PT3="2" PT2="3" PT1="0" PT0="1" SF="40" />
-    </MAP>`;
+    // xmlString = `
+    // <MAP>
+    //     <P YPOS="-220" XPOS="-1040" />
+    //     <P YPOS="280" XPOS="-1040" />
+    //     <P YPOS="280" XPOS="-180" />
+    //     <P YPOS="-220" XPOS="-180" />
+    //     <W ENTER="0" D0="64" SF="6.25" H="250" PTB="0" PTA="1" />
+    //     <W SF="10.75" H="250" PTB="3" PTA="0" />
+    //     <F PT3="2" PT2="3" PT1="0" PT0="1" SF="40" />
+    // </MAP>`;
 
 //     xmlString = `
 //     <MAP>
