@@ -12,7 +12,7 @@ const main = async () => {
   // Main app
   let app = new PIXI.Application();
 
-  await app.init({background: '#1099bb'});
+  await app.init({background: '#1099bb', antialias: true, resolution: 1});
 
   const size = 1;
 

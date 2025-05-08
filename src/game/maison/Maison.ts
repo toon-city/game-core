@@ -324,8 +324,8 @@ class Door {
     const p1 = project(this.x1, this.y1, 0);
 
     const p2 = project(this.x2, this.y2, 0);
-    const p1Top = project(this.x1, this.y1, 225);
-    const p2Top = project(this.x2, this.y2, 225);
+    const p1Top = project(this.x1, this.y1, 200);
+    const p2Top = project(this.x2, this.y2, 200);
 
     // --- Porte noire ---
     g.moveTo(p1.x, p1.y);
@@ -335,29 +335,20 @@ class Door {
     g.closePath();
     g.fill(0x000000);
 
-    // --- Montant gauche ---
+    // Dessiner uniquement les contours gauche et droite
+    g.setStrokeStyle({width: ep, color: 0x888888});
     g.moveTo(p1.x, p1.y);
-    g.lineTo(p1.x + ep, p1.y);
-    g.lineTo(p1Top.x + ep, p1Top.y);
-    g.lineTo(p1Top.x, p1Top.y);
-    g.closePath();
-    g.fill(0x888888);
+    g.lineTo(p1Top.x, p1Top.y); // Contour gauche
+    g.stroke();
 
-    // --- Montant droit ---
-    g.moveTo(p2.x - ep, p2.y);
-    g.lineTo(p2.x, p2.y);
+    g.moveTo(p2.x, p2.y);
     g.lineTo(p2Top.x, p2Top.y);
-    g.lineTo(p2Top.x - ep, p2Top.y);
-    g.closePath();
-    g.fill(0x888888);
-
-    // --- Montant haut ---
+    g.stroke();
+    
     g.moveTo(p1Top.x, p1Top.y);
     g.lineTo(p2Top.x, p2Top.y);
-    g.lineTo(p2Top.x, p2Top.y - ep);
-    g.lineTo(p1Top.x, p1Top.y - ep);
-    g.closePath();
-    g.fill(0x888888);
+    g.stroke();
+    
 
     graphics.addChild(g);
   }
