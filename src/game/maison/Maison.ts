@@ -392,7 +392,7 @@ export class House {
     let maxY = this.floors.flatMap((floor) => floor.map((p) => p.y)).reduce((a, b) => Math.max(a, b));
 
     this.floors.forEach((floorPoints, index) => {
-      const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/quizz_sol.jpg' : 'assets/house/base_floor.png');
+      const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/ha_sol.jpg' : 'assets/house/base_floor.png');
       const floor = createFloorMesh(floorTexture, floorPoints, minX, minY, maxX, maxY, {
         scaleFactor: scale,
         repeatX: true,
