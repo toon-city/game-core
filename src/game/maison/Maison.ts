@@ -89,62 +89,75 @@ function createWallPlane(
 function createFloorMesh(
   texture: PIXI.Texture,
   floorPoints: {x: number; y: number}[],
-  options: WallPlaneOptions = {}
+  options: {
+    scaleFactor?: number;
+    repeatX?: boolean;
+    repeatY?: boolean;
+    rotationAngleDeg?: number;    // <— nouvel optionnel
+  } = {}
 ): PIXI.Mesh {
   const {
     scaleFactor = 2.5,
     repeatX: enableRepeatX = true,
     repeatY: enableRepeatY = true,
-    fitHeight = false,
+    rotationAngleDeg = 45,        // <— angle de rotation en degrés
   } = options;
 
   texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
 
-  const projectedPoints = floorPoints.map((p) => project(p.x, p.y, 0));
+  // 1) Construire la géométrie du sol
+  const projected = floorPoints.map(p => project(p.x, p.y, 0));
   const path = new PIXI.GraphicsPath();
-  path.moveTo(projectedPoints[0].x, projectedPoints[0].y);
-  projectedPoints.forEach((p) => path.lineTo(p.x, p.y));
+  path.moveTo(projected[0].x, projected[0].y);
+  projected.slice(1).forEach(p => path.lineTo(p.x, p.y));
   path.closePath();
 
   const geometry = PIXI.buildGeometryFromPath(path);
+  const mesh = new PIXI.Mesh({ geometry, texture, x: 0, y: 0 });
 
-  const mesh = new PIXI.Mesh({geometry, texture, x: 0, y: 0});
-  
-  // Mettre à jour le buffer des positions
-  // mesh.geometry.getBuffer('aPosition').update();
-
-  // Calcul des dimensions du sol projeté
+  // 2) Calcul de combien de fois répéter la texture
   const dx1 = floorPoints[1].x - floorPoints[0].x;
   const dy1 = floorPoints[1].y - floorPoints[0].y;
-  const projectedLength = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+  const len1 = Math.hypot(dx1, dy1);
 
   const dx2 = floorPoints[2].x - floorPoints[1].x;
   const dy2 = floorPoints[2].y - floorPoints[1].y;
-  const projectedWidth = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+  const len2 = Math.hypot(dx2, dy2);
 
-  const brickScreenWidth = texture.width / scaleFactor;
-  const brickScreenHeight = texture.height / scaleFactor;
+  const brickW = texture.width  / scaleFactor;
+  const brickH = texture.height / scaleFactor;
 
-  // Calcul des répétitions de texture (UVs)
-  const repeatX = enableRepeatX ? projectedLength / brickScreenWidth : 1;
-  const repeatY = enableRepeatY ? projectedWidth / brickScreenHeight : 1;
+  const repeatX = enableRepeatX ? len1 / brickW : 1;
+  const repeatY = enableRepeatY ? len2 / brickH : 1;
 
-  // Calcul des UVs pour chaque point (texture appliquée sur le MeshPlane)
-  const uvBuffer = mesh.geometry.getBuffer('aUV').data;
+  // 3) Initialiser les UV avant rotation
+  const uvBuf = mesh.geometry.getBuffer('aUV').data;
+  // supposer un quad à 4 sommets ; si plus, on adaptera en conséquence
+  const initialUV: [number,number][] = [
+    [0,       0      ],  // coin 0
+    [repeatX, 0      ],  // coin 1
+    [repeatX, repeatY],  // coin 2
+    [0,       repeatY],  // coin 3
+  ];
+  for (let i = 0; i < 4; i++) {
+    uvBuf[2*i  ] = initialUV[i][0];
+    uvBuf[2*i+1] = initialUV[i][1];
+  }
 
-  // Appliquer les UVs
-  uvBuffer[0] = 0;
-  uvBuffer[1] = 0;
-  uvBuffer[2] = repeatX;
-  uvBuffer[3] = 0;
-  uvBuffer[4] = 0;
-  uvBuffer[5] = repeatY;
-  uvBuffer[6] = repeatX;
-  uvBuffer[7] = repeatY;
+  // 4) Rotation des UV autour de leur centre
+  const θ = rotationAngleDeg * Math.PI / 180;
+  const cos = Math.cos(θ), sin = Math.sin(θ);
+  const uC = repeatX / 2, vC = repeatY / 2;
+
+  for (let i = 0; i < uvBuf.length; i += 2) {
+    const u = uvBuf[i]   - uC;
+    const v = uvBuf[i+1] - vC;
+    uvBuf[i]   =  u * cos - v * sin + uC;
+    uvBuf[i+1] =  u * sin + v * cos + vC;
+  }
 
   mesh.geometry.getBuffer('aUV').update();
 
-  // Retourner le plane et les graphiques de texte pour afficher les indices
   return mesh;
 }
 
@@ -296,23 +309,16 @@ export class House {
     //   container.addChild(floor);
     // });
 
-    // this.floors.forEach((floorPoints, index) => {
-    //   const floorTexture = PIXI.Texture.from('assets/house/base_floor.png');
-    //   const floor = createFloorPlane(floorTexture, floorPoints, {
-    //     scaleFactor: 2.5,
-    //     repeatX: true,
-    //     repeatY: true,
-    //   });
-    //   container.addChild(floor);
-    // });
-
-    const floorTexture = PIXI.Texture.from('assets/house/quizz_sol.jpg');
-    const mesh = createFloorMesh(floorTexture, this.floors[0], {
-      scaleFactor: 1,
-      repeatX: true,
-      repeatY: true,
+    this.floors.forEach((floorPoints, index) => {
+      const floorTexture = PIXI.Texture.from('assets/house/quizz_sol.jpg');
+      const floor = createFloorMesh(floorTexture, floorPoints, {
+        scaleFactor: 2.5,
+        repeatX: true,
+        repeatY: true,
+      });
+      container.addChild(floor);
     });
-    container.addChild(mesh);
+
 
     // Dessiner les murs
     const wallsGraphics = new PIXI.Graphics();
