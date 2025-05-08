@@ -1,46 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-// Fonction pour appliquer une projection à une texture
-function applyProjectionToTexture(
-    texture: PIXI.Texture,
-    x: number,
-    y: number,
-    z: number,
-    width: number,
-    height: number
-): PIXI.Sprite {
-    const sprite = new PIXI.Sprite(texture);
-
-    // Projeter les coins de la texture
-    const topLeft = project(x, y, z);
-    const topRight = project(x + width, y, z);
-    const bottomLeft = project(x, y + height, z);
-    const bottomRight = project(x + width, y + height, z);
-
-    // Calculer la position et la transformation
-    sprite.x = topLeft.x;
-    sprite.y = topLeft.y;
-
-    const scaleX = Math.sqrt(
-        Math.pow(topRight.x - topLeft.x, 2) + Math.pow(topRight.y - topLeft.y, 2)
-    ) / texture.width;
-    const scaleY = Math.sqrt(
-        Math.pow(bottomLeft.x - topLeft.x, 2) + Math.pow(bottomLeft.y - topLeft.y, 2)
-    ) / texture.height;
-
-    sprite.scale.set(scaleX, scaleY);
-
-    // Rotation approximative (si nécessaire)
-    const angle = Math.atan2(
-        topRight.y - topLeft.y,
-        topRight.x - topLeft.x
-    );
-    sprite.rotation = angle;
-
-    return sprite;
-}
-
-// Fonction de projection cavalière avec diagonales de droite à gauche
+// Fonction de projection caZvalière avec diagonales de droite à gauche
 function project(x: number, y: number, z: number): {x: number; y: number} {
   const angle = -Math.PI / 4; // -45°
   const scale = 2.5;
@@ -60,7 +20,7 @@ class Wall {
     public y1: number,
     public x2: number,
     public y2: number,
-    public height: number // Ajout de la hauteur
+    public height: number, // Ajout de la hauteur
   ) {}
 
   draw(graphics: PIXI.Graphics) {
@@ -85,8 +45,39 @@ class Wall {
   }
 }
 
+class Door {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+
+  constructor(x1: number, y1: number, x2: number, y2: number) {
+      this.x1 = x1;
+      this.y1 = y1;
+      this.x2 = x2;
+      this.y2 = y2;
+  }
+
+  draw(graphics: PIXI.Graphics) {
+    const doorBottomLeft = project(this.x1, this.y1, 0);
+    const doorBottomRight = project(this.x2, this.y2, 0);
+    const doorTopLeft = project(this.x1, this.y1, 250-25); // hauteur arbitraire
+    const doorTopRight = project(this.x2, this.y2, 250-25);
+
+    // Remplir le mur avec une couleur grise
+    graphics.moveTo(doorBottomLeft.x, doorBottomLeft.y);
+    graphics.lineTo(doorBottomRight.x, doorBottomRight.y);
+    graphics.lineTo(doorTopRight.x, doorTopRight.y);
+    graphics.lineTo(doorTopLeft.x, doorTopLeft.y);
+    graphics.closePath();
+    graphics.fill(0x000000);
+  }
+}
+
+
 // Classe représentant la maison
 export class House {
+  doors: Door[] = [];
   walls: Wall[] = [];
   floorPoints: {x: number; y: number}[] = [];
   floors: {x: number; y: number}[][] = []; // Liste de sols
@@ -96,6 +87,10 @@ export class House {
     public depth: number,
     public height: number
   ) {}
+
+  addDoor(door: Door) {
+    this.doors.push(door);
+  }
 
   addWall(wall: Wall) {
     this.walls.push(wall);
@@ -129,6 +124,10 @@ export class House {
     const wallsGraphics = new PIXI.Graphics();
     this.walls.forEach((wall) => wall.draw(wallsGraphics));
     container.addChild(wallsGraphics);
+
+    const doorsGraphics = new PIXI.Graphics();
+    this.doors.forEach((door) => door.draw(wallsGraphics));
+    container.addChild(doorsGraphics);
 
     return container;
   }
@@ -190,6 +189,26 @@ export function parseHouseXML(xmlString: string): House {
       const p1 = points[ptaIndex];
       const p2 = points[ptbIndex];
       house.addWall(new Wall(p1.x, p1.y, p2.x, p2.y, height));
+
+      if (wall.hasAttribute('ENTER') && wall.hasAttribute('D0')) {
+          const offset = parseFloat(wall.getAttribute('D0')!); // position sur le mur
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const length = Math.hypot(dx, dy);
+          const nx = dx / length;
+          const ny = dy / length;
+
+          const doorWidth = 90; // à adapter si nécessaire
+          const scale = 1; // si tu veux tenir compte d’un facteur d’échelle
+
+          const startX = p1.x + (offset - doorWidth / scale / 2) * nx;
+          const startY = p1.y + (offset - doorWidth / scale / 2) * ny;
+          const endX   = p1.x + (offset + doorWidth / scale / 2) * nx;
+          const endY   = p1.y + (offset + doorWidth / scale / 2) * ny;
+      
+          const door = new Door(startX, startY, endX, endY);
+          house.addDoor(door); // tu stockes les portes dans un tableau
+      }
 
       if (height > 10) {
         house.addWall(new Wall(p1.x, p1.y, p2.x, p2.y, 10));
