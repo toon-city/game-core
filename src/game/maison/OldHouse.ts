@@ -319,7 +319,7 @@ export class House {
     let maxY = this.floors.flatMap((floor) => floor.map((p) => p.y)).reduce((a, b) => Math.max(a, b));
 
     this.floors.forEach((floorPoints, index) => {
-      const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/jardinherbe.png' : 'assets/house/base_floor.png');
+      const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/ha_sol.jpg' : 'assets/house/base_floor.png');
       const floor = createFloorMesh(floorTexture, floorPoints, minX, minY, maxX, maxY, {
         scaleFactor: scale,
         repeatX: true,
@@ -377,8 +377,8 @@ export function parseHouseXML(xmlString: string): House {
   floorNodes.forEach((floorNode) => {
     const floorPoints: {x: number; y: number}[] = [];
     let i = 0;
-    while (floorNode.hasAttribute(PT${i})) {
-      const pointIndex = parseInt(floorNode.getAttribute(PT${i}) ?? '-1', 10);
+    while (floorNode.hasAttribute(`PT${i}`)) {
+      const pointIndex = parseInt(floorNode.getAttribute(`PT${i}`) ?? '-1', 10);
       if (pointIndex >= 0 && pointIndex < points.length) {
         floorPoints.push(points[pointIndex]);
       }
