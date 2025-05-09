@@ -87,81 +87,6 @@ function createWallPlane(
   return plane;
 }
 
-// function createFloorMesh(
-//   texture: PIXI.Texture,
-//   floorPoints: {x: number; y: number}[],
-//   options: {
-//     scaleFactor?: number;
-//     repeatX?: boolean;
-//     repeatY?: boolean;
-//     rotationAngleDeg?: number;    // <— nouvel optionnel
-//   } = {}
-// ): PIXI.Mesh {
-//   const {
-//     scaleFactor = 2.5,
-//     repeatX: enableRepeatX = true,
-//     repeatY: enableRepeatY = true,
-//     rotationAngleDeg = 45,        // <— angle de rotation en degrés
-//   } = options;
-
-//   texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
-
-//   // 1) Construire la géométrie du sol
-//   const projected = floorPoints.map(p => project(p.x, p.y, 0));
-//   const path = new PIXI.GraphicsPath();
-//   path.moveTo(projected[0].x, projected[0].y);
-//   projected.slice(1).forEach(p => path.lineTo(p.x, p.y));
-//   path.closePath();
-
-//   const geometry = PIXI.buildGeometryFromPath(path);
-//   const mesh = new PIXI.Mesh({ geometry, texture, x: 0, y: 0 });
-
-//   // 2) Calcul de combien de fois répéter la texture
-//   const dx1 = floorPoints[1].x - floorPoints[0].x;
-//   const dy1 = floorPoints[1].y - floorPoints[0].y;
-//   const len1 = Math.hypot(dx1, dy1);
-
-//   const dx2 = floorPoints[2].x - floorPoints[1].x;
-//   const dy2 = floorPoints[2].y - floorPoints[1].y;
-//   const len2 = Math.hypot(dx2, dy2);
-
-//   const brickW = texture.width  / scaleFactor;
-//   const brickH = texture.height / scaleFactor;
-
-//   const repeatX = enableRepeatX ? len1 / brickW : 1;
-//   const repeatY = enableRepeatY ? len2 / brickH : 1;
-
-//   // 3) Initialiser les UV avant rotation
-//   const uvBuf = mesh.geometry.getBuffer('aUV').data;
-//   // supposer un quad à 4 sommets ; si plus, on adaptera en conséquence
-//   const initialUV: [number,number][] = [
-//     [0,       0      ],  // coin 0
-//     [repeatX, 0      ],  // coin 1
-//     [repeatX, repeatY],  // coin 2
-//     [0,       repeatY],  // coin 3
-//   ];
-//   for (let i = 0; i < 4; i++) {
-//     uvBuf[2*i  ] = initialUV[i][0];
-//     uvBuf[2*i+1] = initialUV[i][1];
-//   }
-
-//   // 4) Rotation des UV autour de leur centre
-//   const θ = rotationAngleDeg * Math.PI / 180;
-//   const cos = Math.cos(θ), sin = Math.sin(θ);
-//   const uC = repeatX / 2, vC = repeatY / 2;
-
-//   for (let i = 0; i < uvBuf.length; i += 2) {
-//     const u = uvBuf[i]   - uC;
-//     const v = uvBuf[i+1] - vC;
-//     uvBuf[i]   =  u * cos - v * sin + uC;
-//     uvBuf[i+1] =  u * sin + v * cos + vC;
-//   }
-
-//   mesh.geometry.getBuffer('aUV').update();
-
-//   return mesh;
-// }
-
 function createFloorMesh(
   texture: PIXI.Texture,
   floorPoints: {x: number; y: number}[],
@@ -263,10 +188,15 @@ class Wall {
     public y1: number,
     public x2: number,
     public y2: number,
-    public height: number // Ajout de la hauteur
+    public height: number,
+    public hidden: boolean
   ) {}
 
   draw(graphics: PIXI.Graphics) {
+    if (this.hidden) {
+      return;
+    }
+
     const p1 = project(this.x1, this.y1, 0);
     const p2 = project(this.x2, this.y2, 0);
     const p1Top = project(this.x1, this.y1, this.height);
@@ -389,7 +319,7 @@ export class House {
     let maxY = this.floors.flatMap((floor) => floor.map((p) => p.y)).reduce((a, b) => Math.max(a, b));
 
     this.floors.forEach((floorPoints, index) => {
-      const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/ha_sol.jpg' : 'assets/house/base_floor.png');
+      const floorTexture =  PIXI.Texture.from(index != 3 ? 'assets/house/jardinherbe.png' : 'assets/house/base_floor.png');
       const floor = createFloorMesh(floorTexture, floorPoints, minX, minY, maxX, maxY, {
         scaleFactor: scale,
         repeatX: true,
@@ -467,7 +397,7 @@ export function parseHouseXML(xmlString: string): House {
     if (ptaIndex < points.length && ptbIndex < points.length) {
       const p1 = points[ptaIndex];
       const p2 = points[ptbIndex];
-      house.addWall(new Wall(p1.x, p1.y, p2.x, p2.y, height));
+      house.addWall(new Wall(p1.x, p1.y, p2.x, p2.y, height, wall.hasAttribute('HDN')));
 
       if (wall.hasAttribute('ENTER') && wall.hasAttribute('D0')) {
         const offset = parseFloat(wall.getAttribute('D0')!); // position sur le mur
@@ -489,8 +419,8 @@ export function parseHouseXML(xmlString: string): House {
         house.addDoor(door); // tu stockes les portes dans un tableau
       }
 
-      if (height > 10) {
-        house.addWall(new Wall(p1.x, p1.y, p2.x, p2.y, 10));
+      if (height > 10 && !wall.hasAttribute('HDN')) {
+        house.addWall(new Wall(p1.x, p1.y, p2.x, p2.y, 10, false));
       }
     }
   });

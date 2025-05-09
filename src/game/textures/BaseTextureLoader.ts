@@ -44,6 +44,7 @@ export class BaseTextureLoader {
       'assets/house/quizz_sol.jpg',
       'assets/house/disco_mur.png',
       'assets/house/ha_sol.jpg',
+      'assets/house/jardinherbe.png',
     ]);
   }
 
