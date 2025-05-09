@@ -15,7 +15,7 @@ export class House implements Drawable {
   floorPoints: {x: number; y: number}[] = [];
   areas: Area[] = [];
 
-  private _container: Container;
+  private readonly _container: Container;
 
   get container(): Container {
     return this._container;
@@ -49,12 +49,18 @@ export class House implements Drawable {
     this.floorPoints = points;
   }
 
-  draw(container: Container): void {
+  draw(): Container {
     this._container.removeChildren();
 
     this.areas.forEach((area) => {
-      area.draw(this.container);
+      this.container.addChild(area.draw());
     });
+
+    setTimeout(() => {
+      this.areas[0].texture = Texture.from('assets/house/ha_sol.jpg');
+      this.areas[0].draw();
+      console.log('Texture updated');
+    }, 2000);
 
     // Dessiner les murs
     const wallsGraphics = new Graphics();
@@ -65,7 +71,7 @@ export class House implements Drawable {
     this.doors.forEach((door) => door.draw(doorsGraphics));
     this._container.addChild(doorsGraphics);
 
-    container.addChild(this._container);
+    return this._container;
   }
 }
 

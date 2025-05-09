@@ -26,7 +26,7 @@ export class Area implements IArea, Drawable {
   public minY: number;
   public maxX: number;
   public maxY: number;
-  private _container: Container;
+  private readonly _container: Container;
 
   get container(): Container {
     return this._container;
@@ -122,9 +122,9 @@ export class Area implements IArea, Drawable {
     return container;
   }
 
-  draw(container: Container): void {
+  draw(): Container {
     this._container.removeChildren();
     this._container.addChild(this.createFloorMesh());
-    container.addChild(this._container);
+    return this._container;
   }
 }

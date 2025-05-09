@@ -665,8 +665,7 @@ xmlString = `
     const house = parseHouseXML(xmlString);
 
     // Dessiner la maison
-    let houseContainer = new PIXI.Container();
-    house.draw(houseContainer);
+    let houseContainer = house.draw();
     houseContainer.x = 2500;
     houseContainer.y = 2500;
     app.stage.addChild(houseContainer);
