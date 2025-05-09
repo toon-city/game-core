@@ -249,10 +249,7 @@ function createFloorMesh(
 
   mesh.geometry.getBuffer('aUV').update();
 
-  mesh.setMask({
-    mask: mask,
-    inverse: false,
-  });
+  mesh.mask = mask;
 
   container.addChild(mesh, mask);
 
@@ -344,11 +341,11 @@ class Door {
     g.moveTo(p2.x, p2.y);
     g.lineTo(p2Top.x, p2Top.y);
     g.stroke();
-    
+
     g.moveTo(p1Top.x, p1Top.y);
     g.lineTo(p2Top.x, p2Top.y);
     g.stroke();
-    
+
 
     graphics.addChild(g);
   }
