@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import {BaseTextureLoader} from './game/textures/BaseTextureLoader';
 import {Avatar} from './game/avatar/Avatar';
-import { House, parseHouseXML } from './game/maison/Maison';
+import { House, parseHouseXML } from './game/maison/House';
 
 const left = 0b1000;
 const right = 0b0100;
@@ -665,7 +665,8 @@ xmlString = `
     const house = parseHouseXML(xmlString);
 
     // Dessiner la maison
-    const houseContainer = house.draw();
+    let houseContainer = new PIXI.Container();
+    house.draw(houseContainer);
     houseContainer.x = 2500;
     houseContainer.y = 2500;
     app.stage.addChild(houseContainer);
