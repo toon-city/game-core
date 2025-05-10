@@ -32,6 +32,7 @@ export class House implements Drawable {
     public maxY: number = 0
   ) {
     this._container = new Container();
+    this._container.sortableChildren = true;
 
      this.maxPoints = [
       {x: this.minX, y: this.minY},
@@ -94,126 +95,128 @@ export function parseHouseXML(xmlString: string): House {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
 
-  const points: {
-    x: number;
-    y: number;
-    projectedX: number;
-    projectedY: number;
-  }[] = [];
-  const pointNodes = xmlDoc.querySelectorAll('P');
+  // 1) Collecte et projection z=0 pour tous les points
+  type Pt = { x: number; y: number; projX: number; projY: number };
+  const pts: Pt[] = [];
+  xmlDoc.querySelectorAll('P').forEach(node => {
+    const rawX = parseFloat(node.getAttribute('YPOS') ?? '0');
+    const rawY = parseFloat(node.getAttribute('XPOS') ?? '0');
 
-  let minX = Number.MAX_VALUE;
-  let minY = Number.MAX_VALUE;
-  let maxX = Number.MIN_VALUE;
-  let maxY = Number.MIN_VALUE;
+    // Rotation de 90°
+    const { x: xr, y: yr } = rotatePoint(rawX, rawY, -90);
+    const p0 = project(xr, yr, 0);
 
-  pointNodes.forEach((point) => {
-    const x = parseFloat(point.getAttribute('YPOS') ?? '0');
-    const y = parseFloat(point.getAttribute('XPOS') ?? '0');
-
-    // Appliquer une rotation de 90 degrés
-    const rotatedPoint = rotatePoint(x, y, -90);
-    const projectedPoint = project(rotatedPoint.x, rotatedPoint.y, 0);
-
-    // Mettre à jour les min et max
-    minX = Math.min(minX, rotatedPoint.x);
-    minY = Math.min(minY, rotatedPoint.y);
-    maxX = Math.max(maxX, rotatedPoint.x);
-    maxY = Math.max(maxY, rotatedPoint.y);
-
-    points.push({
-      x: rotatedPoint.x,
-      y: rotatedPoint.y,
-      projectedX: projectedPoint.x,
-      projectedY: projectedPoint.y,
-    });
+    pts.push({ x: xr, y: yr, projX: p0.x, projY: p0.y });
   });
 
-  const house = new House(0, 0, 100, minX, minY, maxX, maxY); // Dimensions par défaut
+  // 2) Calcul des bornes projetées pour le décalage
+  let minProjX = Infinity;
+  let minProjY = Infinity;
+  pts.forEach(p => {
+    minProjX = Math.min(minProjX, p.projX);
+    minProjY = Math.min(minProjY, p.projY);
+  });
+  const offsetX = minProjX < 0 ? -minProjX : 0;
+  const offsetY = minProjY < 0 ? -minProjY : 0;
 
-  // Ajouter les points des sols
-  const floorNodes = xmlDoc.querySelectorAll('F');
-  floorNodes.forEach((floorNode) => {
-    const floorPoints: {x: number; y: number}[] = [];
+  // 3) Helper pour projeter tout avec le même offset
+  const proj = (x: number, y: number, z: number) => {
+    const p = project(x, y, z);
+    return { x: p.x + offsetX, y: p.y + offsetY };
+  };
+
+  // 4) Calcul des bornes brutes pour la House
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  const maxX = Math.max(...xs);
+  const maxY = Math.max(...ys);
+
+  const house = new House(0, 0, 100, minX, minY, maxX, maxY);
+
+  // 5) Ajustement des maxPoints pour les areas
+  const adjustedMaxPoints = house.maxPoints.map(p => ({
+    x: p.x + offsetX,
+    y: p.y + offsetY,
+  }));
+
+  // 6) Création des aires (F)
+  xmlDoc.querySelectorAll('F').forEach(nodeF => {
+    const floorPts: { x: number; y: number }[] = [];
     let i = 0;
-  
-    while (floorNode.hasAttribute(`PT${i}`)) {
-      const pointIndex = parseInt(floorNode.getAttribute(`PT${i}`) ?? '-1', 10);
-      if (pointIndex >= 0 && pointIndex < points.length) {
-        floorPoints.push({
-          x: points[pointIndex].projectedX,
-          y: points[pointIndex].projectedY,
-        });
+    while (nodeF.hasAttribute(`PT${i}`)) {
+      const idx = parseInt(nodeF.getAttribute(`PT${i}`)!, 10);
+      const p = pts[idx];
+      if (p) {
+        floorPts.push({ x: p.projX + offsetX, y: p.projY + offsetY });
       }
       i++;
     }
-  
-    house.addArea(
-      new Area({
-        points: floorPoints,
-        texture: Texture.from('assets/house/base_floor.png'),
-        maxPoints: house.maxPoints,
-      })
-    );
+    house.addArea(new Area({
+      points: floorPts,
+      texture: Texture.from('assets/house/base_floor.png'),
+      maxPoints: adjustedMaxPoints,
+    }));
   });
 
-  // Extraire les murs
-  const wallNodes = xmlDoc.querySelectorAll('W');
-  wallNodes.forEach((wall) => {
-    const ptaIndex = parseInt(wall.getAttribute('PTA') ?? '0', 10);
-    const ptbIndex = parseInt(wall.getAttribute('PTB') ?? '0', 10);
-    const height = parseFloat(wall.getAttribute('H') ?? '100'); // Hauteur du mur
+  // 7) Extraction des murs et portes (W)
+  xmlDoc.querySelectorAll('W').forEach(nodeW => {
+    const iA = +nodeW.getAttribute('PTA')!;
+    const iB = +nodeW.getAttribute('PTB')!;
+    const h = parseFloat(nodeW.getAttribute('H') ?? '100');
+    const pA = pts[iA];
+    const pB = pts[iB];
+    if (!pA || !pB) return;
 
-    if (ptaIndex < points.length && ptbIndex < points.length) {
-      const p1 = points[ptaIndex];
-      const p2 = points[ptbIndex];
+    // Mur principal
+    house.addWall(new Wall(
+      proj(pA.x, pA.y, 0),
+      proj(pB.x, pB.y, 0),
+      proj(pA.x, pA.y, h),
+      proj(pB.x, pB.y, h),
+      h,
+      nodeW.hasAttribute('HDN')
+    ));
 
-      house.addWall(
-        new Wall(
-          {x: p1.projectedX, y: p1.projectedY},
-          {x: p2.projectedX, y: p2.projectedY},
-          project(p1.x, p1.y, height),
-          project(p2.x, p2.y, height),
-          height,
-          wall.hasAttribute('HDN')
-        )
+    // Porte éventuelle
+    if (nodeW.hasAttribute('ENTER') && nodeW.hasAttribute('D0')) {
+      const off = parseFloat(nodeW.getAttribute('D0')!);
+      const dx = pB.x - pA.x;
+      const dy = pB.y - pA.y;
+      const L = Math.hypot(dx, dy);
+      const nx = dx / L;
+      const ny = dy / L;
+      const doorW = 90;
+
+      const sx = pA.x + (off - doorW / 2) * nx;
+      const sy = pA.y + (off - doorW / 2) * ny;
+      const ex = pA.x + (off + doorW / 2) * nx;
+      const ey = pA.y + (off + doorW / 2) * ny;
+
+      const bottomY = Math.max(
+        proj(pA.x, pA.y, 0).y,
+        proj(pB.x, pB.y, 0).y,
       );
 
-      if (wall.hasAttribute('ENTER') && wall.hasAttribute('D0')) {
-        const offset = parseFloat(wall.getAttribute('D0')!); // position sur le mur
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
-        const length = Math.hypot(dx, dy);
-        const nx = dx / length;
-        const ny = dy / length;
+      house.addDoor(new Door(
+        proj(sx, sy, 0),
+        proj(ex, ey, 0),
+        proj(sx, sy, 200),
+        proj(ex, ey, 200),
+        bottomY + 0.1
+      ));
+    }
 
-        const doorWidth = 90; // à adapter si nécessaire
-
-        const startX = p1.x + (offset - doorWidth / 2) * nx;
-        const startY = p1.y + (offset - doorWidth / 2) * ny;
-        const endX = p1.x + (offset + doorWidth / 2) * nx;
-        const endY = p1.y + (offset + doorWidth / 2) * ny;
-
-        const door = new Door(
-          project(startX, startY, 0),
-          project(endX, endY, 0),
-          project(startX, startY, 200),
-          project(endX, endY, 200)
-        );
-        house.addDoor(door); // tu stockes les portes dans un tableau
-      }
-
-      if (height > 10 && !wall.hasAttribute('HDN')) {
-        house.addWall(
-          new Wall(
-            {x: p1.projectedX, y: p1.projectedY},
-            {x: p2.projectedX, y: p2.projectedY},
-            project(p1.x, p1.y, 10),
-            project(p2.x, p2.y, 10),
-            10
-          )
-        );
-      }
+    // Plinthe pour h>10
+    if (h > 10 && !nodeW.hasAttribute('HDN')) {
+      house.addWall(new Wall(
+        proj(pA.x, pA.y, 0),
+        proj(pB.x, pB.y, 0),
+        proj(pA.x, pA.y, 10),
+        proj(pB.x, pB.y, 10),
+        10
+      ));
     }
   });
 

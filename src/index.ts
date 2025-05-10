@@ -12,7 +12,7 @@ const main = async () => {
   // Main app
   let app = new PIXI.Application();
 
-  await app.init({background: '#1099bb', antialias: true, resolution: 1});
+  await app.init({background: 'black', antialias: true, resolution: 1 / 2.5});
 
   const size = 1;
 
@@ -37,6 +37,7 @@ const main = async () => {
   });
 
   avatar.interactive = true;
+  avatar.zIndex = 1000;
 
   let arrows = 0;
 

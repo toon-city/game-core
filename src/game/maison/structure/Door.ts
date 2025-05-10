@@ -13,7 +13,8 @@ export class Door implements Drawable {
     public p1: Point,
     public p2: Point,
     public p1Top: Point,
-    public p2Top: Point
+    public p2Top: Point,
+    public zIndex: number = 0
   ) {
     this._container = new Container();
   }
@@ -46,6 +47,7 @@ export class Door implements Drawable {
     g.lineTo(this.p2Top.x, this.p2Top.y);
     g.stroke();
 
+    this._container.zIndex = this.zIndex;
     this._container.addChild(g);
 
     return this._container;

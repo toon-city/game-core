@@ -45,6 +45,7 @@ export class Area implements IArea, Drawable {
 
     this.texture.source.wrapMode = 'repeat';
 
+
     const path = new GraphicsPath();
     path.moveTo(this.maxPoints[0].x, this.maxPoints[0].y);
     this.maxPoints.forEach((p) => path.lineTo(p.x, p.y));

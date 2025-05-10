@@ -107,6 +107,9 @@ export class Wall implements Drawable {
       )
     );
 
+    this._container.zIndex = isBaseBoard ? Math.max(this.p1.y, this.p2.y) : 0;
+    // console.log(this._container.zIndex);
+
     return this._container;
   }
 }
