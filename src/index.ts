@@ -134,7 +134,7 @@ const main = async () => {
       if (avatar.direction & up) avatar.y -= 10 / divider;
       if (avatar.direction & left) avatar.x -= 10 / divider;
       if (avatar.direction & right) avatar.x += 10 / divider;
-      avatar.zIndex = avatar.y + 120;
+      avatar.zIndex = avatar.y + 100;
       app.stage.sortChildren();
     }
   });

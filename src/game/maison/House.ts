@@ -192,8 +192,8 @@ export function parseHouseXML(xmlString: string): House {
       house.addDoor(new Door(
         proj(sx, sy, 0),
         proj(ex, ey, 0),
-        proj(sx, sy, 200),
-        proj(ex, ey, 200),
+        proj(sx, sy, 180),
+        proj(ex, ey, 180),
         bottomY + 0.1
       ));
     }
