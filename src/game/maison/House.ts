@@ -1,6 +1,5 @@
 import {
   Container,
-  Graphics,
   Texture,
 } from 'pixi.js';
 import {project} from './utils/project';
