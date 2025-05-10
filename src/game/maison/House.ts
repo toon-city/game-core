@@ -9,18 +9,12 @@ import {Area} from './structure/Area';
 import { Drawable } from '../../core/abstract/drawable';
 import { Point } from './types';
 
-export class House implements Drawable {
+export class House {
   doors: Door[] = [];
   walls: Wall[] = [];
   floorPoints: {x: number; y: number}[] = [];
   areas: Area[] = [];
   public readonly maxPoints: Point[] = [];
-
-  private readonly _container: Container;
-
-  get container(): Container {
-    return this._container;
-  }
 
   constructor(
     public width: number,
@@ -31,8 +25,6 @@ export class House implements Drawable {
     public maxX: number = 0,
     public maxY: number = 0
   ) {
-    this._container = new Container();
-    this._container.sortableChildren = true;
 
      this.maxPoints = [
       {x: this.minX, y: this.minY},
@@ -58,11 +50,9 @@ export class House implements Drawable {
     this.floorPoints = points;
   }
 
-  draw(): Container {
-    this._container.removeChildren();
-
+  draw(gameScene: Container): Container {
     this.areas.forEach((area) => {
-      this.container.addChild(area.draw());
+      gameScene.addChild(area.draw());
     });
 
     setTimeout(() => {
@@ -71,11 +61,11 @@ export class House implements Drawable {
       console.log('Texture updated');
     }, 2000);
 
-    this.walls.forEach((wall) => this._container.addChild(wall.draw()));
+    this.walls.forEach((wall) => gameScene.addChild(wall.draw()));
 
-    this.doors.forEach((door) =>  this._container.addChild(door.draw()));
+    this.doors.forEach((door) =>  gameScene.addChild(door.draw()));
 
-    return this._container;
+    return gameScene;
   }
 }
 
@@ -194,7 +184,7 @@ export function parseHouseXML(xmlString: string): House {
       const ex = pA.x + (off + doorW / 2) * nx;
       const ey = pA.y + (off + doorW / 2) * ny;
 
-      const bottomY = Math.max(
+      const bottomY = Math.min(
         proj(pA.x, pA.y, 0).y,
         proj(pB.x, pB.y, 0).y,
       );

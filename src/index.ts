@@ -12,7 +12,7 @@ const main = async () => {
   // Main app
   let app = new PIXI.Application();
 
-  await app.init({background: 'black', antialias: true, resolution: 1 / 2.5});
+  await app.init({background: 'black', antialias: true, resolution: 1});
 
   const size = 1;
 
@@ -22,18 +22,20 @@ const main = async () => {
 
   await BaseTextureLoader.getInstance().load();
 
+  const gameScene = new PIXI.Container({sortableChildren: true});
+  app.stage.addChild(gameScene);
+
   var avatar: Avatar = new Avatar(app, {showSocle: true, direction: down});
-  app.stage.sortableChildren = true;
   avatar.scale.set(size, size);
   avatar.position.set(20, 40);
-  app.stage.addChild(avatar);
+  gameScene.addChild(avatar);
   avatar.changeDirection(1);
 
   [2, 4, 5, 6, 8, 9, 10].forEach((direction, index) => {
     let newAvatar = new Avatar(app, {showSocle: true, direction: down});
     newAvatar.scale.set(size, size);
     newAvatar.position.set(80 + 80 * index, 40);
-    app.stage.addChild(newAvatar);
+    gameScene.addChild(newAvatar);
     newAvatar.changeDirection(direction);
   });
 
@@ -128,11 +130,11 @@ const main = async () => {
         avatar.direction & (left | right) && avatar.direction & (up | down)
           ? 1.4
           : 1;
-      if (avatar.direction & down) avatar.y += 1.6 / divider;
-      if (avatar.direction & up) avatar.y -= 1.6 / divider;
-      if (avatar.direction & left) avatar.x -= 1.6 / divider;
-      if (avatar.direction & right) avatar.x += 1.6 / divider;
-      avatar.zIndex = avatar.y;
+      if (avatar.direction & down) avatar.y += 10 / divider;
+      if (avatar.direction & up) avatar.y -= 10 / divider;
+      if (avatar.direction & left) avatar.x -= 10 / divider;
+      if (avatar.direction & right) avatar.x += 10 / divider;
+      avatar.zIndex = avatar.y + 120;
       app.stage.sortChildren();
     }
   });
@@ -669,10 +671,7 @@ const main = async () => {
     const house = parseHouseXML(xmlString);
 
     // Dessiner la maison
-    let houseContainer = house.draw();
-    houseContainer.x = 10;
-    houseContainer.y = 260;
-    app.stage.addChild(houseContainer);
+    house.draw(gameScene);
 };
 
 main();

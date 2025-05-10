@@ -163,6 +163,6 @@ export class Avatar extends Container implements IAvatar {
       part.direction = this._direction;
     });
 
-    this.directionText.text = `${this._direction}`;
+    this.directionText.text = `${this._direction} ${this.zIndex}`;
   }
 }
