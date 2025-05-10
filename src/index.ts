@@ -23,6 +23,7 @@ const main = async () => {
   await BaseTextureLoader.getInstance().load();
 
   var avatar: Avatar = new Avatar(app, {showSocle: true, direction: down});
+  app.stage.sortableChildren = true;
   avatar.scale.set(size, size);
   avatar.position.set(20, 40);
   app.stage.addChild(avatar);
@@ -127,10 +128,12 @@ const main = async () => {
         avatar.direction & (left | right) && avatar.direction & (up | down)
           ? 1.4
           : 1;
-      if (avatar.direction & down) avatar.y += 0.8 / divider;
-      if (avatar.direction & up) avatar.y -= 0.8 / divider;
-      if (avatar.direction & left) avatar.x -= 0.8 / divider;
-      if (avatar.direction & right) avatar.x += 0.8 / divider;
+      if (avatar.direction & down) avatar.y += 1.6 / divider;
+      if (avatar.direction & up) avatar.y -= 1.6 / divider;
+      if (avatar.direction & left) avatar.x -= 1.6 / divider;
+      if (avatar.direction & right) avatar.x += 1.6 / divider;
+      avatar.zIndex = avatar.y;
+      app.stage.sortChildren();
     }
   });
 
@@ -667,8 +670,8 @@ const main = async () => {
 
     // Dessiner la maison
     let houseContainer = house.draw();
-    houseContainer.x = 2500;
-    houseContainer.y = 2500;
+    houseContainer.x = 10;
+    houseContainer.y = 260;
     app.stage.addChild(houseContainer);
 };
 
