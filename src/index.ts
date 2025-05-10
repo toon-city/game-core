@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import {BaseTextureLoader} from './game/textures/BaseTextureLoader';
 import {Avatar} from './game/avatar/Avatar';
-import { parseHouseXML } from './game/maison/OldHouse';
+import { parseHouseXML } from './game/maison/House';
 
 const left = 0b1000;
 const right = 0b0100;

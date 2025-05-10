@@ -8,12 +8,14 @@ import {Wall} from './structure/Wall';
 import {Door} from './structure/Door';
 import {Area} from './structure/Area';
 import { Drawable } from '../../core/abstract/drawable';
+import { Point } from './types';
 
 export class House implements Drawable {
   doors: Door[] = [];
   walls: Wall[] = [];
   floorPoints: {x: number; y: number}[] = [];
   areas: Area[] = [];
+  public readonly maxPoints: Point[] = [];
 
   private readonly _container: Container;
 
@@ -31,6 +33,13 @@ export class House implements Drawable {
     public maxY: number = 0
   ) {
     this._container = new Container();
+
+     this.maxPoints = [
+      {x: this.minX, y: this.minY},
+      {x: this.maxX, y: this.minY},
+      {x: this.maxX, y: this.maxY},
+      {x: this.minX, y: this.maxY},
+    ].map((p) => project(p.x, p.y, 0));
   }
 
   addDoor(door: Door) {
@@ -113,10 +122,10 @@ export function parseHouseXML(xmlString: string): House {
     const projectedPoint = project(rotatedPoint.x, rotatedPoint.y, 0);
 
     // Mettre à jour les min et max
-    minX = Math.min(minX, projectedPoint.x);
-    minY = Math.min(minY, projectedPoint.y);
-    maxX = Math.max(maxX, projectedPoint.x);
-    maxY = Math.max(maxY, projectedPoint.y);
+    minX = Math.min(minX, rotatedPoint.x);
+    minY = Math.min(minY, rotatedPoint.y);
+    maxX = Math.max(maxX, rotatedPoint.x);
+    maxY = Math.max(maxY, rotatedPoint.y);
 
     points.push({
       x: rotatedPoint.x,
@@ -148,11 +157,8 @@ export function parseHouseXML(xmlString: string): House {
     house.addArea(
       new Area({
         points: floorPoints,
-        texture: Texture.from('assets/house/base_floor.png'),
-        minX,
-        minY,
-        maxX,
-        maxY,
+        texture: Texture.from('assets/house/ha_sol.jpg'),
+        maxPoints: house.maxPoints,
       })
     );
   });

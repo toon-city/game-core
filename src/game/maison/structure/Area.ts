@@ -13,19 +13,13 @@ import {Point} from '../types';
 export interface IArea {
   points: Point[];
   texture: Texture;
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
+  maxPoints: Point[];
 }
 
 export class Area implements IArea, Drawable {
   public points: Point[];
   public texture: Texture;
-  public minX: number;
-  public minY: number;
-  public maxX: number;
-  public maxY: number;
+  public maxPoints: Point[];
   private readonly _container: Container;
 
   get container(): Container {
@@ -35,10 +29,7 @@ export class Area implements IArea, Drawable {
   constructor(options: IArea) {
     this.points = options.points;
     this.texture = options.texture;
-    this.minX = options.minX;
-    this.minY = options.minY;
-    this.maxX = options.maxX;
-    this.maxY = options.maxY;
+    this.maxPoints = options.maxPoints;
     this._container = new Container();
   }
 
@@ -55,16 +46,9 @@ export class Area implements IArea, Drawable {
 
     this.texture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
 
-    const normalPoints = [
-      {x: this.minX, y: this.minY},
-      {x: this.maxX, y: this.minY},
-      {x: this.maxX, y: this.maxY},
-      {x: this.minX, y: this.maxY},
-    ];
-
     const path = new GraphicsPath();
-    path.moveTo(normalPoints[0].x, normalPoints[0].y);
-    normalPoints.forEach((p) => path.lineTo(p.x, p.y));
+    path.moveTo(this.maxPoints[0].x, this.maxPoints[0].y);
+    this.maxPoints.forEach((p) => path.lineTo(p.x, p.y));
     path.closePath();
 
     const mask = new Graphics();
@@ -76,12 +60,12 @@ export class Area implements IArea, Drawable {
     const geometry = buildGeometryFromPath(path);
     const mesh = new Mesh({geometry, texture: this.texture, x: 0, y: 0});
 
-    const dx1 = normalPoints[1].x - normalPoints[0].x;
-    const dy1 = normalPoints[1].y - normalPoints[0].y;
+    const dx1 = this.maxPoints[1].x - this.maxPoints[0].x;
+    const dy1 = this.maxPoints[1].y - this.maxPoints[0].y;
     const len1 = Math.hypot(dx1, dy1);
 
-    const dx2 = normalPoints[2].x - normalPoints[1].x;
-    const dy2 = normalPoints[2].y - normalPoints[1].y;
+    const dx2 = this.maxPoints[2].x - this.maxPoints[1].x;
+    const dy2 = this.maxPoints[2].y - this.maxPoints[1].y;
     const len2 = Math.hypot(dx2, dy2);
 
     const brickW = this.texture.width;
