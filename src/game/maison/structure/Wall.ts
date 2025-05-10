@@ -1,4 +1,4 @@
-import { Graphics, MeshPlane, Texture, WRAP_MODES } from "pixi.js";
+import { Graphics, MeshPlane, Texture } from "pixi.js";
 import { Point, WallPlaneOptions } from "../types";
 
 export class Wall {
@@ -8,7 +8,7 @@ export class Wall {
     public p1Top: Point,
     public p2Top: Point,
     public height: number,
-    public hidden: boolean
+    public hidden: boolean = false
   ) {}
 
   private createWallPlane(
@@ -25,7 +25,7 @@ export class Wall {
       fitHeight = false,
     } = options;
 
-    texture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
+    texture.source.wrapMode = 'repeat';
 
     const plane = new MeshPlane({texture, verticesX: 2, verticesY: 2});
 
@@ -53,11 +53,7 @@ export class Wall {
 
     // --- Calcul des répétitions ---
     const repeatX = enableRepeatX ? projectedLength / brickScreenWidth : 1;
-    const repeatY = fitHeight
-      ? 1
-      : enableRepeatY
-      ? projectedHeight / brickScreenHeight
-      : 1;
+    const repeatY = !fitHeight || !enableRepeatY ? projectedHeight / brickScreenHeight : 1;
 
     // --- UVs (aUV) ---
     const uvBuffer = plane.geometry.getBuffer('aUV').data;

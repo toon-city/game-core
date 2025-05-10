@@ -157,7 +157,7 @@ export function parseHouseXML(xmlString: string): House {
     house.addArea(
       new Area({
         points: floorPoints,
-        texture: Texture.from('assets/house/ha_sol.jpg'),
+        texture: Texture.from('assets/house/base_floor.png'),
         maxPoints: house.maxPoints,
       })
     );
@@ -216,8 +216,7 @@ export function parseHouseXML(xmlString: string): House {
             {x: p2.projectedX, y: p2.projectedY},
             project(p1.x, p1.y, 10),
             project(p2.x, p2.y, 10),
-            height,
-            wall.hasAttribute('HDN')
+            10
           )
         );
       }

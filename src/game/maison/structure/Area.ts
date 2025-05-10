@@ -5,7 +5,6 @@ import {
   GraphicsPath,
   Mesh,
   Texture,
-  WRAP_MODES,
 } from 'pixi.js';
 import {Drawable} from '../../../core/abstract/drawable';
 import {Point} from '../types';
@@ -44,7 +43,7 @@ export class Area implements IArea, Drawable {
     const {repeatX: enableRepeatX = true, repeatY: enableRepeatY = true} =
       options;
 
-    this.texture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
+    this.texture.source.wrapMode = 'repeat';
 
     const path = new GraphicsPath();
     path.moveTo(this.maxPoints[0].x, this.maxPoints[0].y);
