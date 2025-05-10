@@ -1,15 +1,26 @@
-import { Graphics } from "pixi.js";
-import { Point } from "../types";
+import {Container, Graphics} from 'pixi.js';
+import {Point} from '../types';
+import { Drawable } from '../../../core/abstract/drawable';
 
-export class Door {
+export class Door implements Drawable {
+  private readonly _container: Container;
+
+  get container(): Container {
+    return this._container;
+  }
+
   constructor(
     public p1: Point,
     public p2: Point,
     public p1Top: Point,
     public p2Top: Point
-  ) {}
+  ) {
+    this._container = new Container();
+  }
 
-  draw(graphics: Graphics) {
+  draw() : Container {
+    this._container.removeChildren();
+  
     const ep = 2;
     const g = new Graphics();
 
@@ -35,6 +46,8 @@ export class Door {
     g.lineTo(this.p2Top.x, this.p2Top.y);
     g.stroke();
 
-    graphics.addChild(g);
+    this._container.addChild(g);
+
+    return this._container;
   }
 }

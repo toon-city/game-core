@@ -73,9 +73,7 @@ export class House implements Drawable {
 
     this.walls.forEach((wall) => this._container.addChild(wall.draw()));
 
-    const doorsGraphics = new Graphics();
-    this.doors.forEach((door) => door.draw(doorsGraphics));
-    this._container.addChild(doorsGraphics);
+    this.doors.forEach((door) =>  this._container.addChild(door.draw()));
 
     return this._container;
   }
