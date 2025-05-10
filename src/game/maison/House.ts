@@ -71,10 +71,7 @@ export class House implements Drawable {
       console.log('Texture updated');
     }, 2000);
 
-    // Dessiner les murs
-    const wallsGraphics = new Graphics();
-    this.walls.forEach((wall) => wall.draw(wallsGraphics));
-    this._container.addChild(wallsGraphics);
+    this.walls.forEach((wall) => this._container.addChild(wall.draw()));
 
     const doorsGraphics = new Graphics();
     this.doors.forEach((door) => door.draw(doorsGraphics));

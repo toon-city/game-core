@@ -1,7 +1,14 @@
-import { Graphics, MeshPlane, Texture } from "pixi.js";
-import { Point, WallPlaneOptions } from "../types";
+import {Container, MeshPlane, Texture} from 'pixi.js';
+import {Point, WallPlaneOptions} from '../types';
+import {Drawable} from '../../../core/abstract/drawable';
 
-export class Wall {
+export class Wall implements Drawable {
+  private readonly _container: Container;
+
+  get container(): Container {
+    return this._container;
+  }
+
   constructor(
     public p1: Point,
     public p2: Point,
@@ -9,7 +16,9 @@ export class Wall {
     public p2Top: Point,
     public height: number,
     public hidden: boolean = false
-  ) {}
+  ) {
+    this._container = new Container();
+  }
 
   private createWallPlane(
     texture: Texture,
@@ -53,7 +62,8 @@ export class Wall {
 
     // --- Calcul des répétitions ---
     const repeatX = enableRepeatX ? projectedLength / brickScreenWidth : 1;
-    const repeatY = !fitHeight || !enableRepeatY ? projectedHeight / brickScreenHeight : 1;
+    const repeatY =
+      !fitHeight || !enableRepeatY ? projectedHeight / brickScreenHeight : 1;
 
     // --- UVs (aUV) ---
     const uvBuffer = plane.geometry.getBuffer('aUV').data;
@@ -70,14 +80,15 @@ export class Wall {
     return plane;
   }
 
-  draw(graphics: Graphics) {
+  draw(): Container {
+    this._container.removeChildren();
     if (this.hidden) {
-      return;
+      return this._container;
     }
 
     const isBaseBoard = this.height == 10;
 
-    graphics.addChild(
+    this._container.addChild(
       this.createWallPlane(
         Texture.from(
           isBaseBoard
@@ -95,5 +106,7 @@ export class Wall {
         }
       )
     );
+
+    return this._container;
   }
 }
