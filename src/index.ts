@@ -2,8 +2,6 @@ import * as PIXI from 'pixi.js';
 import {BaseTextureLoader} from './game/textures/BaseTextureLoader';
 import {Avatar} from './game/avatar/Avatar';
 import { parseHouseXML } from './game/maison/House';
-import { Furniture } from './game/furnitures/Furniture';
-
 const left = 0b1000;
 const right = 0b0100;
 const up = 0b0010;
@@ -17,7 +15,7 @@ const main = async () => {
 
   const size = 1;
 
-  app.renderer.resize(5000, 5000);
+  app.renderer.resize(window.outerWidth, window.outerHeight);
 
   document.body.appendChild(app.canvas);
 
@@ -125,6 +123,54 @@ const main = async () => {
     }
   };
 
+  const cam = {
+  w: app.screen.width,
+  h: app.screen.height,
+  minX: 0,
+  minY: 0,
+  maxX: 5000,
+  maxY: 5000
+};
+
+const MARGIN = 100;
+const SMOOTH = 0.1;
+
+function updateCamera() {
+  // position du joueur dans l'écran
+  const screenX = -gameScene.x + avatar.x;
+  const screenY = -gameScene.y + avatar.y;
+
+  let targetWorldX = gameScene.x;
+  let targetWorldY = gameScene.y;
+
+  // si trop près du bord gauche
+  if (screenX < MARGIN) {
+    targetWorldX = -(avatar.x - MARGIN);
+  }
+  // si trop près du bord droit
+  else if (screenX > cam.w - MARGIN) {
+    targetWorldX = -(avatar.x - (cam.w - MARGIN));
+  }
+
+  // bord haut
+  if (screenY < MARGIN) {
+    targetWorldY = -(avatar.y - MARGIN);
+  }
+  // bord bas
+  else if (screenY > cam.h - MARGIN) {
+    targetWorldY = -(avatar.y - (cam.h - MARGIN));
+  }
+
+  // clamp pour rester dans le monde
+  targetWorldX = Math.min( -cam.minX, Math.max( -cam.maxX, targetWorldX ));
+  targetWorldY = Math.min( -cam.minY, Math.max( -cam.maxY, targetWorldY ));
+
+  // déplacement lissé
+  gameScene.x += (targetWorldX - gameScene.x) * SMOOTH;
+  gameScene.y += (targetWorldY - gameScene.y) * SMOOTH;
+}
+
+
   app.ticker.add((delta) => {
     if (avatar.isWalking) {
       let divider =
@@ -137,6 +183,7 @@ const main = async () => {
       if (avatar.direction & right) avatar.x += 10 / divider;
       avatar.zIndex = avatar.y + 100;
       app.stage.sortChildren();
+      updateCamera();
     }
   });
 
