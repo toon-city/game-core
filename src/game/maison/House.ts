@@ -1,19 +1,17 @@
-import {
-  Container,
-  Texture,
-} from 'pixi.js';
+import {Container, Texture} from 'pixi.js';
 import {project} from './utils/project';
 import {Wall} from './structure/Wall';
 import {Door} from './structure/Door';
 import {Area} from './structure/Area';
-import { Drawable } from '../../core/abstract/drawable';
-import { Point } from './types';
+import {Point} from './types';
+import {Furniture} from '../furnitures/Furniture';
 
 export class House {
   doors: Door[] = [];
   walls: Wall[] = [];
   floorPoints: {x: number; y: number}[] = [];
   areas: Area[] = [];
+  furnitures: Furniture[] = [];
   public readonly maxPoints: Point[] = [];
 
   constructor(
@@ -23,10 +21,11 @@ export class House {
     public minX: number = 0,
     public minY: number = 0,
     public maxX: number = 0,
-    public maxY: number = 0
+    public maxY: number = 0,
+    public offsetX: number = 0,
+    public offsetY: number = 0
   ) {
-
-     this.maxPoints = [
+    this.maxPoints = [
       {x: this.minX, y: this.minY},
       {x: this.maxX, y: this.minY},
       {x: this.maxX, y: this.maxY},
@@ -55,17 +54,40 @@ export class House {
       gameScene.addChild(area.draw());
     });
 
-    setTimeout(() => {
-      this.areas[0].texture = Texture.from('assets/house/ha_sol.jpg');
-      this.areas[0].draw();
-      console.log('Texture updated');
-    }, 2000);
-
     this.walls.forEach((wall) => gameScene.addChild(wall.draw()));
 
-    this.doors.forEach((door) =>  gameScene.addChild(door.draw()));
+    this.doors.forEach((door) => gameScene.addChild(door.draw()));
+
+    this.furnitures.forEach((furniture) => gameScene.addChild(furniture.draw()));
 
     return gameScene;
+  }
+
+  loadFurnituresFromJson(json: string) {
+    const data = JSON.parse(json);
+    data.forEach((furnitureData: any) => {
+      if (furnitureData.SURL && !furnitureData.SURL.includes('.swf')) {
+        const type = parseInt(furnitureData.STYPE);
+        if ([16, 17, 19].includes(type)) {
+          // Sol
+        } else if (type === 18 || type === 20) {
+          this.furnitures.push(
+            new Furniture(
+              furnitureData.SID,
+              type,
+              parseFloat(furnitureData.PXP),
+              parseFloat(furnitureData.PYP),
+              parseInt(furnitureData.PR),
+              0,
+              0,
+              furnitureData.SURL
+            )
+          );
+        } else {
+          // Sol
+        }
+      }
+    });
   }
 }
 
@@ -86,23 +108,23 @@ export function parseHouseXML(xmlString: string): House {
   const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
 
   // 1) Collecte et projection z=0 pour tous les points
-  type Pt = { x: number; y: number; projX: number; projY: number };
+  type Pt = {x: number; y: number; projX: number; projY: number};
   const pts: Pt[] = [];
-  xmlDoc.querySelectorAll('P').forEach(node => {
+  xmlDoc.querySelectorAll('P').forEach((node) => {
     const rawX = parseFloat(node.getAttribute('YPOS') ?? '0');
     const rawY = parseFloat(node.getAttribute('XPOS') ?? '0');
 
     // Rotation de 90°
-    const { x: xr, y: yr } = rotatePoint(rawX, rawY, -90);
+    const {x: xr, y: yr} = rotatePoint(rawX, rawY, -90);
     const p0 = project(xr, yr, 0);
 
-    pts.push({ x: xr, y: yr, projX: p0.x, projY: p0.y });
+    pts.push({x: xr, y: yr, projX: p0.x, projY: p0.y});
   });
 
   // 2) Calcul des bornes projetées pour le décalage
   let minProjX = Infinity;
   let minProjY = Infinity;
-  pts.forEach(p => {
+  pts.forEach((p) => {
     minProjX = Math.min(minProjX, p.projX);
     minProjY = Math.min(minProjY, p.projY);
   });
@@ -112,46 +134,48 @@ export function parseHouseXML(xmlString: string): House {
   // 3) Helper pour projeter tout avec le même offset
   const proj = (x: number, y: number, z: number) => {
     const p = project(x, y, z);
-    return { x: p.x + offsetX, y: p.y + offsetY };
+    return {x: p.x + offsetX, y: p.y + offsetY};
   };
 
   // 4) Calcul des bornes brutes pour la House
-  const xs = pts.map(p => p.x);
-  const ys = pts.map(p => p.y);
+  const xs = pts.map((p) => p.x);
+  const ys = pts.map((p) => p.y);
   const minX = Math.min(...xs);
   const minY = Math.min(...ys);
   const maxX = Math.max(...xs);
   const maxY = Math.max(...ys);
 
-  const house = new House(0, 0, 100, minX, minY, maxX, maxY);
+  const house = new House(0, 0, 100, minX, minY, maxX, maxY, offsetX, offsetY);
 
   // 5) Ajustement des maxPoints pour les areas
-  const adjustedMaxPoints = house.maxPoints.map(p => ({
+  const adjustedMaxPoints = house.maxPoints.map((p) => ({
     x: p.x + offsetX,
     y: p.y + offsetY,
   }));
 
   // 6) Création des aires (F)
-  xmlDoc.querySelectorAll('F').forEach(nodeF => {
-    const floorPts: { x: number; y: number }[] = [];
+  xmlDoc.querySelectorAll('F').forEach((nodeF) => {
+    const floorPts: {x: number; y: number}[] = [];
     let i = 0;
     while (nodeF.hasAttribute(`PT${i}`)) {
       const idx = parseInt(nodeF.getAttribute(`PT${i}`)!, 10);
       const p = pts[idx];
       if (p) {
-        floorPts.push({ x: p.projX + offsetX, y: p.projY + offsetY });
+        floorPts.push({x: p.projX + offsetX, y: p.projY + offsetY});
       }
       i++;
     }
-    house.addArea(new Area({
-      points: floorPts,
-      texture: Texture.from('assets/house/base_floor.png'),
-      maxPoints: adjustedMaxPoints,
-    }));
+    house.addArea(
+      new Area({
+        points: floorPts,
+        texture: Texture.from('assets/house/base_floor.png'),
+        maxPoints: adjustedMaxPoints,
+      })
+    );
   });
 
   // 7) Extraction des murs et portes (W)
-  xmlDoc.querySelectorAll('W').forEach(nodeW => {
+  xmlDoc.querySelectorAll('W').forEach((nodeW) => {
     const iA = +nodeW.getAttribute('PTA')!;
     const iB = +nodeW.getAttribute('PTB')!;
     const h = parseFloat(nodeW.getAttribute('H') ?? '100');
@@ -160,14 +184,16 @@ export function parseHouseXML(xmlString: string): House {
     if (!pA || !pB) return;
 
     // Mur principal
-    house.addWall(new Wall(
-      proj(pA.x, pA.y, 0),
-      proj(pB.x, pB.y, 0),
-      proj(pA.x, pA.y, h),
-      proj(pB.x, pB.y, h),
-      h,
-      nodeW.hasAttribute('HDN')
-    ));
+    house.addWall(
+      new Wall(
+        proj(pA.x, pA.y, 0),
+        proj(pB.x, pB.y, 0),
+        proj(pA.x, pA.y, h),
+        proj(pB.x, pB.y, h),
+        h,
+        nodeW.hasAttribute('HDN')
+      )
+    );
 
     // Porte éventuelle
     if (nodeW.hasAttribute('ENTER') && nodeW.hasAttribute('D0')) {
@@ -184,29 +210,30 @@ export function parseHouseXML(xmlString: string): House {
       const ex = pA.x + (off + doorW / 2) * nx;
       const ey = pA.y + (off + doorW / 2) * ny;
 
-      const bottomY = Math.min(
-        proj(pA.x, pA.y, 0).y,
-        proj(pB.x, pB.y, 0).y,
-      );
+      const bottomY = Math.min(proj(pA.x, pA.y, 0).y, proj(pB.x, pB.y, 0).y);
 
-      house.addDoor(new Door(
-        proj(sx, sy, 0),
-        proj(ex, ey, 0),
-        proj(sx, sy, 180),
-        proj(ex, ey, 180),
-        bottomY + 0.1
-      ));
+      house.addDoor(
+        new Door(
+          proj(sx, sy, 0),
+          proj(ex, ey, 0),
+          proj(sx, sy, 180),
+          proj(ex, ey, 180),
+          bottomY + 0.1
+        )
+      );
     }
 
     // Plinthe pour h>10
     if (h > 10 && !nodeW.hasAttribute('HDN')) {
-      house.addWall(new Wall(
-        proj(pA.x, pA.y, 0),
-        proj(pB.x, pB.y, 0),
-        proj(pA.x, pA.y, 10),
-        proj(pB.x, pB.y, 10),
-        10
-      ));
+      house.addWall(
+        new Wall(
+          proj(pA.x, pA.y, 0),
+          proj(pB.x, pB.y, 0),
+          proj(pA.x, pA.y, 10),
+          proj(pB.x, pB.y, 10),
+          10
+        )
+      );
     }
   });
 

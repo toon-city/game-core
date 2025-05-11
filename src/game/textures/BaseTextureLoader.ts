@@ -45,6 +45,8 @@ export class BaseTextureLoader {
       'assets/house/disco_mur.png',
       'assets/house/ha_sol.jpg',
       'assets/house/jardinherbe.png',
+      'assets/furnitures/jardin/haie.json',
+      'assets/furnitures/jardin/banc.json',
     ]);
   }
 
