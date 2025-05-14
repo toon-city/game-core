@@ -62,39 +62,7 @@ export class House {
       gameScene.addChild(furniture.draw())
     );
 
-    // this.furnitures.forEach((furniture) => {
-    //   furniture.enableDrag(gameScene);
-    // });
-
-    gameScene.interactive = true;
-    gameScene.cursor = 'grab';
-
-    gameScene
-      .on('pointerdown', (event) => this.onDragStart(gameScene, event))
-      .on('pointerup', (event) => this.onDragEnd(gameScene))
-      .on('pointermove', this.onDragMove.bind(this));
-
     return gameScene;
-  }
-
-  public onDragStart(gameScene: Container, e: FederatedPointerEvent) {
-    gameScene.cursor = 'grabbing';
-    this.furnitures.forEach((furniture) => {
-      furniture.onDragStart(e);
-    });
-  }
-
-  public onDragMove(e: FederatedPointerEvent) {
-    this.furnitures.forEach((furniture) => {
-      furniture.onDragMove(e);
-    });
-  }
-
-  public onDragEnd(gameScene: Container) {
-    gameScene.cursor = 'grab';
-    this.furnitures.forEach((furniture) => {
-      furniture.onDragEnd();
-    });
   }
 
   loadFurnituresFromJson(json: string) {
@@ -202,7 +170,7 @@ export function parseHouseXML(xmlString: string): House {
     house.addArea(
       new Area({
         points: floorPts,
-        texture: Texture.from('assets/house/base_floor.png'),
+        texture: Texture.from('assets/house/jardinherbe.png'),
         maxPoints: adjustedMaxPoints,
       })
     );
