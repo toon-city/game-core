@@ -15,7 +15,7 @@ const main = async () => {
 
   const size = 1;
 
-  app.renderer.resize(window.outerWidth, window.outerHeight);
+  app.renderer.resize(7000, 6000);
 
   document.body.appendChild(app.canvas);
 
@@ -183,7 +183,7 @@ function updateCamera() {
       if (avatar.direction & right) avatar.x += 10 / divider;
       avatar.zIndex = avatar.y + 100;
       app.stage.sortChildren();
-      updateCamera();
+      //updateCamera();
     }
   });
 
@@ -718,8 +718,8 @@ xmlString = `
     // Créer une maison à partir du fichier XML
     const house = parseHouseXML(xmlString);
 
-    gameScene.x = 250;
-    gameScene.y = 250;
+    gameScene.x = 400;
+    gameScene.y = 400;
 
     fetch("assets/map_jardin.json").then((response) => {
       return response.text();

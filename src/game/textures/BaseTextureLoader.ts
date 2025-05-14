@@ -47,6 +47,14 @@ export class BaseTextureLoader {
       'assets/house/jardinherbe.png',
       'assets/furnitures/jardin/haie.json',
       'assets/furnitures/jardin/banc.json',
+      'assets/furnitures/jardin/herbe.json',
+      'assets/furnitures/jardin/pave.json',
+      'assets/furnitures/jardin/rond_centre.json',
+      'assets/furnitures/jardin/statut.json',
+      'assets/furnitures/jardin/statut1.json',
+      'assets/furnitures/jardin/statut2.json',
+      'assets/furnitures/jardin/statut3.json',
+      'assets/furnitures/jardin/statut4.json',
     ]);
   }
 

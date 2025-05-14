@@ -1,0 +1,35 @@
+{
+	"frames": {
+		"statut_1.png": {
+			"frame": {
+				"x": 30,
+				"y": 30,
+				"w": 718,
+				"h": 541
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 718,
+				"h": 541
+			},
+			"sourceSize": {
+				"w": 718,
+				"h": 541
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "statut.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 778,
+			"h": 601
+		},
+		"scale": "1"
+	}
+}

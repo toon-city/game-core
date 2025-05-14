@@ -1,4 +1,4 @@
-import {Container, Texture} from 'pixi.js';
+import {Container, FederatedPointerEvent, Texture} from 'pixi.js';
 import {project} from './utils/project';
 import {Wall} from './structure/Wall';
 import {Door} from './structure/Door';
@@ -58,9 +58,43 @@ export class House {
 
     this.doors.forEach((door) => gameScene.addChild(door.draw()));
 
-    this.furnitures.forEach((furniture) => gameScene.addChild(furniture.draw()));
+    this.furnitures.forEach((furniture) =>
+      gameScene.addChild(furniture.draw())
+    );
+
+    // this.furnitures.forEach((furniture) => {
+    //   furniture.enableDrag(gameScene);
+    // });
+
+    gameScene.interactive = true;
+    gameScene.cursor = 'grab';
+
+    gameScene
+      .on('pointerdown', (event) => this.onDragStart(gameScene, event))
+      .on('pointerup', (event) => this.onDragEnd(gameScene))
+      .on('pointermove', this.onDragMove.bind(this));
 
     return gameScene;
+  }
+
+  public onDragStart(gameScene: Container, e: FederatedPointerEvent) {
+    gameScene.cursor = 'grabbing';
+    this.furnitures.forEach((furniture) => {
+      furniture.onDragStart(e);
+    });
+  }
+
+  public onDragMove(e: FederatedPointerEvent) {
+    this.furnitures.forEach((furniture) => {
+      furniture.onDragMove(e);
+    });
+  }
+
+  public onDragEnd(gameScene: Container) {
+    gameScene.cursor = 'grab';
+    this.furnitures.forEach((furniture) => {
+      furniture.onDragEnd();
+    });
   }
 
   loadFurnituresFromJson(json: string) {
@@ -71,18 +105,18 @@ export class House {
         if ([16, 17, 19].includes(type)) {
           // Sol
         } else if (type === 18 || type === 20) {
-          this.furnitures.push(
-            new Furniture(
-              furnitureData.SID,
-              type,
-              parseFloat(furnitureData.PXP),
-              parseFloat(furnitureData.PYP),
-              parseInt(furnitureData.PR),
-              0,
-              0,
-              furnitureData.SURL
-            )
+          const furniture = new Furniture(
+            furnitureData.SID,
+            type,
+            parseFloat(furnitureData.PXP) * 2.5 + this.offsetX,
+            parseFloat(furnitureData.PYP) * 2.5 + this.offsetY,
+            parseInt(furnitureData.PR),
+            0,
+            0,
+            furnitureData.SURL
           );
+
+          this.furnitures.push(furniture);
         } else {
           // Sol
         }
