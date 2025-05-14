@@ -76,8 +76,8 @@ export class House {
           const furniture = new Furniture(
             furnitureData.SID,
             type,
-            parseFloat(furnitureData.PXP) * 2.5 + this.offsetX - 450,
-            parseFloat(furnitureData.PYP) * 2.5 + this.offsetY - 150,
+            parseFloat(furnitureData.PXP) * 2.5 + this.offsetX - 380,
+            parseFloat(furnitureData.PYP) * 2.5 + this.offsetY - 200,
             parseInt(furnitureData.PR),
             0,
             0,
