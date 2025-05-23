@@ -4,7 +4,8 @@ import {Wall} from './structure/Wall';
 import {Door} from './structure/Door';
 import {Area} from './structure/Area';
 import {Point} from './types';
-import {Furniture} from '../furnitures/Furniture';
+import {Furniture} from '../../core/models/Furniture';
+import {FurnitureView} from '../../modules/furniture/FurnitureView';
 
 export class House {
   doors: Door[] = [];
@@ -58,9 +59,13 @@ export class House {
 
     this.doors.forEach((door) => gameScene.addChild(door.draw()));
 
-    this.furnitures.forEach((furniture) =>
-      gameScene.addChild(furniture.draw())
-    );
+    this.furnitures.forEach((furniture) => {
+      gameScene.addChild(new FurnitureView(furniture));
+      setInterval(() => {
+        console.log("test");
+        furniture.setPosition(furniture.x + (-50 + Math.random() * 100), furniture.y + (-50 + Math.random() * 100));
+      }, 1);
+    });
 
     return gameScene;
   }
