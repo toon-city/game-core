@@ -1,6 +1,5 @@
-import {Container, FederatedPointerEvent, Texture} from 'pixi.js';
+import {Container} from 'pixi.js';
 import {project} from './utils/project';
-import {Point} from './types';
 import {Furniture} from '../../core/models/Furniture';
 import {FurnitureView} from '../../modules/furniture/FurnitureView';
 import {Area} from '../../core/models/Area';
@@ -9,6 +8,7 @@ import {Wall} from '../../core/models/Wall';
 import {WallView} from '../../modules/house/structure/WallView';
 import { Door } from '../../core/models/Door';
 import { DoorView } from '../../modules/house/structure/DoorView';
+import { Point } from '../../core/types/Point';
 
 export class House {
   doors: Door[] = [];
@@ -56,9 +56,9 @@ export class House {
   draw(gameScene: Container): Container {
     this.areas.forEach((area) => {
       gameScene.addChild(new AreaView(area));
-      setTimeout(() => {
-        area.setTexture('assets/house/quizz_sol.jpg');
-      }, 1000);
+      // setTimeout(() => {
+      //   area.setTexture('assets/house/quizz_sol.jpg');
+      // }, 1000);
     });
 
     this.walls.forEach((wall) => {
