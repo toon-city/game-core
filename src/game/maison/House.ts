@@ -1,12 +1,13 @@
 import {Container, FederatedPointerEvent, Texture} from 'pixi.js';
 import {project} from './utils/project';
-import {Wall} from './structure/Wall';
 import {Door} from './structure/Door';
 import {Point} from './types';
 import {Furniture} from '../../core/models/Furniture';
 import {FurnitureView} from '../../modules/furniture/FurnitureView';
-import { Area } from '../../core/models/Area';
-import { AreaView } from '../../modules/house/structure/AreaView';
+import {Area} from '../../core/models/Area';
+import {AreaView} from '../../modules/house/structure/AreaView';
+import {Wall} from '../../core/models/Wall';
+import {WallView} from '../../modules/house/structure/WallView';
 
 export class House {
   doors: Door[] = [];
@@ -59,7 +60,9 @@ export class House {
       }, 1000);
     });
 
-    this.walls.forEach((wall) => gameScene.addChild(wall.draw()));
+    this.walls.forEach((wall) => {
+      gameScene.addChild(new WallView(wall));
+    });
 
     this.doors.forEach((door) => gameScene.addChild(door.draw()));
 
@@ -176,11 +179,7 @@ export function parseHouseXML(xmlString: string): House {
       i++;
     }
     house.addArea(
-      new Area(
-        floorPts,
-        adjustedMaxPoints,
-        'assets/house/jardinherbe.png',
-      )
+      new Area(floorPts, adjustedMaxPoints, 'assets/house/jardinherbe.png')
     );
   });
 
@@ -193,6 +192,8 @@ export function parseHouseXML(xmlString: string): House {
     const pB = pts[iB];
     if (!pA || !pB) return;
 
+    const isBaseBoard = h == 10;
+
     // Mur principal
     house.addWall(
       new Wall(
@@ -200,8 +201,11 @@ export function parseHouseXML(xmlString: string): House {
         proj(pB.x, pB.y, 0),
         proj(pA.x, pA.y, h),
         proj(pB.x, pB.y, h),
-        h,
-        nodeW.hasAttribute('HDN')
+        isBaseBoard
+          ? 'assets/house/baseboard.png'
+          : 'assets/house/base_wall.png',
+        nodeW.hasAttribute('HDN'),
+        isBaseBoard
       )
     );
 
@@ -241,7 +245,9 @@ export function parseHouseXML(xmlString: string): House {
           proj(pB.x, pB.y, 0),
           proj(pA.x, pA.y, 10),
           proj(pB.x, pB.y, 10),
-          10
+          'assets/house/baseboard.png',
+          false,
+          true
         )
       );
     }
