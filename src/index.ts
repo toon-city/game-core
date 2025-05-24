@@ -697,23 +697,23 @@ function updateCamera() {
 // </MAP>`;
 
 
-// xmlString = `
-// <MAP>
-//     <P YPOS="-440" XPOS="-660"  />
-//     <P YPOS="-440" XPOS="2080"  />
-//     <P YPOS="1200" XPOS="-660"  />
-//     <P YPOS="1200" XPOS="2060"  />
-//     <P YPOS="-440" XPOS="3060"  />
-//     <P YPOS="1200" XPOS="3060"  />
-//     <W HDN="1" SF="20.5" H="250" PTB="0" PTA="2"  />
-//     <W ENTER="0" D0="1580" HDN="1" SF="34.25" H="250" PTB="1" PTA="0"  />
-//     <W HDN="1" SF="34" H="250" PTB="2" PTA="3"  />
-//     <W HDN="1" SF="12.25" H="250" PTB="4" PTA="1"  />
-//     <W HDN="1" SF="20.5" H="250" PTB="5" PTA="4"  />
-//     <W HDN="1" SF="12.5" H="250" PTB="3" PTA="5"  />
-//     <F PT3="2" PT2="3" PT1="1" PT0="0" SF="1"  />
-//     <F PT3="3" PT2="5" PT1="4" PT0="1" SF="1"  />
-// </MAP>`;
+xmlString = `
+<MAP>
+    <P YPOS="-440" XPOS="-660"  />
+    <P YPOS="-440" XPOS="2080"  />
+    <P YPOS="1200" XPOS="-660"  />
+    <P YPOS="1200" XPOS="2060"  />
+    <P YPOS="-440" XPOS="3060"  />
+    <P YPOS="1200" XPOS="3060"  />
+    <W HDN="1" SF="20.5" H="250" PTB="0" PTA="2"  />
+    <W ENTER="0" D0="1580" HDN="1" SF="34.25" H="250" PTB="1" PTA="0"  />
+    <W HDN="1" SF="34" H="250" PTB="2" PTA="3"  />
+    <W HDN="1" SF="12.25" H="250" PTB="4" PTA="1"  />
+    <W HDN="1" SF="20.5" H="250" PTB="5" PTA="4"  />
+    <W HDN="1" SF="12.5" H="250" PTB="3" PTA="5"  />
+    <F PT3="2" PT2="3" PT1="1" PT0="0" SF="1"  />
+    <F PT3="3" PT2="5" PT1="4" PT0="1" SF="1"  />
+</MAP>`;
 
     // Créer une maison à partir du fichier XML
     const house = parseHouseXML(xmlString);
