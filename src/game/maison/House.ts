@@ -1,5 +1,4 @@
 import {Container} from 'pixi.js';
-import {project} from './utils/project';
 import {Furniture} from '../../core/models/Furniture';
 import {FurnitureView} from '../../modules/furniture/FurnitureView';
 import {Area} from '../../core/models/Area';
@@ -9,6 +8,7 @@ import {WallView} from '../../modules/house/structure/WallView';
 import { Door } from '../../core/models/Door';
 import { DoorView } from '../../modules/house/structure/DoorView';
 import { Point } from '../../core/types/Point';
+import { project } from '../../utils/project';
 
 export class House {
   doors: Door[] = [];
