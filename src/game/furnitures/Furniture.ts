@@ -1,5 +1,5 @@
 import {Container, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
-import {Drawable} from '../../core/abstract/drawable';
+import {Drawable} from '../../core/abstract/Drawable';
 
 export class Furniture implements Drawable {
   private readonly _container: Container;

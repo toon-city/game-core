@@ -1,6 +1,6 @@
 import {Container, MeshPlane, Texture} from 'pixi.js';
 import {Point, WallPlaneOptions} from '../types';
-import {Drawable} from '../../../core/abstract/drawable';
+import {Drawable} from '../../../core/abstract/Drawable';
 
 export class Wall implements Drawable {
   private readonly _container: Container;

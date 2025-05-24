@@ -1,6 +1,6 @@
 import {Container, Graphics} from 'pixi.js';
 import {Point} from '../types';
-import { Drawable } from '../../../core/abstract/drawable';
+import { Drawable } from '../../../core/abstract/Drawable';
 
 export class Door implements Drawable {
   private readonly _container: Container;

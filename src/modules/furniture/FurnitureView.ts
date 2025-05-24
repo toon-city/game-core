@@ -2,8 +2,9 @@
 import {autorun} from 'mobx';
 import {Container, Sprite, Texture, FederatedPointerEvent} from 'pixi.js';
 import { Furniture } from '../../core/models/Furniture';
+import { Drawable } from '../../core/abstract/Drawable';
 
-export class FurnitureView extends Container {
+export class FurnitureView extends Container implements Drawable {
   private readonly sprite: Sprite;
 
   constructor(private readonly model: Furniture) {

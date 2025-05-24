@@ -2,10 +2,11 @@ import {Container, FederatedPointerEvent, Texture} from 'pixi.js';
 import {project} from './utils/project';
 import {Wall} from './structure/Wall';
 import {Door} from './structure/Door';
-import {Area} from './structure/Area';
 import {Point} from './types';
 import {Furniture} from '../../core/models/Furniture';
 import {FurnitureView} from '../../modules/furniture/FurnitureView';
+import { Area } from '../../core/models/Area';
+import { AreaView } from '../../modules/house/structure/AreaView';
 
 export class House {
   doors: Door[] = [];
@@ -52,7 +53,10 @@ export class House {
 
   draw(gameScene: Container): Container {
     this.areas.forEach((area) => {
-      gameScene.addChild(area.draw());
+      gameScene.addChild(new AreaView(area));
+      setTimeout(() => {
+        area.setTexture('assets/house/quizz_sol.jpg');
+      }, 1000);
     });
 
     this.walls.forEach((wall) => gameScene.addChild(wall.draw()));
@@ -61,10 +65,9 @@ export class House {
 
     this.furnitures.forEach((furniture) => {
       gameScene.addChild(new FurnitureView(furniture));
-      setInterval(() => {
-        console.log("test");
-        furniture.setPosition(furniture.x + (-50 + Math.random() * 100), furniture.y + (-50 + Math.random() * 100));
-      }, 1);
+      // setInterval(() => {
+      //   furniture.setPosition(furniture.x + (-50 + Math.random() * 100), furniture.y + (-50 + Math.random() * 100));
+      // }, 1);
     });
 
     return gameScene;
@@ -173,11 +176,11 @@ export function parseHouseXML(xmlString: string): House {
       i++;
     }
     house.addArea(
-      new Area({
-        points: floorPts,
-        texture: Texture.from('assets/house/jardinherbe.png'),
-        maxPoints: adjustedMaxPoints,
-      })
+      new Area(
+        floorPts,
+        adjustedMaxPoints,
+        'assets/house/jardinherbe.png',
+      )
     );
   });
 

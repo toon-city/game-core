@@ -1,3 +1,5 @@
+// src/modules/house/structure/AreaView.ts
+
 import {
   buildGeometryFromPath,
   Container,
@@ -7,29 +9,21 @@ import {
   Texture,
 } from 'pixi.js';
 import {Drawable} from '../../../core/abstract/Drawable';
-import {Point} from '../types';
+import {Area} from '../../../core/models/Area';
+import {autorun} from 'mobx';
 
-export interface IArea {
-  points: Point[];
-  texture: Texture;
-  maxPoints: Point[];
-}
+export class AreaView extends Container implements Drawable {
+  private texture: Texture;
 
-export class Area implements IArea, Drawable {
-  public points: Point[];
-  public texture: Texture;
-  public maxPoints: Point[];
-  private readonly _container: Container;
+  constructor(private readonly model: Area) {
+    super();
 
-  get container(): Container {
-    return this._container;
-  }
+    this.texture = Texture.from(model.texture);
 
-  constructor(options: IArea) {
-    this.points = options.points;
-    this.texture = options.texture;
-    this.maxPoints = options.maxPoints;
-    this._container = new Container();
+    autorun(() => {
+      this.texture = Texture.from(this.model.texture);
+      this.draw();
+    });
   }
 
   private createFloorMesh(
@@ -38,34 +32,35 @@ export class Area implements IArea, Drawable {
       repeatY?: boolean;
     } = {repeatX: true, repeatY: true}
   ): Container {
+    console.log("Draw floor");
     const container = new Container();
 
     const {repeatX: enableRepeatX = true, repeatY: enableRepeatY = true} =
       options;
 
+    const {points, maxPoints} = this.model;
     this.texture.source.wrapMode = 'repeat';
 
-
     const path = new GraphicsPath();
-    path.moveTo(this.maxPoints[0].x, this.maxPoints[0].y);
-    this.maxPoints.forEach((p) => path.lineTo(p.x, p.y));
+    path.moveTo(maxPoints[0].x, maxPoints[0].y);
+    maxPoints.forEach((p) => path.lineTo(p.x, p.y));
     path.closePath();
 
     const mask = new Graphics();
-    mask.moveTo(this.points[0].x, this.points[0].y);
-    this.points.forEach((p) => mask.lineTo(p.x, p.y));
+    mask.moveTo(points[0].x, points[0].y);
+    points.forEach((p) => mask.lineTo(p.x, p.y));
     mask.closePath();
     mask.fill(0xffffff);
 
     const geometry = buildGeometryFromPath(path);
     const mesh = new Mesh({geometry, texture: this.texture, x: 0, y: 0});
 
-    const dx1 = this.maxPoints[1].x - this.maxPoints[0].x;
-    const dy1 = this.maxPoints[1].y - this.maxPoints[0].y;
+    const dx1 = maxPoints[1].x - maxPoints[0].x;
+    const dy1 = maxPoints[1].y - maxPoints[0].y;
     const len1 = Math.hypot(dx1, dy1);
 
-    const dx2 = this.maxPoints[2].x - this.maxPoints[1].x;
-    const dy2 = this.maxPoints[2].y - this.maxPoints[1].y;
+    const dx2 = maxPoints[2].x - maxPoints[1].x;
+    const dy2 = maxPoints[2].y - maxPoints[1].y;
     const len2 = Math.hypot(dx2, dy2);
 
     const brickW = this.texture.width;
@@ -107,8 +102,8 @@ export class Area implements IArea, Drawable {
   }
 
   draw(): Container {
-    this._container.removeChildren();
-    this._container.addChild(this.createFloorMesh());
-    return this._container;
+    this.removeChildren();
+    this.addChild(this.createFloorMesh());
+    return this;
   }
 }
