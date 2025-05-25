@@ -6,6 +6,8 @@ import { Drawable } from '../../core/abstract/Drawable';
 
 export class FurnitureView extends Container implements Drawable {
   private readonly sprite: Sprite;
+  private dragging = false;
+  private readonly offset = { x: 0, y: 0 };
 
   constructor(private readonly model: Furniture) {
     super();
@@ -27,35 +29,44 @@ export class FurnitureView extends Container implements Drawable {
       this.zIndex = model.y + this.sprite.height;
     });
 
-    // (Optionnel) Drag & drop simple
-    this.on('pointerdown', this.onDragStart)
-      .on('pointermove', this.onDragMove)
-      .on('pointerup', this.onDragEnd)
-      .on('pointerupoutside', this.onDragEnd);
+    this.cursor = 'grab';
+
+    this.on('pointerdown', this.onPointerDown);
+    this.on('pointerup', this.onPointerUp);
+    this.on('pointerupoutside', this.onPointerUp);
   }
 
-  private dragging = false;
-  private readonly offset = {x: 0, y: 0};
-
-  private onDragStart(event: FederatedPointerEvent) {
+  private readonly onPointerDown = (evt: FederatedPointerEvent): void => {
     this.dragging = true;
-    const pos = event.data.getLocalPosition(this.parent);
+    this.cursor = 'grabbing';
+
+    // on souscrit au pointermove sur le stage entier
+    const stage = this.parent;
+    stage.interactive = true;
+    stage.on('pointermove', this.onPointerMove);
+
+    // calcul de l'offset initial
+    const pos = evt.getLocalPosition(stage);
     this.offset.x = pos.x - this.x;
     this.offset.y = pos.y - this.y;
-  }
+  };
 
-  private onDragMove(event: FederatedPointerEvent) {
+  private readonly onPointerMove = (evt: FederatedPointerEvent): void => {
     if (!this.dragging) return;
-    const pos = event.data.getLocalPosition(this.parent);
-    // On met à jour le modèle, MobX notifie automatiquement la vue
+    const stage = this.parent;
+    const pos = evt.getLocalPosition(stage);
+    // mise à jour du modèle (MobX notifie la vue)
     this.model.setPosition(pos.x - this.offset.x, pos.y - this.offset.y);
-  }
+  };
 
-  private onDragEnd() {
+  private readonly onPointerUp = (): void => {
+    this.cursor = 'grab';
     this.dragging = false;
-  }
+    const stage = this.parent;
+    // se désabonner du move pour ne pas surcharger
+    stage.off('pointermove', this.onPointerMove);
+  };
 
-  // Pour l’interface Drawable
   draw(): Container {
     return this;
   }
