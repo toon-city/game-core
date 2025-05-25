@@ -40,7 +40,7 @@ export class House {
     ];
     return corners.map(p => {
       const proj = project(p.x, p.y, 0);
-      return { x: proj.x + this.offsetX, y: proj.y + this.offsetY };
+      return { x: proj.x, y: proj.y };
     });
   }
 

@@ -32,7 +32,6 @@ export class AreaView extends Container implements Drawable {
       repeatY?: boolean;
     } = {repeatX: true, repeatY: true}
   ): Container {
-    console.log("Draw floor");
     const container = new Container();
 
     const {repeatX: enableRepeatX = true, repeatY: enableRepeatY = true} =
