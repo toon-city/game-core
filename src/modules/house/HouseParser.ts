@@ -165,6 +165,7 @@ export class HouseParser {
         if ([16, 17, 19].includes(type)) {
           // Sol
         } else if (type === 18 || type === 20) {
+          // Si STYPE = 20 => calculer zIndex, sinon 0
           const furniture = new Furniture(
             furnitureData.SID,
             type,
