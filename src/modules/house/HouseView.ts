@@ -19,7 +19,6 @@ export class HouseView extends Container implements Drawable {
 
     for (const area of this.model.areas) {
       const view = new AreaView(area);
-      console.log('Drawing area', area);
       this.addChild(view.draw());
     }
 
