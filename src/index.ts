@@ -735,16 +735,12 @@ xmlString = `
     loadingView.zIndex = 50000;
     gameScene.addChild(loadingView);
 
-    let loading = 0;
+    let loading = 1;
     loadingView.setProgress(loading);
-    
-    setInterval(() => {
-      loading += 0.01;
-      if (loading > 1) {
-        loading = 1;
-      }
-      loadingView.setProgress(loading);
-    }, 10);
+
+    setTimeout(() => {
+      loadingView.setProgress(null);
+    }, 2000);
 };
 
 main();

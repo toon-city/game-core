@@ -45,7 +45,14 @@ export class LoadingContainer extends Container {
     this.loadingBar.removeChildren();
     this.progress = progress;
 
+    const loadingBarIndex = this.children.indexOf(this.loadingBar);
+
     if (this.progress === null) {
+      if (loadingBarIndex === -1) {
+        return;
+      }
+
+      this.removeChildAt(loadingBarIndex);
       this.updateTextPosition();
       return;
     }
@@ -64,14 +71,14 @@ export class LoadingContainer extends Container {
       .stroke(0x000000);
     barBackground.x = barX;
     barBackground.y = barY;
-    this.addChild(barBackground);
+    this.loadingBar.addChild(barBackground);
 
     const barFill = new Graphics()
       .roundRect(0, 0, (barWidth - 4) * this.progress, barHeight - 4, cornerRadius)
       .fill(0xe85c43);
     barFill.x = barX + 2;
     barFill.y = barY + 2;
-    this.addChild(barFill);
+    this.loadingBar.addChild(barFill);
     
     const barBubble = new Graphics()
       .roundRect(0, 0, ((barWidth - 4) * this.progress) - 4, 4, 2)
@@ -80,6 +87,10 @@ export class LoadingContainer extends Container {
     barBubble.alpha = 0.33;
     barBubble.x = barX + 4;
     barBubble.y = barY + 5;
-    this.addChild(barBubble);
+    this.loadingBar.addChild(barBubble);
+
+    if (loadingBarIndex === -1) {
+      this.addChild(this.loadingBar);
+    }
   }
 }
