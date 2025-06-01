@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js';
 import {BaseTextureLoader} from './game/textures/BaseTextureLoader';
 import {Avatar} from './game/avatar/Avatar';
-import { parseHouseXML } from './game/maison/House';
 import { HouseParser } from './modules/house/HouseParser';
 import { HouseView } from './modules/house/HouseView';
+import { LoadingView } from './game/ui/loading/LoadingView';
 const left = 0b1000;
 const right = 0b0100;
 const up = 0b0010;
@@ -729,8 +729,11 @@ xmlString = `
       HouseParser.parseFurnitures(house, jsonString).then(() => {
         gameScene.addChild(new HouseView(house));
       });
-      
     });
+
+    const loadingView = new LoadingView();
+    loadingView.zIndex = 50000;
+    gameScene.addChild(loadingView);
 };
 
 main();

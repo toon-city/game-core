@@ -35,6 +35,7 @@ export class BaseTextureLoader {
 
   private async loadTextures() {
     await Assets.load([
+      'assets/ui/loading.webm',
       'assets/toon/toon.json',
       'assets/house/baseboard.png',
       'assets/house/quizz_tapisserie.jpg',
