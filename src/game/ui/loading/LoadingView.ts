@@ -8,12 +8,11 @@ export class LoadingView extends Container {
     constructor() {
         super();
         this.loadingContainer = new LoadingContainer("Chargement en cours", null);
-        this.draw();
     }
 
-    private draw(): void {
+    public draw(): void {
         this.removeChildren();
-        const height = 800;
+        const height = 600;
         const width = 800;
 
         const bg = new Graphics()
