@@ -76,33 +76,6 @@ export class House {
 
     return gameScene;
   }
-
-  loadFurnituresFromJson(json: string) {
-    const data = JSON.parse(json);
-    data.forEach((furnitureData: any) => {
-      if (furnitureData.SURL && !furnitureData.SURL.includes('.swf')) {
-        const type = parseInt(furnitureData.STYPE);
-        if ([16, 17, 19].includes(type)) {
-          // Sol
-        } else if (type === 18 || type === 20) {
-          const furniture = new Furniture(
-            furnitureData.SID,
-            type,
-            parseFloat(furnitureData.PXP) * 2.5 + this.offsetX - 380,
-            parseFloat(furnitureData.PYP) * 2.5 + this.offsetY - 200,
-            parseInt(furnitureData.PR),
-            0,
-            0,
-            furnitureData.SURL
-          );
-
-          this.furnitures.push(furniture);
-        } else {
-          // Sol
-        }
-      }
-    });
-  }
 }
 
 export function rotatePoint(

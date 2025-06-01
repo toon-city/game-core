@@ -726,9 +726,10 @@ xmlString = `
     fetch("assets/map_jardin.json").then((response) => {
       return response.text();
     }).then((jsonString) => {
-      HouseParser.parseFurnitures(house, jsonString);
+      HouseParser.parseFurnitures(house, jsonString).then(() => {
+        gameScene.addChild(new HouseView(house));
+      });
       
-      gameScene.addChild(new HouseView(house));
     });
 };
 

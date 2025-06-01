@@ -5,6 +5,7 @@ import {Area} from '../../core/models/Area';
 import {project} from '../../utils/project';
 import {rotatePoint} from '../../utils/geometry';
 import {Furniture} from '../../core/models/Furniture';
+import {GameItemManager} from '../../game/textures/GameItemManager';
 
 export class HouseParser {
   static parseStructure(xmlString: string): House {
@@ -157,31 +158,40 @@ export class HouseParser {
     return house;
   }
 
-  static parseFurnitures(house: House, json: string): void {
+  static async parseFurnitures(house: House, json: string): Promise<void> {
     const data = JSON.parse(json);
-    data.forEach((furnitureData: any) => {
+    for (const furnitureData of data) {
       if (furnitureData.SURL && !furnitureData.SURL.includes('.swf')) {
         const type = parseInt(furnitureData.STYPE);
         if ([16, 17, 19].includes(type)) {
           // Sol
         } else if (type === 18 || type === 20) {
           // Si STYPE = 20 => calculer zIndex, sinon 0
-          const furniture = new Furniture(
-            furnitureData.SID,
-            type,
-            parseFloat(furnitureData.PXP) * 2.5 + house.offsetX - 380,
-            parseFloat(furnitureData.PYP) * 2.5 + house.offsetY - 200,
-            parseInt(furnitureData.PR),
-            0,
-            0,
-            furnitureData.SURL
-          );
+          const furnitureBase =
+            await GameItemManager.getInstance().getFurnitureBase(
+              Number(furnitureData.SOID),
+              type,
+              furnitureData.SURL
+            );
 
-          house.addFurniture(furniture);
+          if (furnitureBase) {
+            console.log(furnitureBase);
+            const furniture = new Furniture(
+              furnitureData.SID,
+              furnitureBase,
+              parseFloat(furnitureData.PXP) * 2.5 + house.offsetX - 380,
+              parseFloat(furnitureData.PYP) * 2.5 + house.offsetY - 200,
+              parseInt(furnitureData.PR),
+              0,
+              0
+            );
+            house.addFurniture(furniture);
+          }
+
         } else {
           // Sol
         }
       }
-    });
+    }
   }
 }

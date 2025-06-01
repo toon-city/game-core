@@ -1,15 +1,15 @@
 import { makeAutoObservable } from 'mobx';
+import { FurnitureBase } from './FurnitureBase';
 
 export class Furniture {
   constructor(
     public readonly id: number,
-    public readonly type: number,
+    public base: FurnitureBase,
     public x: number,
     public y: number,
     public orientation: number,
     public width: number,
     public height: number,
-    public textureBase: string
   ) {
     makeAutoObservable(this);
   }
@@ -21,9 +21,5 @@ export class Furniture {
 
   setOrientation(o: number) {
     this.orientation = o;
-  }
-
-  setTextureBase(base: string) {
-    this.textureBase = base;
   }
 }

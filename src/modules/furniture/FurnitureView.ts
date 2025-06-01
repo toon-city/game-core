@@ -63,14 +63,13 @@ export class FurnitureView extends Container implements Drawable {
     // Réaction automatique aux changements de x, y, orientation ou textureBase
     autorun(() => {
       // 1) Met à jour la texture si besoin
-      const url = `${model.textureBase}_${model.orientation}.png`;
-      this.sprite.texture = Texture.from(url);
+      this.sprite.texture = Texture.from(model.base.frameKeys[model.orientation - 1] ?? model.base.frameKeys[0]);
 
       // 2) Met à jour position et zIndex
       this.x = model.x;
       this.y = model.y;
 
-      if (model.type == 18) {
+      if (model.base.type == 18) {
         this.zIndex = model.y + this.sprite.height;
       } else {
         this.zIndex = 0.1;

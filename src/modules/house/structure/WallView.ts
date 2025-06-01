@@ -87,7 +87,6 @@ export class WallView extends Container implements Drawable {
   }
 
   draw(): Container {
-    console.log('Drawing WallView');
     this.removeChildren();
     if (this.model.hidden) {
       return this;
