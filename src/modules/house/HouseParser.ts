@@ -81,7 +81,7 @@ export class HouseParser {
         i++;
       }
       house.addArea(
-        new Area(floorPts, adjustedMaxPoints, 'assets/house/jardinherbe.png')
+        new Area(floorPts, adjustedMaxPoints, 'assets/house/base_floor.png')
       );
     });
 
@@ -163,8 +163,16 @@ export class HouseParser {
     for (const furnitureData of data) {
       if (furnitureData.SURL && !furnitureData.SURL.includes('.swf')) {
         const type = parseInt(furnitureData.STYPE);
-        if ([16, 17, 19].includes(type)) {
+        if ([16, 19].includes(type)) {
           // Sol
+        } else if (type === 17) {
+          if (furnitureData.AREA !== undefined && house.areas[furnitureData.AREA]) {
+            const areaTexture = await GameItemManager.getInstance().getFloorTexture(Number(furnitureData.SOID), furnitureData.SURL);
+
+            if (areaTexture) {
+              house.areas[furnitureData.AREA].setTexture(`assets/textures/floors/${furnitureData.SURL}`);
+            }
+          }
         } else if (type === 18 || type === 20) {
           // Si STYPE = 20 => calculer zIndex, sinon 0
           const furnitureBase =
@@ -175,7 +183,6 @@ export class HouseParser {
             );
 
           if (furnitureBase) {
-            console.log(furnitureBase);
             const furniture = new Furniture(
               furnitureData.SID,
               furnitureBase,
@@ -187,7 +194,6 @@ export class HouseParser {
             );
             house.addFurniture(furniture);
           }
-
         } else {
           // Sol
         }

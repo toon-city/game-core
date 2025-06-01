@@ -3208,7 +3208,22 @@
     "SID": "710",
     "SOID": "710",
     "STYPE": "17",
-    "SURL": "jardin/swf/textures/jardinherbe.png"
+    "AREA": 0,
+    "SURL": "jardinherbe.png"
+  },
+  {
+    "PID": "2547",
+    "POID": "709",
+    "PXP": "1199",
+    "PYP": "-131",
+    "PR": "1",
+    "PMID": "0",
+    "PSID": "0",
+    "SID": "710",
+    "SOID": "710",
+    "STYPE": "17",
+    "AREA": 1,
+    "SURL": "jardinherbe.png"
   },
   {
     "PID": "2547",

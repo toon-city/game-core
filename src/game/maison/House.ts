@@ -153,7 +153,7 @@ export function parseHouseXML(xmlString: string): House {
       i++;
     }
     house.addArea(
-      new Area(floorPts, adjustedMaxPoints, 'assets/house/jardinherbe.png')
+      new Area(floorPts, adjustedMaxPoints, 'assets/house/base_floor.png')
     );
   });
 
