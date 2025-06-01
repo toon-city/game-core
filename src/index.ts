@@ -734,6 +734,17 @@ xmlString = `
     const loadingView = new LoadingView();
     loadingView.zIndex = 50000;
     gameScene.addChild(loadingView);
+
+    let loading = 0;
+    loadingView.setProgress(loading);
+    
+    setInterval(() => {
+      loading += 0.01;
+      if (loading > 1) {
+        loading = 1;
+      }
+      loadingView.setProgress(loading);
+    }, 10);
 };
 
 main();
