@@ -61,6 +61,9 @@ export class BaseTextureLoader {
     Assets.addBundle('fonts', [
       {
         alias: 'Brady Bunch Remastered', src: 'assets/fonts/BradyBunchRemastered.ttf',
+      },
+      {
+        alias: 'Cute Dino', src: 'assets/fonts/Cute Dino.ttf',
       }
     ]);
 

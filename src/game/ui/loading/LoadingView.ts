@@ -2,7 +2,7 @@ import { Container, Graphics } from "pixi.js";
 import { LoadingContainer } from "./components/LoadingContainer";
 
 export class LoadingView extends Container {
-    private message: string = "Chargement en cours...";
+    private message: string = "Chargement en cours";
     private progress: number | null = 0;
     
 
