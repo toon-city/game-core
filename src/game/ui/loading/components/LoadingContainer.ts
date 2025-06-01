@@ -45,14 +45,8 @@ export class LoadingContainer extends Container {
     this.loadingBar.removeChildren();
     this.progress = progress;
 
-    const loadingBarIndex = this.children.indexOf(this.loadingBar);
 
     if (this.progress === null) {
-      if (loadingBarIndex === -1) {
-        return;
-      }
-
-      this.removeChildAt(loadingBarIndex);
       this.updateTextPosition();
       return;
     }
@@ -88,9 +82,5 @@ export class LoadingContainer extends Container {
     barBubble.x = barX + 4;
     barBubble.y = barY + 5;
     this.loadingBar.addChild(barBubble);
-
-    if (loadingBarIndex === -1) {
-      this.addChild(this.loadingBar);
-    }
   }
 }
