@@ -21,8 +21,20 @@ export class LoadingView extends Container {
             .fill(0x81c9e7);
         this.addChild(bg);
 
-        const loadingContainer = new LoadingContainer();
+        const loadingContainer = new LoadingContainer(this.message, this.progress);
+        loadingContainer.x = (width - loadingContainer.width) / 2;
+        loadingContainer.y = (height - loadingContainer.height) / 2;
         
         this.addChild(loadingContainer);
+    }
+
+    public setMessage(message: string): void {
+        this.message = message;
+        this.draw();
+    }
+
+    public setProgress(progress: number | null): void {
+        this.progress = progress;
+        this.draw();
     }
 }

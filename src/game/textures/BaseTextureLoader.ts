@@ -57,6 +57,14 @@ export class BaseTextureLoader {
       // 'assets/furnitures/jardin/statut3.json',
       // 'assets/furnitures/jardin/statut4.json',
     ]);
+
+    Assets.addBundle('fonts', [
+      {
+        alias: 'Brady Bunch Remastered', src: 'assets/fonts/BradyBunchRemastered.ttf',
+      }
+    ]);
+
+    await Assets.loadBundle('fonts');
   }
 
   private loadAnimations() {
