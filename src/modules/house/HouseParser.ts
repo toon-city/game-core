@@ -6,6 +6,7 @@ import {project} from '../../utils/project';
 import {rotatePoint} from '../../utils/geometry';
 import {Furniture} from '../../core/models/Furniture';
 import {GameItemManager} from '../../game/textures/GameItemManager';
+import { Point } from '../../core/types/Point';
 
 export class HouseParser {
   static parseStructure(xmlString: string): House {
@@ -13,7 +14,7 @@ export class HouseParser {
     const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
 
     // 1) Collecte et projection z=0 pour tous les points
-    type Pt = {x: number; y: number; projX: number; projY: number};
+    type Pt = {point: Point; projectedPoint: Point};
     const pts: Pt[] = [];
     xmlDoc.querySelectorAll('P').forEach((node) => {
       const rawX = parseFloat(node.getAttribute('YPOS') ?? '0');
@@ -23,28 +24,28 @@ export class HouseParser {
       const {x: xr, y: yr} = rotatePoint(rawX, rawY, -90);
       const p0 = project(xr, yr, 0);
 
-      pts.push({x: xr, y: yr, projX: p0.x, projY: p0.y});
+      pts.push({point: {x: xr, y: yr}, projectedPoint: {x: p0.x, y: p0.y}});
     });
 
     // 2) Calcul des bornes projetées pour le décalage
     let minProjX = Infinity;
     let minProjY = Infinity;
     pts.forEach((p) => {
-      minProjX = Math.min(minProjX, p.projX);
-      minProjY = Math.min(minProjY, p.projY);
+      minProjX = Math.min(minProjX, p.projectedPoint.x);
+      minProjY = Math.min(minProjY, p.projectedPoint.y);
     });
     const offsetX = minProjX < 0 ? -minProjX : 0;
     const offsetY = minProjY < 0 ? -minProjY : 0;
 
-    // 3) Helper pour projeter tout avec le même offset
-    const proj = (x: number, y: number, z: number) => {
-      const p = project(x, y, z);
-      return {x: p.x + offsetX, y: p.y + offsetY};
-    };
+    // Application de l'offset aux points projetés
+    pts.forEach((p) => {
+      p.projectedPoint.x += offsetX;
+      p.projectedPoint.y += offsetY;
+    });
 
     // 4) Calcul des bornes brutes pour la House
-    const xs = pts.map((p) => p.x);
-    const ys = pts.map((p) => p.y);
+    const xs = pts.map((p) => p.projectedPoint.x);
+    const ys = pts.map((p) => p.projectedPoint.y);
     const minX = Math.min(...xs);
     const minY = Math.min(...ys);
     const maxX = Math.max(...xs);
@@ -54,10 +55,8 @@ export class HouseParser {
       0,
       0,
       100,
-      minX,
-      minY,
-      maxX,
-      maxY,
+      {x: minX, y: minY},
+      {x: maxX, y: maxY},
       offsetX,
       offsetY
     );
@@ -76,7 +75,7 @@ export class HouseParser {
         const idx = parseInt(nodeF.getAttribute(`PT${i}`)!, 10);
         const p = pts[idx];
         if (p) {
-          floorPts.push({x: p.projX + offsetX, y: p.projY + offsetY});
+          floorPts.push({x: p.projectedPoint.x, y: p.projectedPoint.y});
         }
         i++;
       }
@@ -99,10 +98,10 @@ export class HouseParser {
       // Mur principal
       house.addWall(
         new Wall(
-          proj(pA.x, pA.y, 0),
-          proj(pB.x, pB.y, 0),
-          proj(pA.x, pA.y, h),
-          proj(pB.x, pB.y, h),
+          {x: pA.projectedPoint.x, y: pA.projectedPoint.y},
+          {x: pB.projectedPoint.x, y: pB.projectedPoint.y},
+          {x: pA.projectedPoint.x, y: -h + (pA.projectedPoint.y) },
+          {x: pB.projectedPoint.x, y: -h + (pB.projectedPoint.y) },
           isBaseBoard
             ? 'assets/house/baseboard.png'
             : 'assets/house/base_wall.png',
@@ -114,26 +113,26 @@ export class HouseParser {
       // Porte éventuelle
       if (nodeW.hasAttribute('ENTER') && nodeW.hasAttribute('D0')) {
         const off = parseFloat(nodeW.getAttribute('D0')!);
-        const dx = pB.x - pA.x;
-        const dy = pB.y - pA.y;
+        const dx = pB.projectedPoint.x - pA.projectedPoint.x;
+        const dy = pB.projectedPoint.y - pA.projectedPoint.y;
         const L = Math.hypot(dx, dy);
         const nx = dx / L;
         const ny = dy / L;
         const doorW = 90;
 
-        const sx = pA.x + (off - doorW / 2) * nx;
-        const sy = pA.y + (off - doorW / 2) * ny;
-        const ex = pA.x + (off + doorW / 2) * nx;
-        const ey = pA.y + (off + doorW / 2) * ny;
+        const sx = pA.projectedPoint.x + (off - doorW / 2) * nx;
+        const sy = pA.projectedPoint.y + (off - doorW / 2) * ny;
+        const ex = pA.projectedPoint.x + (off + doorW / 2) * nx;
+        const ey = pA.projectedPoint.y + (off + doorW / 2) * ny;
 
-        const bottomY = Math.min(proj(pA.x, pA.y, 0).y, proj(pB.x, pB.y, 0).y);
+        const bottomY = Math.min(pA.projectedPoint.y, pB.projectedPoint.y);
 
         house.addDoor(
           new Door(
-            proj(sx, sy, 0),
-            proj(ex, ey, 0),
-            proj(sx, sy, 180),
-            proj(ex, ey, 180),
+            {x: sx, y: sy},
+            {x: ex, y: ey},
+            {x: sx, y: -180 + sy},
+            {x: ex, y: -180 + ey},
             bottomY + 0.1
           )
         );
@@ -143,10 +142,10 @@ export class HouseParser {
       if (h > 10 && !nodeW.hasAttribute('HDN')) {
         house.addWall(
           new Wall(
-            proj(pA.x, pA.y, 0),
-            proj(pB.x, pB.y, 0),
-            proj(pA.x, pA.y, 10),
-            proj(pB.x, pB.y, 10),
+            {x: pA.projectedPoint.x, y: pA.projectedPoint.y},
+            {x: pB.projectedPoint.x, y: pB.projectedPoint.y},
+            {x: pA.projectedPoint.x, y: -10 + (pA.projectedPoint.y)},
+            {x: pB.projectedPoint.x, y: -10 + (pB.projectedPoint.y)},
             'assets/house/baseboard.png',
             false,
             true

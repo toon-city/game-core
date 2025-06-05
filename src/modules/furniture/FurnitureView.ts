@@ -9,6 +9,7 @@ import {
 } from 'pixi.js';
 import {Furniture} from '../../core/models/Furniture';
 import {Drawable} from '../../core/abstract/Drawable';
+import { HouseView } from '../house/HouseView';
 
 class PrecisionSprite extends Sprite {
   constructor(texture: Texture) {
@@ -54,7 +55,7 @@ export class FurnitureView extends Container implements Drawable {
   private dragging = false;
   private readonly offset = {x: 0, y: 0};
 
-  constructor(private readonly model: Furniture) {
+  constructor(private readonly model: Furniture, private readonly houseView: HouseView | null = null) {
     super();
     this.sprite = new PrecisionSprite(Texture.EMPTY);
     this.sprite.eventMode = 'static'; // Pour les événements de pointeur
@@ -70,7 +71,7 @@ export class FurnitureView extends Container implements Drawable {
       this.y = model.y;
 
       if (model.base.type == 18) {
-        this.zIndex = model.y + this.sprite.height;
+        this.zIndex = this.houseView?.getDepthAtPointClip([{x: this.x, y: this.y}]) ?? model.y + this.sprite.height;
       } else {
         this.zIndex = 0.1;
       }

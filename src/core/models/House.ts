@@ -18,10 +18,8 @@ export class House {
     public readonly width: number,
     public readonly depth: number,
     public readonly height: number,
-    public minX = 0,
-    public minY = 0,
-    public maxX = 0,
-    public maxY = 0,
+    public minPoint: Point = { x: 0, y: 0 },
+    public maxPoint: Point = { x: 0, y: 0 },
     public offsetX = 0,
     public offsetY = 0,
   ) {
@@ -32,16 +30,14 @@ export class House {
 
   /** Les 4 coins projetés, appliquant offset */
   get maxPoints(): Point[] {
-    const corners: Point[] = [
-      { x: this.minX, y: this.minY },
-      { x: this.maxX, y: this.minY },
-      { x: this.maxX, y: this.maxY },
-      { x: this.minX, y: this.maxY },
+    const corners = [
+      {x: this.minPoint.x, y: this.minPoint.y},
+      {x: this.maxPoint.x, y: this.minPoint.y},
+      {x: this.maxPoint.x, y: this.maxPoint.y},
+      {x: this.minPoint.x, y: this.maxPoint.y},
     ];
-    return corners.map(p => {
-      const proj = project(p.x, p.y, 0);
-      return { x: proj.x, y: proj.y };
-    });
+
+    return corners;
   }
 
   addWall(w: Wall): void {
@@ -76,13 +72,7 @@ export class House {
     this.floorPoints = pts;
   }
 
-  // setters pour min/max/offset si besoin après parsing
-  setBounds(minX: number, minY: number, maxX: number, maxY: number): void {
-    this.minX = minX;
-    this.minY = minY;
-    this.maxX = maxX;
-    this.maxY = maxY;
-  }
+  
   setOffset(offsetX: number, offsetY: number): void {
     this.offsetX = offsetX;
     this.offsetY = offsetY;

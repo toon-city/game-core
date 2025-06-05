@@ -17,7 +17,7 @@ const main = async () => {
 
   const size = 1;
 
-  app.renderer.resize(800, 600);
+  app.renderer.resize(7000, 6000);
 
   document.body.appendChild(app.canvas);
 
@@ -721,28 +721,32 @@ xmlString = `
     gameScene.x = 400;
     gameScene.y = 400;
 
-    // const house = HouseParser.parseStructure(xmlString);
+    const house = HouseParser.parseStructure(xmlString);
 
-    // fetch("assets/map_jardin.json").then((response) => {
-    //   return response.text();
-    // }).then((jsonString) => {
-    //   HouseParser.parseFurnitures(house, jsonString).then(() => {
-    //     gameScene.addChild(new HouseView(house));
-    //   });
-    // });
+    fetch("assets/map_jardin.json").then((response) => {
+      return response.text();
+    }).then((jsonString) => {
+      HouseParser.parseFurnitures(house, jsonString).then(() => {
+        gameScene.addChild(new HouseView(house));
+      });
+    });
 
-    const loadingView = new LoadingView();
-    app.stage.addChild(loadingView);
-    loadingView.draw();
-    loadingView.x = 0;
-    loadingView.y = 0;
+    // const loadingView = new LoadingView();
+    // app.stage.addChild(loadingView);
+    // loadingView.draw();
+    // loadingView.x = 0;
+    // loadingView.y = 0;
 
-    let loading = 1;
-    loadingView.setProgress(loading);
+    // let loading = 0;
+    // loadingView.setProgress(loading);
 
-    setTimeout(() => {
-      loadingView.setProgress(null);
-    }, 2000);
+    // setInterval(() => {
+    //   loading += 0.01;
+    //   if (loading > 1) {
+    //     loading = 1;
+    //   }
+    //   loadingView.setProgress(loading);
+    // }, 100);
 };
 
 main();
