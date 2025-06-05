@@ -93,9 +93,9 @@ export class AreaView extends Container implements Drawable {
 
     mesh.geometry.getBuffer('aUV').update();
 
-    // mesh.mask = mask;
+    mesh.mask = mask;
 
-    container.addChild(mesh);
+    container.addChild(mesh, mask);
 
     return container;
   }

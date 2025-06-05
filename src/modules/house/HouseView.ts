@@ -41,14 +41,6 @@ export class HouseView extends Container implements Drawable {
       const view = new FurnitureView(furn, this);
       this.addChild(view.draw());
     }
-
-    for (const point of this.maxPoints) {
-      const circle = new Graphics();
-      circle.beginFill(0xff0000);
-      circle.drawCircle(point.x, point.y, 35);
-      circle.endFill();
-      this.addChild(circle);
-    }
   }
 
   draw(): Container {

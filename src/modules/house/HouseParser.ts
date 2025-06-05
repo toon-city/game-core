@@ -60,14 +60,6 @@ export class HouseParser {
       offsetX,
       offsetY
     );
-
-    // 5) Ajustement des maxPoints pour les areas
-    const adjustedMaxPoints = house.maxPoints.map((p) => ({
-      x: p.x + offsetX,
-      y: p.y + offsetY,
-    }));
-
-    // 6) Création des aires (F)
     xmlDoc.querySelectorAll('F').forEach((nodeF) => {
       const floorPts: {x: number; y: number}[] = [];
       let i = 0;
@@ -80,7 +72,7 @@ export class HouseParser {
         i++;
       }
       house.addArea(
-        new Area(floorPts, adjustedMaxPoints, 'assets/house/base_floor.png')
+        new Area(floorPts, house.maxPoints, 'assets/house/base_floor.png')
       );
     });
 
