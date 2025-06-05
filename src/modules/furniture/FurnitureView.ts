@@ -71,7 +71,7 @@ export class FurnitureView extends Container implements Drawable {
       this.y = model.y;
 
       if (model.base.type == 18) {
-        this.zIndex = this.houseView?.getDepthAtPointClip([{x: this.x, y: this.y}]) ?? model.y + this.sprite.height;
+        this.zIndex = this.houseView?.getDepthAtPointClip([{x: this.x, y: this.y + this.sprite.height}]) ?? model.y + this.sprite.height;
       } else {
         this.zIndex = 0.1;
       }

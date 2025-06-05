@@ -57,6 +57,7 @@ export class HouseView extends Container implements Drawable {
     const divider = points.length > 1 ? points.length - 1 : 1;
     for (zIndex = Math.round(zIndex / divider); this.children.some(child => (child as any).zIndex === Math.round(zIndex)); ++zIndex);
 
+    console.log(zIndex);
     return zIndex;
   }
 
@@ -66,7 +67,6 @@ export class HouseView extends Container implements Drawable {
     const deltaX = point.x - minPoint.x;
     const deltaY = point.y - minPoint.y;
     const width = maxPoint.x - minPoint.x;
-    console.log('getDepthAtPoint', point, minPoint, maxPoint, deltaX, deltaY, width);
     let zIndex = (deltaX * 2 + deltaY * 7) * width + deltaY;
     zIndex = zIndex / 10;
     if (zIndex < 0) {
