@@ -44,8 +44,12 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
           this.depthCalculator.getDepthAtPointClip(this.points) ??
           model.y + this.sprite.height;
           if (this.dragging && this.depthCalculator.checkCollision(this)) {
-            this.alpha = 0.8;
+            this.sprite.cursor = 'not-allowed';
+            this.alpha = 0.7;
           } else {
+            if (this.dragging) {
+              this.sprite.cursor = 'grab';
+            }
             this.alpha = 1;
           }
       } else {
