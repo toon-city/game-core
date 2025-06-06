@@ -22,7 +22,7 @@
 		}
 	},
 	"meta": {
-		"app": "http://www.codeandweb.com/texturepacker",
+		
 		"version": "1.0",
 		"image": "pave.png",
 		"format": "RGBA8888",
