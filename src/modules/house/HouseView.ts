@@ -6,8 +6,9 @@ import {DoorView} from './structure/DoorView';
 import {AreaView} from './structure/AreaView';
 import {FurnitureView} from '../furniture/FurnitureView';
 import {Point} from '../../core/types/Point';
+import { IHasDepthCalculator } from '../common/abstract/IHasDepthCalculator';
 
-export class HouseView extends Container implements Drawable {
+export class HouseView extends Container implements Drawable, IHasDepthCalculator {
   private readonly maxPoints: Point[] = [];
 
   constructor(private readonly model: House) {
