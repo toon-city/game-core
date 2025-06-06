@@ -11,6 +11,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   public readonly sprite: Sprite;
   private dragging = false;
   private readonly offset = {x: 0, y: 0};
+  private readonly dragStartPosition = {x: 0, y: 0};
 
   private _points: Point[] = [];
   get points(): Point[] {
@@ -18,7 +19,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   }
 
   constructor(
-    private readonly model: Furniture,
+    public readonly model: Furniture,
     public readonly depthCalculator: IHasDepthCalculator
   ) {
     super();
@@ -42,6 +43,11 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
         this.zIndex =
           this.depthCalculator.getDepthAtPointClip(this.points) ??
           model.y + this.sprite.height;
+          if (this.dragging && this.depthCalculator.checkCollision(this)) {
+            this.alpha = 0.8;
+          } else {
+            this.alpha = 1;
+          }
       } else {
         this.zIndex = 0.1;
       }
@@ -91,6 +97,9 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     const pos = evt.getLocalPosition(stage);
     this.offset.x = pos.x - this.x;
     this.offset.y = pos.y - this.y;
+
+    this.dragStartPosition.x = this.x;
+    this.dragStartPosition.y = this.y;
   };
 
   private readonly onPointerMove = (evt: FederatedPointerEvent): void => {
@@ -105,8 +114,16 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     this.sprite.cursor = 'grab';
     this.dragging = false;
     const stage = this.parent;
-    // se désabonner du move pour ne pas surcharger
     stage.off('pointermove', this.onPointerMove);
+
+    this.alpha = 1;
+
+    if (this.depthCalculator.checkCollision(this)) {
+      this.model.setPosition(
+        this.dragStartPosition.x,
+        this.dragStartPosition.y
+      );
+    }
   };
 
   draw(): Container {

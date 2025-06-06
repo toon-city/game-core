@@ -6,9 +6,14 @@ import {DoorView} from './structure/DoorView';
 import {AreaView} from './structure/AreaView';
 import {FurnitureView} from '../furniture/FurnitureView';
 import {Point} from '../../core/types/Point';
-import { IHasDepthCalculator } from '../common/abstract/IHasDepthCalculator';
+import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
+import {IHasPoints} from '../common/abstract/IHasPoints';
+import { aabbOverlap, getAABB, polygonsIntersect } from '../../utils/collision';
 
-export class HouseView extends Container implements Drawable, IHasDepthCalculator {
+export class HouseView
+  extends Container
+  implements Drawable, IHasDepthCalculator
+{
   private readonly maxPoints: Point[] = [];
 
   constructor(private readonly model: House) {
@@ -86,5 +91,38 @@ export class HouseView extends Container implements Drawable, IHasDepthCalculato
     );
 
     return zIndex;
+  }
+
+  public checkCollision(object: FurnitureView): boolean {
+    const polyA = object.points;
+
+    for (const child of this.children) {
+      if (object === child) {
+        continue;
+      }
+  
+      if (child instanceof FurnitureView) {
+        if (child.model.base.type !== 18) {
+          continue;
+        }
+
+        const polyB = child.points;
+
+        const aabbA = getAABB(polyA);
+        const aabbB = getAABB(polyB);
+
+        if (!aabbOverlap(aabbA, aabbB)) {
+          // Pas de chevauchement AABB, pas de collision (trop éloignés)
+          continue;
+        }
+
+
+        if (polygonsIntersect(polyA, polyB)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
