@@ -111,6 +111,8 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   };
 
   private readonly onPointerUp = (): void => {
+    if (!this.dragging) return;
+  
     this.sprite.cursor = 'grab';
     this.dragging = false;
     const stage = this.parent;
