@@ -7,7 +7,6 @@ import {AreaView} from './structure/AreaView';
 import {FurnitureView} from '../furniture/FurnitureView';
 import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
-import {IHasPoints} from '../common/abstract/IHasPoints';
 import { aabbOverlap, getAABB, polygonsIntersect } from '../../utils/collision';
 
 export class HouseView
