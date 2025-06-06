@@ -1,5 +1,4 @@
-import {Container, Graphics} from 'pixi.js';
-import {autorun} from 'mobx';
+import {Container} from 'pixi.js';
 import type {Drawable} from '../../core/abstract/Drawable';
 import type {House} from '../../core/models/House';
 import {WallView} from './structure/WallView';
@@ -9,14 +8,12 @@ import {FurnitureView} from '../furniture/FurnitureView';
 import {Point} from '../../core/types/Point';
 
 export class HouseView extends Container implements Drawable {
-  private maxPoints: Point[] = [];
+  private readonly maxPoints: Point[] = [];
 
   constructor(private readonly model: House) {
     super();
-    autorun(() => {
-      this.maxPoints = this.model.maxPoints;
-      this.render();
-    });
+    this.maxPoints = model.maxPoints;
+    this.render();
   }
 
   private render(): void {
@@ -39,6 +36,7 @@ export class HouseView extends Container implements Drawable {
 
     for (const furn of this.model.furnitures) {
       const view = new FurnitureView(furn, this);
+
       this.addChild(view.draw());
     }
   }
@@ -54,10 +52,15 @@ export class HouseView extends Container implements Drawable {
       zIndex += this.getDepthAtPoint(point);
     }
 
-    const divider = points.length > 1 ? points.length - 1 : 1;
-    for (zIndex = Math.round(zIndex / divider); this.children.some(child => (child as any).zIndex === Math.round(zIndex)); ++zIndex);
+    const divider = points.length > 0 ? points.length : 1;
+    for (
+      zIndex = Math.round(zIndex / divider);
+      this.children.some(
+        (child) => (child as any).zIndex === Math.round(zIndex)
+      );
+      ++zIndex
+    );
 
-    console.log(zIndex);
     return zIndex;
   }
 
@@ -73,8 +76,13 @@ export class HouseView extends Container implements Drawable {
       return 0;
     }
 
-
-    for (zIndex = Math.round(zIndex); this.children.some(child => (child as any).zIndex === Math.round(zIndex)); ++zIndex);
+    for (
+      zIndex = Math.round(zIndex);
+      this.children.some(
+        (child) => (child as any).zIndex === Math.round(zIndex)
+      );
+      ++zIndex
+    );
 
     return zIndex;
   }

@@ -5,11 +5,12 @@ import {
   Sprite,
   Texture,
   FederatedPointerEvent,
-  Point,
+  Graphics,
 } from 'pixi.js';
 import {Furniture} from '../../core/models/Furniture';
 import {Drawable} from '../../core/abstract/Drawable';
-import { HouseView } from '../house/HouseView';
+import {HouseView} from '../house/HouseView';
+import {Point} from '../../core/types/Point';
 
 class PrecisionSprite extends Sprite {
   constructor(texture: Texture) {
@@ -51,11 +52,14 @@ class PrecisionSprite extends Sprite {
 }
 
 export class FurnitureView extends Container implements Drawable {
-  private readonly sprite: Sprite;
+  public readonly sprite: Sprite;
   private dragging = false;
   private readonly offset = {x: 0, y: 0};
 
-  constructor(private readonly model: Furniture, private readonly houseView: HouseView | null = null) {
+  constructor(
+    private readonly model: Furniture,
+    private readonly houseView: HouseView | null = null
+  ) {
     super();
     this.sprite = new PrecisionSprite(Texture.EMPTY);
     this.sprite.eventMode = 'static'; // Pour les événements de pointeur
@@ -64,14 +68,18 @@ export class FurnitureView extends Container implements Drawable {
     // Réaction automatique aux changements de x, y, orientation ou textureBase
     autorun(() => {
       // 1) Met à jour la texture si besoin
-      this.sprite.texture = Texture.from(model.base.frameKeys[model.orientation - 1] ?? model.base.frameKeys[0]);
+      this.sprite.texture = Texture.from(
+        model.base.frameKeys[model.orientation - 1] ?? model.base.frameKeys[0]
+      );
 
       // 2) Met à jour position et zIndex
       this.x = model.x;
       this.y = model.y;
 
       if (model.base.type == 18) {
-        this.zIndex = this.houseView?.getDepthAtPointClip([{x: this.x, y: this.y + this.sprite.height}]) ?? model.y + this.sprite.height;
+        this.zIndex =
+          this.houseView?.getDepthAtPointClip(this.getPoints()) ??
+          model.y + this.sprite.height;
       } else {
         this.zIndex = 0.1;
       }
@@ -82,6 +90,30 @@ export class FurnitureView extends Container implements Drawable {
     this.sprite.on('pointerdown', this.onPointerDown);
     this.sprite.on('pointerup', this.onPointerUp);
     this.sprite.on('pointerupoutside', this.onPointerUp);
+  }
+
+  public getPoints(): Point[] {
+    let points: Point[] = [];
+    const frameKey =
+      this.model.base.frameKeys[this.model.orientation - 1] ??
+      this.model.base.frameKeys[0];
+
+    if (frameKey) {
+      points = (this.model.base.spritesheet.frames[frameKey]?.points ??
+        []) as Point[];
+    }
+
+    if (points.length === 0) {
+      // Si pas de points, on utilise les coins du sprite
+      points = [
+        {x: 0, y: 0},
+        {x: this.sprite.width, y: 0},
+        {x: this.sprite.width, y: this.sprite.height},
+        {x: 0, y: this.sprite.height},
+      ];
+    }
+
+    return points.map((point) => ({x: this.x + point.x, y: this.y + point.y}));
   }
 
   private readonly onPointerDown = (evt: FederatedPointerEvent): void => {
