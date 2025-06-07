@@ -9,6 +9,7 @@ import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
 import {aabbOverlap, getAABB, isAnyPointOutside, polygonsIntersect} from '../../utils/collision';
 import {Area} from '../../core/models/Area';
+import { Avatar } from '../../game/avatar/Avatar';
 
 export class HouseView
   extends Container
@@ -93,8 +94,8 @@ export class HouseView
     return zIndex;
   }
 
-  public checkCollision(object: FurnitureView): boolean {
-    const polyA = object.points;
+  public checkCollision(object: FurnitureView | Avatar, points: Point[] | null = null): boolean {
+    const polyA = points ?? object.points;
 
     const areaIndex = this.model.areas.findIndex((area: Area) => {
       const polyB = area.points;

@@ -4,5 +4,5 @@ import { IHasPoints } from "./IHasPoints";
 export interface IHasDepthCalculator {
   getDepthAtPoint(point: Point): number;
   getDepthAtPointClip(points: Point[]): number;
-  checkCollision(object: IHasPoints): boolean;
+  checkCollision(object: IHasPoints, points: Point[] | null): boolean;
 };

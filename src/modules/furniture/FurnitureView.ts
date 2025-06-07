@@ -61,7 +61,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
         this.model.y + this.sprite.height;
 
       if (this.isDragging) {
-        const collision = this.depthCalculator.checkCollision(this);
+        const collision = this.depthCalculator.checkCollision(this, null);
         this.sprite.cursor = collision ? 'not-allowed' : 'grab';
         this.alpha = collision ? 0.7 : 1;
       } else {
@@ -126,7 +126,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     stage.off('pointermove', this.onPointerMove);
     this.alpha = 1;
 
-    if (this.depthCalculator.checkCollision(this)) {
+    if (this.depthCalculator.checkCollision(this, null)) {
       this.model.setPosition(
         this.initialPosition.x,
         this.initialPosition.y

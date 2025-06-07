@@ -12,12 +12,14 @@ import {
 import {Tshirt} from './structure/parts/clothes/parts/Tshirt';
 import {Hat} from './structure/parts/clothes/parts/Hat';
 import {Hair} from './structure/parts/clothes/parts/Hair';
+import { IHasPoints } from '../../modules/common/abstract/IHasPoints';
+import { Point } from '../../core/types/Point';
 
 // 10	2	6
 // 8	1	4
 // 9	1	5
 
-export class Avatar extends Container implements IAvatar {
+export class Avatar extends Container implements IAvatar, IHasPoints {
   app: Application;
 
   private _direction: number = 1;
@@ -41,6 +43,13 @@ export class Avatar extends Container implements IAvatar {
     this._direction = params.direction ?? 1;
     this.init();
     this.changeDirection(this._direction);
+  }
+
+  get points(): Point[] {
+    return [
+      {x: this.x, y: this.y + this.height},
+      {x: this.x + this.width, y: this.y + this.height},
+    ]
   }
 
   public get direction(): number {
@@ -89,12 +98,12 @@ export class Avatar extends Container implements IAvatar {
       new Hat('hat_april1', this._direction),
     ];
 
-    this.directionText.x = 50;
-    this.directionText.y = 120;
+    // this.directionText.x = 50;
+    // this.directionText.y = 120;
 
     this.hair.tint = 0x000000;
 
-    this.addChild(this.directionText);
+    // this.addChild(this.directionText);
 
     this.renderParts();
 

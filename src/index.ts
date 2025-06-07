@@ -1,9 +1,10 @@
 import * as PIXI from 'pixi.js';
 import {BaseTextureLoader} from './game/textures/BaseTextureLoader';
 import {Avatar} from './game/avatar/Avatar';
-import { HouseParser } from './modules/house/HouseParser';
-import { HouseView } from './modules/house/HouseView';
-import { LoadingView } from './game/ui/loading/LoadingView';
+import {HouseParser} from './modules/house/HouseParser';
+import {HouseView} from './modules/house/HouseView';
+import {LoadingView} from './game/ui/loading/LoadingView';
+import {Door} from './core/models/Door';
 const left = 0b1000;
 const right = 0b0100;
 const up = 0b0010;
@@ -26,19 +27,19 @@ const main = async () => {
   const gameScene = new PIXI.Container({sortableChildren: true});
   app.stage.addChild(gameScene);
 
-  var avatar: Avatar = new Avatar(app, {showSocle: true, direction: down});
+  let avatar: Avatar = new Avatar(app, {showSocle: true, direction: down});
   avatar.scale.set(size, size);
   avatar.position.set(20, 40);
-  gameScene.addChild(avatar);
+  // gameScene.addChild(avatar);
   avatar.changeDirection(1);
 
-  [2, 4, 5, 6, 8, 9, 10].forEach((direction, index) => {
-    let newAvatar = new Avatar(app, {showSocle: true, direction: down});
-    newAvatar.scale.set(size, size);
-    newAvatar.position.set(80 + 80 * index, 40);
-    gameScene.addChild(newAvatar);
-    newAvatar.changeDirection(direction);
-  });
+  // [2, 4, 5, 6, 8, 9, 10].forEach((direction, index) => {
+  //   let newAvatar = new Avatar(app, {showSocle: true, direction: down});
+  //   newAvatar.scale.set(size, size);
+  //   newAvatar.position.set(80 + 80 * index, 40);
+  //   gameScene.addChild(newAvatar);
+  //   newAvatar.changeDirection(direction);
+  // });
 
   avatar.interactive = true;
   avatar.zIndex = 1000;
@@ -126,68 +127,51 @@ const main = async () => {
   };
 
   const cam = {
-  w: app.screen.width,
-  h: app.screen.height,
-  minX: 0,
-  minY: 0,
-  maxX: 5000,
-  maxY: 5000
-};
+    w: app.screen.width,
+    h: app.screen.height,
+    minX: 0,
+    minY: 0,
+    maxX: 5000,
+    maxY: 5000,
+  };
 
-const MARGIN = 100;
-const SMOOTH = 0.1;
+  const MARGIN = 100;
+  const SMOOTH = 0.1;
 
-function updateCamera() {
-  // position du joueur dans l'écran
-  const screenX = -gameScene.x + avatar.x;
-  const screenY = -gameScene.y + avatar.y;
+  function updateCamera() {
+    // position du joueur dans l'écran
+    const screenX = -gameScene.x + avatar.x;
+    const screenY = -gameScene.y + avatar.y;
 
-  let targetWorldX = gameScene.x;
-  let targetWorldY = gameScene.y;
+    let targetWorldX = gameScene.x;
+    let targetWorldY = gameScene.y;
 
-  // si trop près du bord gauche
-  if (screenX < MARGIN) {
-    targetWorldX = -(avatar.x - MARGIN);
-  }
-  // si trop près du bord droit
-  else if (screenX > cam.w - MARGIN) {
-    targetWorldX = -(avatar.x - (cam.w - MARGIN));
-  }
-
-  // bord haut
-  if (screenY < MARGIN) {
-    targetWorldY = -(avatar.y - MARGIN);
-  }
-  // bord bas
-  else if (screenY > cam.h - MARGIN) {
-    targetWorldY = -(avatar.y - (cam.h - MARGIN));
-  }
-
-  // clamp pour rester dans le monde
-  targetWorldX = Math.min( -cam.minX, Math.max( -cam.maxX, targetWorldX ));
-  targetWorldY = Math.min( -cam.minY, Math.max( -cam.maxY, targetWorldY ));
-
-  // déplacement lissé
-  gameScene.x += (targetWorldX - gameScene.x) * SMOOTH;
-  gameScene.y += (targetWorldY - gameScene.y) * SMOOTH;
-}
-
-
-  app.ticker.add((delta) => {
-    if (avatar.isWalking) {
-      let divider =
-        avatar.direction & (left | right) && avatar.direction & (up | down)
-          ? 1.4
-          : 1;
-      if (avatar.direction & down) avatar.y += 10 / divider;
-      if (avatar.direction & up) avatar.y -= 10 / divider;
-      if (avatar.direction & left) avatar.x -= 10 / divider;
-      if (avatar.direction & right) avatar.x += 10 / divider;
-      avatar.zIndex = avatar.y + 100;
-      app.stage.sortChildren();
-      //updateCamera();
+    // si trop près du bord gauche
+    if (screenX < MARGIN) {
+      targetWorldX = -(avatar.x - MARGIN);
     }
-  });
+    // si trop près du bord droit
+    else if (screenX > cam.w - MARGIN) {
+      targetWorldX = -(avatar.x - (cam.w - MARGIN));
+    }
+
+    // bord haut
+    if (screenY < MARGIN) {
+      targetWorldY = -(avatar.y - MARGIN);
+    }
+    // bord bas
+    else if (screenY > cam.h - MARGIN) {
+      targetWorldY = -(avatar.y - (cam.h - MARGIN));
+    }
+
+    // clamp pour rester dans le monde
+    targetWorldX = Math.min(-cam.minX, Math.max(-cam.maxX, targetWorldX));
+    targetWorldY = Math.min(-cam.minY, Math.max(-cam.maxY, targetWorldY));
+
+    // déplacement lissé
+    gameScene.x += (targetWorldX - gameScene.x) * SMOOTH;
+    gameScene.y += (targetWorldY - gameScene.y) * SMOOTH;
+  }
 
   let xmlString = `
     <MAP>
@@ -242,7 +226,7 @@ function updateCamera() {
     </MAP>
     `;
 
-    xmlString = `
+  xmlString = `
     <MAP>
         <P YPOS="-200" XPOS="-1040"  />
         <P YPOS="-200" XPOS="-100"  />
@@ -273,7 +257,7 @@ function updateCamera() {
         <F PT3="7" PT2="5" PT1="3" PT0="4" SF="0"  />
     </MAP>`;
 
-    xmlString = `
+  xmlString = `
     <MAP>
         <P YPOS="-220" XPOS="-1040" />
         <P YPOS="280" XPOS="-1040" />
@@ -284,135 +268,135 @@ function updateCamera() {
         <F PT3="2" PT2="3" PT1="0" PT0="1" SF="40" />
     </MAP>`;
 
-//     xmlString = `
-//     <MAP>
-//       <P YPOS="-340" XPOS="-40"  />
-//       <P YPOS="40" XPOS="-40"  />
-//       <P YPOS="40" XPOS="-780"  />
-//       <P YPOS="-520" XPOS="-40"  />
-//       <P YPOS="-520" XPOS="560"  />
-//       <P YPOS="40" XPOS="560"  />
-//       <P YPOS="440" XPOS="-780"  />
-//       <P YPOS="440" XPOS="560"  />
-//       <P YPOS="40" XPOS="-500"  />
-//       <P YPOS="40" XPOS="-400"  />
-//       <P YPOS="40" XPOS="220"  />
-//       <P YPOS="40" XPOS="320"  />
-//       <P YPOS="-240" XPOS="-40"  />
-//       <P YPOS="-340" XPOS="-340"  />
-//       <P YPOS="-340" XPOS="-440"  />
-//       <P YPOS="-240" XPOS="-340"  />
-//       <P YPOS="-240" XPOS="-440"  />
-//       <P YPOS="-720" XPOS="-40"  />
-//       <P YPOS="-720" XPOS="-620"  />
-//       <P YPOS="-340" XPOS="-620"  />
-//       <P YPOS="40" XPOS="-620"  />
-//       <P YPOS="-240" XPOS="-620"  />
-//       <P YPOS="-720" XPOS="-1400"  />
-//       <P YPOS="40" XPOS="-1400"  />
-//       <P YPOS="440" XPOS="-1000"  />
-//       <P YPOS="40" XPOS="-1000"  />
-//       <P YPOS="200" XPOS="-780"  />
-//       <P YPOS="280" XPOS="-780"  />
-//       <P YPOS="-340" XPOS="-1000"  />
-//       <P YPOS="-520" XPOS="-1000"  />
-//       <P YPOS="-520" XPOS="-1400"  />
-//       <P YPOS="-340" XPOS="-860"  />
-//       <P YPOS="-340" XPOS="-740"  />
-//       <W SF="0.09" H="10" PTB="3" PTA="0"  />
-//       <W ENTER="0" D0="280" SF="0.3" H="10" PTB="4" PTA="3"  />
-//       <W SF="0.28" H="10" PTB="5" PTA="4"  />
-//       <W SF="0.2" H="10" PTB="7" PTA="5"  />
-//       <W SF="0.67" H="10" PTB="6" PTA="7"  />
-//       <W SF="0.14" H="10" PTB="8" PTA="2"  />
-//       <W SF="0.18" H="10" PTB="1" PTA="9"  />
-//       <W SF="0.13" H="10" PTB="10" PTA="1"  />
-//       <W SF="0.12" H="10" PTB="5" PTA="11"  />
-//       <W SF="0.14" H="10" PTB="12" PTA="1"  />
-//       <W SF="0.15" H="10" PTB="12" PTA="15"  />
-//       <W SF="0.15" H="10" PTB="0" PTA="13"  />
-//       <W SF="0.1" H="10" PTB="17" PTA="3"  />
-//       <W SF="7.25" H="250" PTB="18" PTA="17"  />
-//       <W SF="0.19" H="10" PTB="19" PTA="18"  />
-//       <W SF="0.09" H="10" PTB="14" PTA="19"  />
-//       <W SF="0.09" H="10" PTB="21" PTA="16"  />
-//       <W SF="0.14" H="10" PTB="20" PTA="21"  />
-//       <W SF="9.75" H="250" PTB="22" PTA="18"  />
-//       <W SF="0.11" H="10" PTB="24" PTA="6"  />
-//       <W SF="0.2" H="10" PTB="25" PTA="24"  />
-//       <W SF="0.2" H="10" PTB="25" PTA="23"  />
-//       <W SF="1.1" H="10" PTB="2" PTA="25"  />
-//       <W SF="0.8" H="10" PTB="2" PTA="26"  />
-//       <W SF="0.8" H="10" PTB="27" PTA="6"  />
-//       <W SF="0.9" H="10" PTB="29" PTA="28"  />
-//       <W SF="2" H="10" PTB="29" PTA="30"  />
-//       <W SF="2.5" H="250" PTB="30" PTA="22"  />
-//       <W SF="7" H="250" PTB="23" PTA="30"  />
-//       <W SF="0.7" H="10" PTB="31" PTA="28"  />
-//       <W SF="0.6" H="10" PTB="19" PTA="32"  />
-//       <F PT3="6" PT2="7" PT1="5" PT0="2" SF="0"  />
-//       <F PT3="19" PT2="0" PT1="17" PT0="18" SF="0"  />
-//       <F PT3="20" PT2="1" PT1="12" PT0="21" SF="0"  />
-//       <F PT3="1" PT2="5" PT1="4" PT0="3" SF="0"  />
-//       <F PT3="21" PT2="12" PT1="0" PT0="19" SF="0"  />
-//       <F PT3="2" PT2="25" PT1="24" PT0="6" SF="0"  />
-//       <F PT5="30" PT4="29" PT3="28" PT2="19" PT1="18" PT0="22" SF="0"  />
-//       <F PT5="23" PT4="20" PT3="19" PT2="28" PT1="29" PT0="30" SF="0"  />
-//   </MAP>`;
+  //     xmlString = `
+  //     <MAP>
+  //       <P YPOS="-340" XPOS="-40"  />
+  //       <P YPOS="40" XPOS="-40"  />
+  //       <P YPOS="40" XPOS="-780"  />
+  //       <P YPOS="-520" XPOS="-40"  />
+  //       <P YPOS="-520" XPOS="560"  />
+  //       <P YPOS="40" XPOS="560"  />
+  //       <P YPOS="440" XPOS="-780"  />
+  //       <P YPOS="440" XPOS="560"  />
+  //       <P YPOS="40" XPOS="-500"  />
+  //       <P YPOS="40" XPOS="-400"  />
+  //       <P YPOS="40" XPOS="220"  />
+  //       <P YPOS="40" XPOS="320"  />
+  //       <P YPOS="-240" XPOS="-40"  />
+  //       <P YPOS="-340" XPOS="-340"  />
+  //       <P YPOS="-340" XPOS="-440"  />
+  //       <P YPOS="-240" XPOS="-340"  />
+  //       <P YPOS="-240" XPOS="-440"  />
+  //       <P YPOS="-720" XPOS="-40"  />
+  //       <P YPOS="-720" XPOS="-620"  />
+  //       <P YPOS="-340" XPOS="-620"  />
+  //       <P YPOS="40" XPOS="-620"  />
+  //       <P YPOS="-240" XPOS="-620"  />
+  //       <P YPOS="-720" XPOS="-1400"  />
+  //       <P YPOS="40" XPOS="-1400"  />
+  //       <P YPOS="440" XPOS="-1000"  />
+  //       <P YPOS="40" XPOS="-1000"  />
+  //       <P YPOS="200" XPOS="-780"  />
+  //       <P YPOS="280" XPOS="-780"  />
+  //       <P YPOS="-340" XPOS="-1000"  />
+  //       <P YPOS="-520" XPOS="-1000"  />
+  //       <P YPOS="-520" XPOS="-1400"  />
+  //       <P YPOS="-340" XPOS="-860"  />
+  //       <P YPOS="-340" XPOS="-740"  />
+  //       <W SF="0.09" H="10" PTB="3" PTA="0"  />
+  //       <W ENTER="0" D0="280" SF="0.3" H="10" PTB="4" PTA="3"  />
+  //       <W SF="0.28" H="10" PTB="5" PTA="4"  />
+  //       <W SF="0.2" H="10" PTB="7" PTA="5"  />
+  //       <W SF="0.67" H="10" PTB="6" PTA="7"  />
+  //       <W SF="0.14" H="10" PTB="8" PTA="2"  />
+  //       <W SF="0.18" H="10" PTB="1" PTA="9"  />
+  //       <W SF="0.13" H="10" PTB="10" PTA="1"  />
+  //       <W SF="0.12" H="10" PTB="5" PTA="11"  />
+  //       <W SF="0.14" H="10" PTB="12" PTA="1"  />
+  //       <W SF="0.15" H="10" PTB="12" PTA="15"  />
+  //       <W SF="0.15" H="10" PTB="0" PTA="13"  />
+  //       <W SF="0.1" H="10" PTB="17" PTA="3"  />
+  //       <W SF="7.25" H="250" PTB="18" PTA="17"  />
+  //       <W SF="0.19" H="10" PTB="19" PTA="18"  />
+  //       <W SF="0.09" H="10" PTB="14" PTA="19"  />
+  //       <W SF="0.09" H="10" PTB="21" PTA="16"  />
+  //       <W SF="0.14" H="10" PTB="20" PTA="21"  />
+  //       <W SF="9.75" H="250" PTB="22" PTA="18"  />
+  //       <W SF="0.11" H="10" PTB="24" PTA="6"  />
+  //       <W SF="0.2" H="10" PTB="25" PTA="24"  />
+  //       <W SF="0.2" H="10" PTB="25" PTA="23"  />
+  //       <W SF="1.1" H="10" PTB="2" PTA="25"  />
+  //       <W SF="0.8" H="10" PTB="2" PTA="26"  />
+  //       <W SF="0.8" H="10" PTB="27" PTA="6"  />
+  //       <W SF="0.9" H="10" PTB="29" PTA="28"  />
+  //       <W SF="2" H="10" PTB="29" PTA="30"  />
+  //       <W SF="2.5" H="250" PTB="30" PTA="22"  />
+  //       <W SF="7" H="250" PTB="23" PTA="30"  />
+  //       <W SF="0.7" H="10" PTB="31" PTA="28"  />
+  //       <W SF="0.6" H="10" PTB="19" PTA="32"  />
+  //       <F PT3="6" PT2="7" PT1="5" PT0="2" SF="0"  />
+  //       <F PT3="19" PT2="0" PT1="17" PT0="18" SF="0"  />
+  //       <F PT3="20" PT2="1" PT1="12" PT0="21" SF="0"  />
+  //       <F PT3="1" PT2="5" PT1="4" PT0="3" SF="0"  />
+  //       <F PT3="21" PT2="12" PT1="0" PT0="19" SF="0"  />
+  //       <F PT3="2" PT2="25" PT1="24" PT0="6" SF="0"  />
+  //       <F PT5="30" PT4="29" PT3="28" PT2="19" PT1="18" PT0="22" SF="0"  />
+  //       <F PT5="23" PT4="20" PT3="19" PT2="28" PT1="29" PT0="30" SF="0"  />
+  //   </MAP>`;
 
-//     xmlString = `
-//       <MAP>
-//       <P YPOS="-340" XPOS="-780"  />
-//       <P YPOS="-340" XPOS="-40"  />
-//       <P YPOS="40" XPOS="-40"  />
-//       <P YPOS="40" XPOS="-780"  />
-//       <P YPOS="-340" XPOS="-720"  />
-//       <P YPOS="-340" XPOS="-620"  />
-//       <P YPOS="-340" XPOS="-560"  />
-//       <P YPOS="-340" XPOS="-500"  />
-//       <P YPOS="-340" XPOS="-400"  />
-//       <P YPOS="-520" XPOS="-780"  />
-//       <P YPOS="-520" XPOS="-560"  />
-//       <P YPOS="-520" XPOS="-40"  />
-//       <P YPOS="-520" XPOS="560"  />
-//       <P YPOS="40" XPOS="560"  />
-//       <P YPOS="-200" XPOS="-40"  />
-//       <P YPOS="-100" XPOS="-40"  />
-//       <P YPOS="440" XPOS="-780"  />
-//       <P YPOS="440" XPOS="560"  />
-//       <P YPOS="40" XPOS="-500"  />
-//       <P YPOS="40" XPOS="-400"  />
-//       <P YPOS="40" XPOS="220"  />
-//       <P YPOS="40" XPOS="320"  />
-//       <W SF="2.25" H="250" PTB="0" PTA="9"  />
-//       <W SF="0.03" H="10" PTB="4" PTA="0"  />
-//       <W SF="2.75" H="250" PTB="10" PTA="9"  />
-//       <W SF="0.09" H="10" PTB="6" PTA="10"  />
-//       <W SF="0.03" H="10" PTB="5" PTA="6"  />
-//       <W SF="0.03" H="10" PTB="7" PTA="6"  />
-//       <W SF="0.09" H="10" PTB="11" PTA="1"  />
-//       <W SF="0.18" H="10" PTB="8" PTA="1"  />
-//       <W SF="6.5" H="250" PTB="11" PTA="10"  />
-//       <W ENTER="0" D0="192" SF="4.75" H="250" PTB="3" PTA="0"  />
-//       <W SF="7.5" H="250" PTB="12" PTA="11"  />
-//       <W SF="0.28" H="10" PTB="13" PTA="12"  />
-//       <W SF="0.07" H="10" PTB="14" PTA="1"  />
-//       <W SF="0.07" H="10" PTB="15" PTA="2"  />
-//       <W SF="2" H="10" PTB="17" PTA="13"  />
-//       <W SF="6.7" H="10" PTB="16" PTA="17"  />
-//       <W SF="5" H="250" PTB="3" PTA="16"  />
-//       <W SF="1.4" H="10" PTB="18" PTA="3"  />
-//       <W SF="1.8" H="10" PTB="2" PTA="19"  />
-//       <W SF="1.3" H="10" PTB="20" PTA="2"  />
-//       <W SF="1.2" H="10" PTB="13" PTA="21"  />
-//       <F PT3="3" PT2="2" PT1="1" PT0="0" SF="0"  />
-//       <F PT5="0" PT4="4" PT3="5" PT2="6" PT1="10" PT0="9" SF="0"  />
-//       <F PT5="6" PT4="7" PT3="8" PT2="1" PT1="11" PT0="10" SF="0"  />
-//       <F PT6="1" PT5="14" PT4="15" PT3="2" PT2="13" PT1="12" PT0="11" SF="0"  />
-//       <F PT3="16" PT2="17" PT1="13" PT0="3" SF="0"  />
-//   </MAP>`;
+  //     xmlString = `
+  //       <MAP>
+  //       <P YPOS="-340" XPOS="-780"  />
+  //       <P YPOS="-340" XPOS="-40"  />
+  //       <P YPOS="40" XPOS="-40"  />
+  //       <P YPOS="40" XPOS="-780"  />
+  //       <P YPOS="-340" XPOS="-720"  />
+  //       <P YPOS="-340" XPOS="-620"  />
+  //       <P YPOS="-340" XPOS="-560"  />
+  //       <P YPOS="-340" XPOS="-500"  />
+  //       <P YPOS="-340" XPOS="-400"  />
+  //       <P YPOS="-520" XPOS="-780"  />
+  //       <P YPOS="-520" XPOS="-560"  />
+  //       <P YPOS="-520" XPOS="-40"  />
+  //       <P YPOS="-520" XPOS="560"  />
+  //       <P YPOS="40" XPOS="560"  />
+  //       <P YPOS="-200" XPOS="-40"  />
+  //       <P YPOS="-100" XPOS="-40"  />
+  //       <P YPOS="440" XPOS="-780"  />
+  //       <P YPOS="440" XPOS="560"  />
+  //       <P YPOS="40" XPOS="-500"  />
+  //       <P YPOS="40" XPOS="-400"  />
+  //       <P YPOS="40" XPOS="220"  />
+  //       <P YPOS="40" XPOS="320"  />
+  //       <W SF="2.25" H="250" PTB="0" PTA="9"  />
+  //       <W SF="0.03" H="10" PTB="4" PTA="0"  />
+  //       <W SF="2.75" H="250" PTB="10" PTA="9"  />
+  //       <W SF="0.09" H="10" PTB="6" PTA="10"  />
+  //       <W SF="0.03" H="10" PTB="5" PTA="6"  />
+  //       <W SF="0.03" H="10" PTB="7" PTA="6"  />
+  //       <W SF="0.09" H="10" PTB="11" PTA="1"  />
+  //       <W SF="0.18" H="10" PTB="8" PTA="1"  />
+  //       <W SF="6.5" H="250" PTB="11" PTA="10"  />
+  //       <W ENTER="0" D0="192" SF="4.75" H="250" PTB="3" PTA="0"  />
+  //       <W SF="7.5" H="250" PTB="12" PTA="11"  />
+  //       <W SF="0.28" H="10" PTB="13" PTA="12"  />
+  //       <W SF="0.07" H="10" PTB="14" PTA="1"  />
+  //       <W SF="0.07" H="10" PTB="15" PTA="2"  />
+  //       <W SF="2" H="10" PTB="17" PTA="13"  />
+  //       <W SF="6.7" H="10" PTB="16" PTA="17"  />
+  //       <W SF="5" H="250" PTB="3" PTA="16"  />
+  //       <W SF="1.4" H="10" PTB="18" PTA="3"  />
+  //       <W SF="1.8" H="10" PTB="2" PTA="19"  />
+  //       <W SF="1.3" H="10" PTB="20" PTA="2"  />
+  //       <W SF="1.2" H="10" PTB="13" PTA="21"  />
+  //       <F PT3="3" PT2="2" PT1="1" PT0="0" SF="0"  />
+  //       <F PT5="0" PT4="4" PT3="5" PT2="6" PT1="10" PT0="9" SF="0"  />
+  //       <F PT5="6" PT4="7" PT3="8" PT2="1" PT1="11" PT0="10" SF="0"  />
+  //       <F PT6="1" PT5="14" PT4="15" PT3="2" PT2="13" PT1="12" PT0="11" SF="0"  />
+  //       <F PT3="16" PT2="17" PT1="13" PT0="3" SF="0"  />
+  //   </MAP>`;
 
-    xmlString = `
+  xmlString = `
     <MAP>
     <P YPOS="-340" XPOS="-780"  />
     <P YPOS="-340" XPOS="-40"  />
@@ -576,130 +560,129 @@ function updateCamera() {
     <F PT5="46" PT4="50" PT3="49" PT2="48" PT1="16" PT0="3" SF="0"  />
 </MAP>`;
 
-// xmlString = `
-// <MAP>
-//     <P YPOS="300" XPOS="-200" />
-//     <P YPOS="700" XPOS="-200" />
-//     <P YPOS="700" XPOS="680" />
-//     <P YPOS="-160" XPOS="680" />
-//     <P YPOS="-160" XPOS="140" />
-//     <P YPOS="120" XPOS="140" />
-//     <P YPOS="300" XPOS="140" />
-//     <P YPOS="-160" XPOS="140" />
-//     <P YPOS="-680" XPOS="140" />
-//     <P YPOS="-680" XPOS="-300" />
-//     <P YPOS="-680" XPOS="-500" />
-//     <P YPOS="-680" XPOS="-880" />
-//     <P YPOS="120" XPOS="-880" />
-//     <P YPOS="120" XPOS="140" />
-//     <P YPOS="-740" XPOS="-880" />
-//     <P YPOS="-840" XPOS="-880" />
-//     <P YPOS="-840" XPOS="-920" />
-//     <P YPOS="-740" XPOS="140" />
-//     <P YPOS="-1920" XPOS="140" />
-//     <P YPOS="-1920" XPOS="-880" />
-//     <P YPOS="-1060" XPOS="-880" />
-//     <P YPOS="-1060" XPOS="-920" />
-//     <P YPOS="-1500" XPOS="-920" />
-//     <P YPOS="-1500" XPOS="-880" />
-//     <P YPOS="-1720" XPOS="-880" />
-//     <P YPOS="-1720" XPOS="-920" />
-//     <P YPOS="-1920" XPOS="-920" />
-//     <P YPOS="-1920" XPOS="-2140" />
-//     <P YPOS="-740" XPOS="-2140" />
-//     <P YPOS="-740" XPOS="-1720" />
-//     <P YPOS="-680" XPOS="-1720" />
-//     <P YPOS="-680" XPOS="-1340" />
-//     <P YPOS="-740" XPOS="-1340" />
-//     <P YPOS="-740" XPOS="-920" />
-//     <P YPOS="-1360" XPOS="-2140" />
-//     <P YPOS="-1360" XPOS="-920" />
-//     <P YPOS="-680" XPOS="-2480" />
-//     <P YPOS="-740" XPOS="-2480" />
-//     <P YPOS="-740" XPOS="-2880" />
-//     <P YPOS="-680" XPOS="-2880" />
-//     <P YPOS="-680" XPOS="-3220" />
-//     <P YPOS="120" XPOS="-3220" />
-//     <P YPOS="120" XPOS="-920" />
-//     <P YPOS="-680" XPOS="-920" />
-//     <P YPOS="-740" XPOS="-2180" />
-//     <P YPOS="-1920" XPOS="-2180" />
-//     <P YPOS="-1920" XPOS="-2480" />
-//     <P YPOS="-1920" XPOS="-2840" />
-//     <P YPOS="-1920" XPOS="-3220" />
-//     <P YPOS="-740" XPOS="-3220" />
-//     <P YPOS="-1960" XPOS="-2840" />
-//     <P YPOS="-1960" XPOS="-2480" />
-//     <P YPOS="-1960" XPOS="-920" />
-//     <P YPOS="-2780" XPOS="-920" />
-//     <P YPOS="-2780" XPOS="-3220" />
-//     <P YPOS="-1960" XPOS="-3220" />
-//     <P YPOS="-740" XPOS="-500" />
-//     <P YPOS="-740" XPOS="-300" />
-//     <W SF="0.2" H="10" PTB="1" PTA="0" />
-//     <W SF="0.44" H="10" PTB="2" PTA="1" />
-//     <W SF="0.43" H="10" PTB="3" PTA="2" />
-//     <W SF="0.27" H="10" PTB="4" PTA="3" />
-//     <W SF="0.09" H="10" PTB="6" PTA="5" />
-//     <W SF="0.17" H="10" PTB="0" PTA="6" />
-//     <W SF="0.26" H="10" PTB="8" PTA="7" />
-//     <W SF="0.22" H="10" PTB="9" PTA="8" />
-//     <W SF="0.19" H="10" PTB="11" PTA="10" />
-//     <W SF="0.4" H="10" PTB="12" PTA="11" />
-//     <W SF="0.51" H="10" PTB="13" PTA="12" />
-//     <W SF="0.05" H="10" PTB="15" PTA="14" />
-//     <W SF="0.02" H="10" PTB="16" PTA="15" />
-//     <W SF="0.02" H="10" PTB="20" PTA="21" />
-//     <W SF="0.22" H="10" PTB="23" PTA="20" />
-//     <W SF="0.02" H="10" PTB="22" PTA="23" />
-//     <W SF="0.22" H="10" PTB="21" PTA="22" />
-//     <W SF="0.02" H="10" PTB="24" PTA="25" />
-//     <W SF="0.1" H="10" PTB="24" PTA="19" />
-//     <W SF="0.59" H="10" PTB="17" PTA="18" />
-//     <W SF="0.05" H="10" PTB="16" PTA="33" />
-//     <W SF="0.21" H="10" PTB="32" PTA="33" />
-//     <W SF="0.03" H="10" PTB="31" PTA="32" />
-//     <W SF="0.03" H="10" PTB="29" PTA="30" />
-//     <W SF="0.21" H="10" PTB="28" PTA="29" />
-//     <W SF="0.59" H="10" PTB="27" PTA="28" />
-//     <W SF="6.1" H="10" PTB="26" PTA="27" />
-//     <W SF="0.1" H="10" PTB="25" PTA="26" />
-//     <W D0="620" SF="0.61" H="10" PTB="35" PTA="34" />
-//     <W SF="0.38" H="10" PTB="36" PTA="30" />
-//     <W SF="0.17" H="10" PTB="40" PTA="39" />
-//     <W SF="8" H="200" PTB="41" PTA="40" />
-//     <W SF="1.15" H="10" PTB="42" PTA="41" />
-//     <W SF="0.4" H="10" PTB="43" PTA="42" />
-//     <W SF="0.21" H="10" PTB="31" PTA="43" />
-//     <W SF="0.17" H="10" PTB="49" PTA="38" />
-//     <W ENTER="0" D0="892" SF="11.8" H="200" PTB="48" PTA="49" />
-//     <W SF="1.9" H="10" PTB="47" PTA="48" />
-//     <W SF="1.5" H="10" PTB="45" PTA="46" />
-//     <W SF="0.59" H="10" PTB="44" PTA="45" />
-//     <W SF="0.15" H="10" PTB="37" PTA="44" />
-//     <W SF="0.02" H="10" PTB="50" PTA="47" />
-//     <W SF="0.02" H="10" PTB="51" PTA="46" />
-//     <W SF="5.1" H="10" PTB="18" PTA="19" />
-//     <W SF="0.19" H="10" PTB="56" PTA="14" />
-//     <W SF="0.22" H="10" PTB="17" PTA="57" />
-//     <W SF="0.03" H="10" PTB="56" PTA="10" />
-//     <W SF="0.03" H="10" PTB="57" PTA="9" />
-//     <W SF="0.03" H="10" PTB="38" PTA="39" />
-//     <W SF="0.03" H="10" PTB="37" PTA="36" />
-//     <F PT6="5" PT5="6" PT4="0" PT3="1" PT2="2" PT1="3" PT0="4" SF="0" />
-//     <F PT6="12" PT5="13" PT4="7" PT3="8" PT2="9" PT1="10" PT0="11" SF="0" />
-//     <F PT7="36" PT6="30" PT5="31" PT4="43" PT3="42" PT2="41" PT1="40" PT0="39" SF="0" />
-//     <F PT7="14" PT6="56" PT5="10" PT4="9" PT3="57" PT2="17" PT1="18" PT0="19" SF="0" />
-//     <F PT11="28" PT10="29" PT9="30" PT8="31" PT7="32" PT6="33" PT5="16" PT4="15" PT3="20" PT2="21"
-//         PT1="35" PT0="34" SF="0" />
-//     <F PT7="34" PT6="35" PT5="22" PT4="23" PT3="24" PT2="25" PT1="26" PT0="27" SF="0" />
-//     <F PT9="36" PT8="37" PT7="44" PT6="45" PT5="46" PT4="47" PT3="48" PT2="49" PT1="38" PT0="39"
-//         SF="0" />
-//     <F PT7="50" PT6="47" PT5="46" PT4="51" PT3="52" PT2="53" PT1="54" PT0="55" SF="0" />
-// </MAP>`;
+  // xmlString = `
+  // <MAP>
+  //     <P YPOS="300" XPOS="-200" />
+  //     <P YPOS="700" XPOS="-200" />
+  //     <P YPOS="700" XPOS="680" />
+  //     <P YPOS="-160" XPOS="680" />
+  //     <P YPOS="-160" XPOS="140" />
+  //     <P YPOS="120" XPOS="140" />
+  //     <P YPOS="300" XPOS="140" />
+  //     <P YPOS="-160" XPOS="140" />
+  //     <P YPOS="-680" XPOS="140" />
+  //     <P YPOS="-680" XPOS="-300" />
+  //     <P YPOS="-680" XPOS="-500" />
+  //     <P YPOS="-680" XPOS="-880" />
+  //     <P YPOS="120" XPOS="-880" />
+  //     <P YPOS="120" XPOS="140" />
+  //     <P YPOS="-740" XPOS="-880" />
+  //     <P YPOS="-840" XPOS="-880" />
+  //     <P YPOS="-840" XPOS="-920" />
+  //     <P YPOS="-740" XPOS="140" />
+  //     <P YPOS="-1920" XPOS="140" />
+  //     <P YPOS="-1920" XPOS="-880" />
+  //     <P YPOS="-1060" XPOS="-880" />
+  //     <P YPOS="-1060" XPOS="-920" />
+  //     <P YPOS="-1500" XPOS="-920" />
+  //     <P YPOS="-1500" XPOS="-880" />
+  //     <P YPOS="-1720" XPOS="-880" />
+  //     <P YPOS="-1720" XPOS="-920" />
+  //     <P YPOS="-1920" XPOS="-920" />
+  //     <P YPOS="-1920" XPOS="-2140" />
+  //     <P YPOS="-740" XPOS="-2140" />
+  //     <P YPOS="-740" XPOS="-1720" />
+  //     <P YPOS="-680" XPOS="-1720" />
+  //     <P YPOS="-680" XPOS="-1340" />
+  //     <P YPOS="-740" XPOS="-1340" />
+  //     <P YPOS="-740" XPOS="-920" />
+  //     <P YPOS="-1360" XPOS="-2140" />
+  //     <P YPOS="-1360" XPOS="-920" />
+  //     <P YPOS="-680" XPOS="-2480" />
+  //     <P YPOS="-740" XPOS="-2480" />
+  //     <P YPOS="-740" XPOS="-2880" />
+  //     <P YPOS="-680" XPOS="-2880" />
+  //     <P YPOS="-680" XPOS="-3220" />
+  //     <P YPOS="120" XPOS="-3220" />
+  //     <P YPOS="120" XPOS="-920" />
+  //     <P YPOS="-680" XPOS="-920" />
+  //     <P YPOS="-740" XPOS="-2180" />
+  //     <P YPOS="-1920" XPOS="-2180" />
+  //     <P YPOS="-1920" XPOS="-2480" />
+  //     <P YPOS="-1920" XPOS="-2840" />
+  //     <P YPOS="-1920" XPOS="-3220" />
+  //     <P YPOS="-740" XPOS="-3220" />
+  //     <P YPOS="-1960" XPOS="-2840" />
+  //     <P YPOS="-1960" XPOS="-2480" />
+  //     <P YPOS="-1960" XPOS="-920" />
+  //     <P YPOS="-2780" XPOS="-920" />
+  //     <P YPOS="-2780" XPOS="-3220" />
+  //     <P YPOS="-1960" XPOS="-3220" />
+  //     <P YPOS="-740" XPOS="-500" />
+  //     <P YPOS="-740" XPOS="-300" />
+  //     <W SF="0.2" H="10" PTB="1" PTA="0" />
+  //     <W SF="0.44" H="10" PTB="2" PTA="1" />
+  //     <W SF="0.43" H="10" PTB="3" PTA="2" />
+  //     <W SF="0.27" H="10" PTB="4" PTA="3" />
+  //     <W SF="0.09" H="10" PTB="6" PTA="5" />
+  //     <W SF="0.17" H="10" PTB="0" PTA="6" />
+  //     <W SF="0.26" H="10" PTB="8" PTA="7" />
+  //     <W SF="0.22" H="10" PTB="9" PTA="8" />
+  //     <W SF="0.19" H="10" PTB="11" PTA="10" />
+  //     <W SF="0.4" H="10" PTB="12" PTA="11" />
+  //     <W SF="0.51" H="10" PTB="13" PTA="12" />
+  //     <W SF="0.05" H="10" PTB="15" PTA="14" />
+  //     <W SF="0.02" H="10" PTB="16" PTA="15" />
+  //     <W SF="0.02" H="10" PTB="20" PTA="21" />
+  //     <W SF="0.22" H="10" PTB="23" PTA="20" />
+  //     <W SF="0.02" H="10" PTB="22" PTA="23" />
+  //     <W SF="0.22" H="10" PTB="21" PTA="22" />
+  //     <W SF="0.02" H="10" PTB="24" PTA="25" />
+  //     <W SF="0.1" H="10" PTB="24" PTA="19" />
+  //     <W SF="0.59" H="10" PTB="17" PTA="18" />
+  //     <W SF="0.05" H="10" PTB="16" PTA="33" />
+  //     <W SF="0.21" H="10" PTB="32" PTA="33" />
+  //     <W SF="0.03" H="10" PTB="31" PTA="32" />
+  //     <W SF="0.03" H="10" PTB="29" PTA="30" />
+  //     <W SF="0.21" H="10" PTB="28" PTA="29" />
+  //     <W SF="0.59" H="10" PTB="27" PTA="28" />
+  //     <W SF="6.1" H="10" PTB="26" PTA="27" />
+  //     <W SF="0.1" H="10" PTB="25" PTA="26" />
+  //     <W D0="620" SF="0.61" H="10" PTB="35" PTA="34" />
+  //     <W SF="0.38" H="10" PTB="36" PTA="30" />
+  //     <W SF="0.17" H="10" PTB="40" PTA="39" />
+  //     <W SF="8" H="200" PTB="41" PTA="40" />
+  //     <W SF="1.15" H="10" PTB="42" PTA="41" />
+  //     <W SF="0.4" H="10" PTB="43" PTA="42" />
+  //     <W SF="0.21" H="10" PTB="31" PTA="43" />
+  //     <W SF="0.17" H="10" PTB="49" PTA="38" />
+  //     <W ENTER="0" D0="892" SF="11.8" H="200" PTB="48" PTA="49" />
+  //     <W SF="1.9" H="10" PTB="47" PTA="48" />
+  //     <W SF="1.5" H="10" PTB="45" PTA="46" />
+  //     <W SF="0.59" H="10" PTB="44" PTA="45" />
+  //     <W SF="0.15" H="10" PTB="37" PTA="44" />
+  //     <W SF="0.02" H="10" PTB="50" PTA="47" />
+  //     <W SF="0.02" H="10" PTB="51" PTA="46" />
+  //     <W SF="5.1" H="10" PTB="18" PTA="19" />
+  //     <W SF="0.19" H="10" PTB="56" PTA="14" />
+  //     <W SF="0.22" H="10" PTB="17" PTA="57" />
+  //     <W SF="0.03" H="10" PTB="56" PTA="10" />
+  //     <W SF="0.03" H="10" PTB="57" PTA="9" />
+  //     <W SF="0.03" H="10" PTB="38" PTA="39" />
+  //     <W SF="0.03" H="10" PTB="37" PTA="36" />
+  //     <F PT6="5" PT5="6" PT4="0" PT3="1" PT2="2" PT1="3" PT0="4" SF="0" />
+  //     <F PT6="12" PT5="13" PT4="7" PT3="8" PT2="9" PT1="10" PT0="11" SF="0" />
+  //     <F PT7="36" PT6="30" PT5="31" PT4="43" PT3="42" PT2="41" PT1="40" PT0="39" SF="0" />
+  //     <F PT7="14" PT6="56" PT5="10" PT4="9" PT3="57" PT2="17" PT1="18" PT0="19" SF="0" />
+  //     <F PT11="28" PT10="29" PT9="30" PT8="31" PT7="32" PT6="33" PT5="16" PT4="15" PT3="20" PT2="21"
+  //         PT1="35" PT0="34" SF="0" />
+  //     <F PT7="34" PT6="35" PT5="22" PT4="23" PT3="24" PT2="25" PT1="26" PT0="27" SF="0" />
+  //     <F PT9="36" PT8="37" PT7="44" PT6="45" PT5="46" PT4="47" PT3="48" PT2="49" PT1="38" PT0="39"
+  //         SF="0" />
+  //     <F PT7="50" PT6="47" PT5="46" PT4="51" PT3="52" PT2="53" PT1="54" PT0="55" SF="0" />
+  // </MAP>`;
 
-
-xmlString = `
+  xmlString = `
 <MAP>
     <P YPOS="-440" XPOS="-660"  />
     <P YPOS="-440" XPOS="2080"  />
@@ -717,36 +700,79 @@ xmlString = `
     <F PT3="3" PT2="5" PT1="4" PT0="1" SF="1"  />
 </MAP>`;
 
-    // Créer une maison à partir du fichier XML
-    gameScene.x = 400;
-    gameScene.y = 400;
+  // Créer une maison à partir du fichier XML
+  gameScene.x = 400;
+  gameScene.y = 400;
 
-    const house = HouseParser.parseStructure(xmlString);
+  const house = HouseParser.parseStructure(xmlString);
+  let houseView: HouseView | null = null;
 
-    fetch("assets/map_jardin.json").then((response) => {
+  const door: Door | null = house.doors[0] ?? null;
+
+  if (door) {
+    avatar.x = door.p1.x + 10;
+    avatar.y = door.p1.y - avatar.height + 10;
+  }
+
+  fetch('assets/map_jardin.json')
+    .then((response) => {
       return response.text();
-    }).then((jsonString) => {
+    })
+    .then((jsonString) => {
       HouseParser.parseFurnitures(house, jsonString).then(() => {
-        gameScene.addChild(new HouseView(house));
+        houseView = new HouseView(house);
+        gameScene.addChild(houseView);
+        houseView.addChild(avatar);
       });
     });
 
-    // const loadingView = new LoadingView();
-    // app.stage.addChild(loadingView);
-    // loadingView.draw();
-    // loadingView.x = 0;
-    // loadingView.y = 0;
+  // const loadingView = new LoadingView();
+  // app.stage.addChild(loadingView);
+  // loadingView.draw();
+  // loadingView.x = 0;
+  // loadingView.y = 0;
 
-    // let loading = 0;
-    // loadingView.setProgress(loading);
+  // let loading = 0;
+  // loadingView.setProgress(loading);
 
-    // setInterval(() => {
-    //   loading += 0.01;
-    //   if (loading > 1) {
-    //     loading = 1;
-    //   }
-    //   loadingView.setProgress(loading);
-    // }, 100);
+  // setInterval(() => {
+  //   loading += 0.01;
+  //   if (loading > 1) {
+  //     loading = 1;
+  //   }
+  //   loadingView.setProgress(loading);
+  // }, 100);
+
+  app.ticker.add((delta) => {
+    if (avatar.isWalking) {
+      let divider =
+        avatar.direction & (left | right) && avatar.direction & (up | down)
+          ? 1.33
+          : 1;
+      let newX = avatar.x;
+      let newY = avatar.y;
+      if (avatar.direction & down) newY += 10 / divider;
+      if (avatar.direction & up) newY -= 10 / divider;
+      if (avatar.direction & left) newX -= 10 / divider;
+      if (avatar.direction & right) newX += 10 / divider;
+
+      const newPoints = [
+        {x: newX, y: newY + avatar.height},
+        {x: newX + avatar.width, y: newY + avatar.height},
+      ];
+
+      if (
+        !houseView!.checkCollision(avatar, newPoints)
+      ) {
+        avatar.x = newX;
+        avatar.y = newY;
+        avatar.zIndex = houseView!.getDepthAtPointClip(avatar.points);
+      }
+    
+      app.stage.sortChildren();
+      //updateCamera();
+    }
+  });
 };
 
 main();
