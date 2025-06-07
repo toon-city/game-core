@@ -20,7 +20,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   ) {
     super();
     this.sprite = new PrecisionSprite(Texture.EMPTY);
-    this.sprite.eventMode = 'static';
+    this.sprite.eventMode = 'dynamic';
     this.sprite.cursor = 'grab';
     this.addChild(this.sprite);
 

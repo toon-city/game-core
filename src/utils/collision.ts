@@ -75,3 +75,29 @@ export function polygonsIntersect(polyA: Point[], polyB: Point[]): boolean {
   // aucun axe de séparation => collision
   return true;
 }
+
+export function isAnyPointOutside(polyA: Point[], polyB: Point[]): boolean {
+  // Pour chaque point de polyA, vérifier s'il est à l'extérieur de polyB
+  for (const point of polyA) {
+    if (!pointInPolygon(point, polyB)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Détermine si un point est à l'intérieur d'un polygone (algorithme du rayon).
+ */
+function pointInPolygon(point: Point, polygon: Point[]): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x, yi = polygon[i].y;
+    const xj = polygon[j].x, yj = polygon[j].y;
+
+    const intersect = ((yi > point.y) !== (yj > point.y)) &&
+      (point.x < ((xj - xi) * (point.y - yi)) / (yj - yi + Number.EPSILON) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}

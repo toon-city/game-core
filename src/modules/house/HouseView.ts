@@ -7,7 +7,8 @@ import {AreaView} from './structure/AreaView';
 import {FurnitureView} from '../furniture/FurnitureView';
 import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
-import { aabbOverlap, getAABB, polygonsIntersect } from '../../utils/collision';
+import {aabbOverlap, getAABB, isAnyPointOutside, polygonsIntersect} from '../../utils/collision';
+import {Area} from '../../core/models/Area';
 
 export class HouseView
   extends Container
@@ -95,11 +96,34 @@ export class HouseView
   public checkCollision(object: FurnitureView): boolean {
     const polyA = object.points;
 
+    const areaIndex = this.model.areas.findIndex((area: Area) => {
+      const polyB = area.points;
+
+      const aabbA = getAABB(polyA);
+      const aabbB = getAABB(polyB);
+
+      if (!aabbOverlap(aabbA, aabbB)) {
+        return false;
+      }
+
+      if (isAnyPointOutside(polyA, polyB)) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Si l'objet est en dehors de toutes les zones, alors on
+    // considère qu'il y a pas de collision.
+    if (areaIndex === -1) {
+      return true;
+    }
+
     for (const child of this.children) {
       if (object === child) {
         continue;
       }
-  
+
       if (child instanceof FurnitureView) {
         if (child.model.base.type !== 18) {
           continue;
@@ -114,7 +138,6 @@ export class HouseView
           // Pas de chevauchement AABB, pas de collision (trop éloignés)
           continue;
         }
-
 
         if (polygonsIntersect(polyA, polyB)) {
           return true;
