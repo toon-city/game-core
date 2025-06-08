@@ -3,7 +3,6 @@ import {BaseTextureLoader} from './game/textures/BaseTextureLoader';
 import {Avatar} from './game/avatar/Avatar';
 import {HouseParser} from './modules/house/HouseParser';
 import {HouseView} from './modules/house/HouseView';
-import {LoadingView} from './game/ui/loading/LoadingView';
 import {Door} from './core/models/Door';
 const left = 0b1000;
 const right = 0b0100;
@@ -14,11 +13,14 @@ const main = async () => {
   // Main app
   let app = new PIXI.Application();
 
+  const gameWidth = 2000;
+  const gameHeight = 1000;
+
   await app.init({background: 'black', antialias: true, resolution: 1});
 
   const size = 1;
 
-  app.renderer.resize(7000, 6000);
+  app.renderer.resize(gameWidth, gameHeight);
 
   document.body.appendChild(app.canvas);
 
@@ -456,7 +458,7 @@ const main = async () => {
     <P YPOS="-700" XPOS="560"  />
     <P YPOS="-700" XPOS="320"  />
     <P YPOS="-840" XPOS="320"  />
-    <P YPOS="-800" XPOS="320"  />
+    <P YPOS="-gameWidth" XPOS="320"  />
     <P YPOS="-740" XPOS="320"  />
     <P YPOS="-180" XPOS="1320"  />
     <P YPOS="-180" XPOS="860"  />
@@ -714,6 +716,23 @@ const main = async () => {
     avatar.y = door.p1.y - avatar.height + 10;
   }
 
+  const updateMapPosition = (force: boolean = false) => {
+    const avatarOnScreenX = avatar.x + gameScene.x;
+    const avatarOnScreenY = avatar.y + avatar.height + gameScene.y;
+
+    const distanceX = Math.min(avatarOnScreenX, gameWidth - avatarOnScreenX);
+    const distanceY = Math.min(avatarOnScreenY, gameHeight - avatarOnScreenY);
+
+    if (distanceX < 100 || distanceY < 100 || force) {
+      const targetX = -avatar.x + gameWidth / 2;
+      const targetY = -(avatar.y + avatar.height) + gameHeight / 2;
+      const alpha = force ? 1 : 0.1;
+
+      gameScene.x += (targetX - gameScene.x) * alpha;
+      gameScene.y += (targetY - gameScene.y) * alpha;
+    }
+  };
+
   fetch('assets/map_jardin.json')
     .then((response) => {
       return response.text();
@@ -723,6 +742,7 @@ const main = async () => {
         houseView = new HouseView(house);
         gameScene.addChild(houseView);
         houseView.addChild(avatar);
+        updateMapPosition(true);
       });
     });
 
@@ -761,14 +781,13 @@ const main = async () => {
         {x: newX + avatar.width, y: newY + avatar.height},
       ];
 
-      if (
-        !houseView!.checkCollision(avatar, newPoints)
-      ) {
+      if (!houseView!.checkCollision(avatar, newPoints)) {
         avatar.x = newX;
         avatar.y = newY;
         avatar.zIndex = houseView!.getDepthAtPointClip(avatar.points);
+        updateMapPosition();
       }
-    
+
       app.stage.sortChildren();
       //updateCamera();
     }

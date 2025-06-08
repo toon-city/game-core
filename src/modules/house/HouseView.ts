@@ -7,8 +7,7 @@ import {AreaView} from './structure/AreaView';
 import {FurnitureView} from '../furniture/FurnitureView';
 import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
-import {aabbOverlap, getAABB, isAnyPointOutside, polygonsIntersect} from '../../utils/collision';
-import {Area} from '../../core/models/Area';
+import {aabbOverlap, getAABB, polygonsIntersect} from '../../utils/collision';
 import { Avatar } from '../../game/avatar/Avatar';
 
 export class HouseView
@@ -96,29 +95,6 @@ export class HouseView
 
   public checkCollision(object: FurnitureView | Avatar, points: Point[] | null = null): boolean {
     const polyA = points ?? object.points;
-
-    const areaIndex = this.model.areas.findIndex((area: Area) => {
-      const polyB = area.points;
-
-      const aabbA = getAABB(polyA);
-      const aabbB = getAABB(polyB);
-
-      if (!aabbOverlap(aabbA, aabbB)) {
-        return false;
-      }
-
-      if (isAnyPointOutside(polyA, polyB)) {
-        return false;
-      }
-
-      return true;
-    });
-
-    // Si l'objet est en dehors de toutes les zones, alors on
-    // considère qu'il y a pas de collision.
-    if (areaIndex === -1) {
-      return true;
-    }
 
     for (const child of this.children) {
       if (object === child) {
