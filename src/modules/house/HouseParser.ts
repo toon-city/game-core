@@ -72,7 +72,7 @@ export class HouseParser {
         i++;
       }
       house.addArea(
-        new Area(floorPts, house.maxPoints, 'assets/house/base_floor.png')
+        new Area(floorPts, house.maxPoints, 'assets/house/quizz_sol.jpg')
       );
     });
 

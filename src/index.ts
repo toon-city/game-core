@@ -733,18 +733,23 @@ const main = async () => {
     }
   };
 
-  fetch('assets/map_jardin.json')
-    .then((response) => {
-      return response.text();
-    })
-    .then((jsonString) => {
-      HouseParser.parseFurnitures(house, jsonString).then(() => {
-        houseView = new HouseView(house);
+  // fetch('assets/map_jardin.json')
+  //   .then((response) => {
+  //     return response.text();
+  //   })
+  //   .then((jsonString) => {
+  //     HouseParser.parseFurnitures(house, jsonString).then(() => {
+  //       houseView = new HouseView(house);
+  //       gameScene.addChild(houseView);
+  //       houseView.addChild(avatar);
+  //       updateMapPosition(true);
+  //     });
+  //   });
+
+  houseView = new HouseView(house);
         gameScene.addChild(houseView);
         houseView.addChild(avatar);
         updateMapPosition(true);
-      });
-    });
 
   // const loadingView = new LoadingView();
   // app.stage.addChild(loadingView);
@@ -763,8 +768,11 @@ const main = async () => {
   //   loadingView.setProgress(loading);
   // }, 100);
 
+  let lastMoveTime = performance.now();
   app.ticker.add((delta) => {
-    if (avatar.isWalking) {
+    const now = performance.now();
+    if (avatar.isWalking && now - lastMoveTime >= 10) {
+      lastMoveTime = now;
       let divider =
         avatar.direction & (left | right) && avatar.direction & (up | down)
           ? 1.33
