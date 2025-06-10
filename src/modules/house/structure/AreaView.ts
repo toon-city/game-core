@@ -54,12 +54,12 @@ export class AreaView extends Container implements Drawable {
     const geometry = buildGeometryFromPath(path);
     const mesh = new Mesh({geometry, texture: this.texture, x: 0, y: 0});
 
-    const dx1 = maxPoints[1].x - maxPoints[0].x;
-    const dy1 = maxPoints[1].y - maxPoints[0].y;
+    const dx1 = this.model.maxPoints[1].x - this.model.maxPoints[0].x;
+    const dy1 = this.model.maxPoints[1].y - this.model.maxPoints[0].y;
     const len1 = Math.hypot(dx1, dy1);
 
-    const dx2 = maxPoints[2].x - maxPoints[1].x;
-    const dy2 = maxPoints[2].y - maxPoints[1].y;
+    const dx2 = this.model.maxPoints[2].x - this.model.maxPoints[1].x;
+    const dy2 = this.model.maxPoints[2].y - this.model.maxPoints[1].y;
     const len2 = Math.hypot(dx2, dy2);
 
     const brickW = this.texture.width;
@@ -67,12 +67,6 @@ export class AreaView extends Container implements Drawable {
 
     const repeatX = enableRepeatX ? len1 / brickW : 1;
     const repeatY = enableRepeatY ? len2 / brickH : 1;
-
-    // Apply a -45° perspective to the UVs
-    // -45° rotation matrix: [cos(-π/4) -sin(-π/4); sin(-π/4) cos(-π/4)]
-    const angle = -Math.PI / 4;
-    const cosA = Math.cos(angle);
-    const sinA = Math.sin(angle);
 
     const uvBuf = mesh.geometry.getBuffer('aUV').data;
 
@@ -82,15 +76,19 @@ export class AreaView extends Container implements Drawable {
       [repeatX, repeatY],
       [0, repeatY],
     ];
-
     for (let i = 0; i < 4; i++) {
-      // Rotate UVs by -45°
-      const u = initialUV[i][0] - repeatX / 2;
-      const v = initialUV[i][1] - repeatY / 2;
-      const uRot = u * cosA - v * sinA;
-      const vRot = u * sinA + v * cosA;
-      uvBuf[2 * i] = uRot + repeatX / 2;
-      uvBuf[2 * i + 1] = vRot + repeatY / 2;
+      uvBuf[2 * i] = initialUV[i][0];
+      uvBuf[2 * i + 1] = initialUV[i][1];
+    }
+
+    const uC = repeatX / 2,
+      vC = repeatY / 2;
+
+    for (let i = 0; i < uvBuf.length; i += 2) {
+      const u = uvBuf[i] - uC;
+      const v = uvBuf[i + 1] - vC;
+      uvBuf[i] = u + uC;
+      uvBuf[i + 1] = v + vC;
     }
 
     mesh.geometry.getBuffer('aUV').update();

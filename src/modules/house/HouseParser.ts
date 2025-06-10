@@ -6,7 +6,7 @@ import {project} from '../../utils/project';
 import {rotatePoint} from '../../utils/geometry';
 import {Furniture} from '../../core/models/Furniture';
 import {GameItemManager} from '../../game/textures/GameItemManager';
-import { Point } from '../../core/types/Point';
+import {Point} from '../../core/types/Point';
 
 export class HouseParser {
   static parseStructure(xmlString: string): House {
@@ -44,8 +44,8 @@ export class HouseParser {
     });
 
     // 4) Calcul des bornes brutes pour la House
-    const xs = pts.map((p) => p.projectedPoint.x);
-    const ys = pts.map((p) => p.projectedPoint.y);
+    const xs = pts.map((p) => p.point.x);
+    const ys = pts.map((p) => p.point.y);
     const minX = Math.min(...xs);
     const minY = Math.min(...ys);
     const maxX = Math.max(...xs);
@@ -55,12 +55,19 @@ export class HouseParser {
       0,
       0,
       100,
-      {x: minX, y: minY},
-      {x: maxX, y: maxY},
+      [
+        {x: minX, y: minY},
+        {x: maxX, y: minY},
+        {x: maxX, y: maxY},
+        {x: minX, y: maxY},
+      ].map((p) => {
+        const {x, y} = project(p.x, p.y, 0);
+        return {x: x + offsetX, y: y + offsetY};
+      }),
       offsetX,
       offsetY
     );
-  
+
     xmlDoc.querySelectorAll('F').forEach((nodeF) => {
       const floorPts: {x: number; y: number}[] = [];
       let i = 0;
@@ -93,8 +100,8 @@ export class HouseParser {
         new Wall(
           {x: pA.projectedPoint.x, y: pA.projectedPoint.y},
           {x: pB.projectedPoint.x, y: pB.projectedPoint.y},
-          {x: pA.projectedPoint.x, y: -h + (pA.projectedPoint.y) },
-          {x: pB.projectedPoint.x, y: -h + (pB.projectedPoint.y) },
+          {x: pA.projectedPoint.x, y: -h + pA.projectedPoint.y},
+          {x: pB.projectedPoint.x, y: -h + pB.projectedPoint.y},
           isBaseBoard
             ? 'assets/house/baseboard.png'
             : 'assets/house/base_wall.png',
@@ -137,8 +144,8 @@ export class HouseParser {
           new Wall(
             {x: pA.projectedPoint.x, y: pA.projectedPoint.y},
             {x: pB.projectedPoint.x, y: pB.projectedPoint.y},
-            {x: pA.projectedPoint.x, y: -10 + (pA.projectedPoint.y)},
-            {x: pB.projectedPoint.x, y: -10 + (pB.projectedPoint.y)},
+            {x: pA.projectedPoint.x, y: -10 + pA.projectedPoint.y},
+            {x: pB.projectedPoint.x, y: -10 + pB.projectedPoint.y},
             'assets/house/baseboard.png',
             false,
             true

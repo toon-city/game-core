@@ -18,26 +18,11 @@ export class House {
     public readonly width: number,
     public readonly depth: number,
     public readonly height: number,
-    public minPoint: Point = { x: 0, y: 0 },
-    public maxPoint: Point = { x: 0, y: 0 },
+    public maxPoints: Point[],
     public offsetX = 0,
     public offsetY = 0,
   ) {
-    makeAutoObservable(this, {
-      maxPoints: computed, // computed property
-    });
-  }
-
-  /** Les 4 coins projetés, appliquant offset */
-  get maxPoints(): Point[] {
-    const corners = [
-      {x: this.minPoint.x, y: this.minPoint.y},
-      {x: this.maxPoint.x, y: this.minPoint.y},
-      {x: this.maxPoint.x, y: this.maxPoint.y},
-      {x: this.minPoint.x, y: this.maxPoint.y},
-    ];
-
-    return corners;
+    makeAutoObservable(this);
   }
 
   addWall(w: Wall): void {
