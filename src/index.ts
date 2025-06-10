@@ -13,8 +13,8 @@ const main = async () => {
   // Main app
   let app = new PIXI.Application();
 
-  const gameWidth = 2000;
-  const gameHeight = 1000;
+  const gameWidth = 7000;
+  const gameHeight = 6000;
 
   await app.init({background: 'black', antialias: true, resolution: 1});
 
@@ -458,7 +458,7 @@ const main = async () => {
     <P YPOS="-700" XPOS="560"  />
     <P YPOS="-700" XPOS="320"  />
     <P YPOS="-840" XPOS="320"  />
-    <P YPOS="-gameWidth" XPOS="320"  />
+    <P YPOS="-800" XPOS="320"  />
     <P YPOS="-740" XPOS="320"  />
     <P YPOS="-180" XPOS="1320"  />
     <P YPOS="-180" XPOS="860"  />
@@ -684,23 +684,23 @@ const main = async () => {
   //     <F PT7="50" PT6="47" PT5="46" PT4="51" PT3="52" PT2="53" PT1="54" PT0="55" SF="0" />
   // </MAP>`;
 
-  xmlString = `
-<MAP>
-    <P YPOS="-440" XPOS="-660"  />
-    <P YPOS="-440" XPOS="2080"  />
-    <P YPOS="1200" XPOS="-660"  />
-    <P YPOS="1200" XPOS="2060"  />
-    <P YPOS="-440" XPOS="3060"  />
-    <P YPOS="1200" XPOS="3060"  />
-    <W HDN="1" SF="20.5" H="250" PTB="0" PTA="2"  />
-    <W ENTER="0" D0="1580" HDN="1" SF="34.25" H="250" PTB="1" PTA="0"  />
-    <W HDN="1" SF="34" H="250" PTB="2" PTA="3"  />
-    <W HDN="1" SF="12.25" H="250" PTB="4" PTA="1"  />
-    <W HDN="1" SF="20.5" H="250" PTB="5" PTA="4"  />
-    <W HDN="1" SF="12.5" H="250" PTB="3" PTA="5"  />
-    <F PT3="2" PT2="3" PT1="1" PT0="0" SF="1"  />
-    <F PT3="3" PT2="5" PT1="4" PT0="1" SF="1"  />
-</MAP>`;
+//   xmlString = `
+// <MAP>
+//     <P YPOS="-440" XPOS="-660"  />
+//     <P YPOS="-440" XPOS="2080"  />
+//     <P YPOS="1200" XPOS="-660"  />
+//     <P YPOS="1200" XPOS="2060"  />
+//     <P YPOS="-440" XPOS="3060"  />
+//     <P YPOS="1200" XPOS="3060"  />
+//     <W HDN="1" SF="20.5" H="250" PTB="0" PTA="2"  />
+//     <W ENTER="0" D0="1580" HDN="1" SF="34.25" H="250" PTB="1" PTA="0"  />
+//     <W HDN="1" SF="34" H="250" PTB="2" PTA="3"  />
+//     <W HDN="1" SF="12.25" H="250" PTB="4" PTA="1"  />
+//     <W HDN="1" SF="20.5" H="250" PTB="5" PTA="4"  />
+//     <W HDN="1" SF="12.5" H="250" PTB="3" PTA="5"  />
+//     <F PT3="2" PT2="3" PT1="1" PT0="0" SF="1"  />
+//     <F PT3="3" PT2="5" PT1="4" PT0="1" SF="1"  />
+// </MAP>`;
 
   // Créer une maison à partir du fichier XML
   gameScene.x = 400;
@@ -733,6 +733,7 @@ const main = async () => {
     }
   };
 
+  houseView = new HouseView(house);
   // fetch('assets/map_jardin.json')
   //   .then((response) => {
   //     return response.text();
@@ -746,10 +747,9 @@ const main = async () => {
   //     });
   //   });
 
-  houseView = new HouseView(house);
-        gameScene.addChild(houseView);
-        houseView.addChild(avatar);
-        updateMapPosition(true);
+  gameScene.addChild(houseView);
+  houseView.addChild(avatar);
+  updateMapPosition(true);
 
   // const loadingView = new LoadingView();
   // app.stage.addChild(loadingView);

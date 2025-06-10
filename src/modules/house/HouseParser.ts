@@ -60,6 +60,7 @@ export class HouseParser {
       offsetX,
       offsetY
     );
+  
     xmlDoc.querySelectorAll('F').forEach((nodeF) => {
       const floorPts: {x: number; y: number}[] = [];
       let i = 0;

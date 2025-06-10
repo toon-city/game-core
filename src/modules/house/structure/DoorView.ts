@@ -42,7 +42,7 @@ export class DoorView extends Container implements Drawable {
     g.lineTo(this.model.p2Top.x, this.model.p2Top.y);
     g.stroke();
 
-    this.zIndex = this.model.zIndex;
+    this.zIndex = 8;
     this.addChild(g);
 
     return this;

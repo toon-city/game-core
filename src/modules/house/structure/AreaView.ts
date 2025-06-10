@@ -68,6 +68,12 @@ export class AreaView extends Container implements Drawable {
     const repeatX = enableRepeatX ? len1 / brickW : 1;
     const repeatY = enableRepeatY ? len2 / brickH : 1;
 
+    // Apply a -45° perspective to the UVs
+    // -45° rotation matrix: [cos(-π/4) -sin(-π/4); sin(-π/4) cos(-π/4)]
+    const angle = -Math.PI / 4;
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+
     const uvBuf = mesh.geometry.getBuffer('aUV').data;
 
     const initialUV: [number, number][] = [
@@ -76,19 +82,15 @@ export class AreaView extends Container implements Drawable {
       [repeatX, repeatY],
       [0, repeatY],
     ];
+
     for (let i = 0; i < 4; i++) {
-      uvBuf[2 * i] = initialUV[i][0];
-      uvBuf[2 * i + 1] = initialUV[i][1];
-    }
-
-    const uC = repeatX / 2,
-      vC = repeatY / 2;
-
-    for (let i = 0; i < uvBuf.length; i += 2) {
-      const u = uvBuf[i] - uC;
-      const v = uvBuf[i + 1] - vC;
-      uvBuf[i] = u + uC;
-      uvBuf[i + 1] = v + vC;
+      // Rotate UVs by -45°
+      const u = initialUV[i][0] - repeatX / 2;
+      const v = initialUV[i][1] - repeatY / 2;
+      const uRot = u * cosA - v * sinA;
+      const vRot = u * sinA + v * cosA;
+      uvBuf[2 * i] = uRot + repeatX / 2;
+      uvBuf[2 * i + 1] = vRot + repeatY / 2;
     }
 
     mesh.geometry.getBuffer('aUV').update();
