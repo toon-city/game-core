@@ -14,6 +14,9 @@ import {Hat} from './structure/parts/clothes/parts/Hat';
 import {Hair} from './structure/parts/clothes/parts/Hair';
 import { IHasPoints } from '../../modules/common/abstract/IHasPoints';
 import { Point } from '../../core/types/Point';
+import { PARTS_CONFIG, getPartsInOrder, PartConfig } from './partsConfig';
+import ClotheRegistry from './ClotheRegistry';
+import * as ZOrder from '../../modules/common/ZOrder';
 
 // 10	2	6
 // 8	1	4
@@ -84,24 +87,17 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
       this.addChild(this.socle);
     }
 
-    this.hair = new Hair('hair7', this._direction);
+    // Initialize parts based on configuration
+    this.parts = this.initializeParts();
 
-    this.parts = [
-      new AvatarRightArm(this._direction),
-      new AvatarLegs(this._direction),
-      new AvatarBody(this._direction),
-      new Tshirt('tshirt_april7', this._direction),
-      new AvatarLeftArm(this._direction),
-      new AvatarHead(this._direction),
-      this.hair,
-      // new Hat('chapeau_paques4', this._direction),
-      new Hat('hat_april1', this._direction),
-    ];
+    // Initial Z-index calculation - will be updated when avatar moves
+    this.updateZIndex();
 
-    // this.directionText.x = 50;
-    // this.directionText.y = 120;
-
-    this.hair.tint = 0x000000;
+    // Apply default hair color
+    const hair = this.parts.find(part => part instanceof Hair) as Hair;
+    if (hair) {
+      hair.tint = 0x000000;
+    }
 
     // this.addChild(this.directionText);
 
@@ -173,5 +169,110 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
     });
 
     this.directionText.text = `${this._direction} ${this.zIndex}`;
+  }
+
+  private initializeParts(): IAvatarPart[] {
+    const parts: IAvatarPart[] = [];
+    const orderedParts = getPartsInOrder();
+
+    for (const partConfig of orderedParts) {
+      try {
+        const part = this.createPartFromConfig(partConfig);
+        if (part) {
+          parts.push(part);
+        }
+      } catch (error) {
+        console.error(`Failed to create part ${partConfig.className}:`, error);
+        if (partConfig.required) {
+          throw error; // Re-throw for required parts
+        }
+      }
+    }
+
+    return parts;
+  }
+
+  private createPartFromConfig(config: PartConfig): IAvatarPart | null {
+    // Handle body parts
+    if (config.category === 'body') {
+      switch (config.className) {
+        case 'AvatarRightArm':
+          return new AvatarRightArm(this._direction);
+        case 'AvatarLegs':
+          return new AvatarLegs(this._direction);
+        case 'AvatarBody':
+          return new AvatarBody(this._direction);
+        case 'AvatarLeftArm':
+          return new AvatarLeftArm(this._direction);
+        case 'AvatarHead':
+          return new AvatarHead(this._direction);
+        default:
+          console.warn(`Unknown body part: ${config.className}`);
+          return null;
+      }
+    }
+
+    // Handle clothing parts via registry
+    const clothe = ClotheRegistry.create(config.category, config.id, this._direction);
+    return clothe;
+  }
+
+  /**
+   * Change a specific clothing item
+   */
+  public changeClothing(category: string, id?: string): boolean {
+    // Remove existing clothing of this category
+    const existingIndex = this.parts.findIndex(part => 
+      part.constructor.name.toLowerCase().includes(category.toLowerCase())
+    );
+
+    if (existingIndex !== -1) {
+      const existingPart = this.parts[existingIndex];
+      this.removeChild(existingPart);
+      this.parts.splice(existingIndex, 1);
+    }
+
+    // Add new clothing if id provided
+    if (id) {
+      const newClothe = ClotheRegistry.create(category, id, this._direction);
+      if (newClothe) {
+        // Find the correct position to insert based on configuration
+        const config = PARTS_CONFIG.find(p => p.category === category);
+        const insertIndex = config ? this.findInsertionIndex(config.order) : this.parts.length;
+        
+        this.parts.splice(insertIndex, 0, newClothe);
+        this.renderParts();
+        return true;
+      }
+    }
+
+    this.renderParts();
+    return false;
+  }
+
+  private findInsertionIndex(targetOrder: number): number {
+    for (let i = 0; i < this.parts.length; i++) {
+      const partConfig = this.getPartConfig(this.parts[i]);
+      if (partConfig && partConfig.order > targetOrder) {
+        return i;
+      }
+    }
+    return this.parts.length;
+  }
+
+  private getPartConfig(part: IAvatarPart): PartConfig | undefined {
+    const className = part.constructor.name;
+    return PARTS_CONFIG.find(config => config.className === className);
+  }
+
+  /**
+   * Update Z-index based on current position (like furniture)
+   */
+  public updateZIndex(): void {
+    this.zIndex = ZOrder.compute({
+      x: this.x,
+      y: this.y + this.height, // Use bottom of avatar for ground position
+      layer: ZOrder.ZPriority.AVATAR
+    });
   }
 }

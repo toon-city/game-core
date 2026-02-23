@@ -4,10 +4,19 @@ import {Container, Graphics} from 'pixi.js';
 import {Drawable} from '../../../core/abstract/Drawable';
 import {autorun} from 'mobx';
 import {Door} from '../../../core/models/Door';
+import * as ZOrder from '../../common/ZOrder';
 
 export class DoorView extends Container implements Drawable {
   constructor(private readonly model: Door) {
     super();
+
+    // Set consistent z-index for doors (higher than walls)
+    this.zIndex = ZOrder.compute({
+      x: (model.p1.x + model.p2.x) / 2,
+      y: (model.p1.y + model.p2.y) / 2,
+      layer: ZOrder.ZPriority.WALL,
+      offset: 10 // Slightly above walls
+    });
 
     autorun(() => {
       this.draw();

@@ -1,7 +1,7 @@
 import {Clothe} from '../Clothe';
 
 export class Hat extends Clothe {
-  constructor(identifier: string, direction: number | null) {
+  constructor(identifier: string = 'hat_default', direction?: number) {
     super('hat', identifier, direction ?? 1);
   }
 }

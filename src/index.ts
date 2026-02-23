@@ -16,7 +16,7 @@ const main = async () => {
   const gameWidth = 1000;
   const gameHeight = 1000;
 
-  await app.init({background: 'black', antialias: true, resolution: 1});
+  await app.init({background: '#1099bb', antialias: true, resolution: 1});
 
   const size = 1;
 
@@ -24,6 +24,7 @@ const main = async () => {
 
   document.body.appendChild(app.canvas);
 
+  // Load textures before creating avatar
   await BaseTextureLoader.getInstance().load();
 
   const gameScene = new PIXI.Container({sortableChildren: true});
@@ -32,7 +33,6 @@ const main = async () => {
   let avatar: Avatar = new Avatar(app, {showSocle: true, direction: down});
   avatar.scale.set(size, size);
   avatar.position.set(20, 40);
-  // gameScene.addChild(avatar);
   avatar.changeDirection(1);
 
   // [2, 4, 5, 6, 8, 9, 10].forEach((direction, index) => {
@@ -706,7 +706,9 @@ const main = async () => {
   gameScene.x = 400;
   gameScene.y = 400;
 
+  console.log('Parsing XML structure...');
   const house = HouseParser.parseStructure(xmlString);
+  console.log('House parsed:', house, 'Areas:', house.areas.length, 'Walls:', house.walls.length);
   let houseView: HouseView | null = null;
 
   const door: Door | null = house.doors[0] ?? null;
@@ -734,17 +736,27 @@ const main = async () => {
   };
 
   // houseView = new HouseView(house);
+  console.log('Fetching map_jardin.json...');
   fetch('assets/map_jardin.json')
     .then((response) => {
+      console.log('Fetch response:', response.status);
       return response.text();
     })
     .then((jsonString) => {
+      console.log('JSON loaded, parsing furnitures...');
       HouseParser.parseFurnitures(house, jsonString).then(() => {
+        console.log('Furnitures parsed, creating HouseView...');
         houseView = new HouseView(house);
+        console.log('HouseView created:', houseView);
         gameScene.addChild(houseView);
         houseView.addChild(avatar);
+        console.log('Avatar added to houseView, calling updateMapPosition');
         updateMapPosition(true);
+        console.log('Setup complete!');
       });
+    })
+    .catch((error) => {
+      console.error('Error loading house:', error);
     });
 
   // gameScene.addChild(houseView);

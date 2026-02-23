@@ -9,6 +9,7 @@ import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
 import {aabbOverlap, getAABB, polygonsIntersect} from '../../utils/collision';
 import { Avatar } from '../../game/avatar/Avatar';
+import * as ZOrder from '../common/ZOrder';
 
 export class HouseView
   extends Container
@@ -52,45 +53,32 @@ export class HouseView
   }
 
   public getDepthAtPointClip(points: Point[]): number {
-    let zIndex = 0;
+    if (points.length === 0) return 0;
 
-    for (const point of points) {
-      zIndex += this.getDepthAtPoint(point);
-    }
+    // Calculate average position
+    const avgX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
+    const avgY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
 
-    const divider = points.length > 0 ? points.length : 1;
-    for (
-      zIndex = Math.round(zIndex / divider);
-      this.children.some(
-        (child) => (child as any).zIndex === Math.round(zIndex)
-      );
-      ++zIndex
-    );
+    const baseZIndex = ZOrder.compute({
+      x: avgX,
+      y: avgY,
+      layer: ZOrder.ZPriority.FURNITURE
+    });
 
-    return zIndex;
+    // Find available z-index to avoid conflicts
+    const existingZIndices = this.children.map(child => (child as any).zIndex || 0);
+    return ZOrder.findAvailable(baseZIndex, existingZIndices);
   }
 
   public getDepthAtPoint(point: Point): number {
-    const minPoint = this.maxPoints[0];
-    const maxPoint = this.maxPoints[2];
-    const deltaX = point.x - minPoint.x;
-    const deltaY = point.y - minPoint.y;
-    const width = maxPoint.x - minPoint.x;
-    let zIndex = (deltaX * 2 + deltaY * 7) * width + deltaY;
-    zIndex = zIndex / 10;
-    if (zIndex < 0) {
-      return 0;
-    }
+    const baseZIndex = ZOrder.compute({
+      x: point.x,
+      y: point.y,
+      layer: ZOrder.ZPriority.FURNITURE
+    });
 
-    for (
-      zIndex = Math.round(zIndex);
-      this.children.some(
-        (child) => (child as any).zIndex === Math.round(zIndex)
-      );
-      ++zIndex
-    );
-
-    return zIndex;
+    const existingZIndices = this.children.map(child => (child as any).zIndex || 0);
+    return ZOrder.findAvailable(baseZIndex, existingZIndices);
   }
 
   public checkCollision(object: FurnitureView | Avatar, points: Point[] | null = null): boolean {

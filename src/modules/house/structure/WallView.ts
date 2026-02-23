@@ -5,6 +5,7 @@ import {Drawable} from '../../../core/abstract/Drawable';
 import {Wall} from '../../../core/models/Wall';
 import {autorun} from 'mobx';
 import {Point} from '../../../core/types/Point';
+import * as ZOrder from '../../common/ZOrder';
 
 export interface WallPlaneOptions {
   repeatX?: boolean;
@@ -19,6 +20,13 @@ export class WallView extends Container implements Drawable {
     super();
 
     this.texture = Texture.from(model.texture);
+
+    // Set consistent z-index for walls
+    this.zIndex = ZOrder.compute({
+      x: (model.p1.x + model.p2.x) / 2,
+      y: (model.p1.y + model.p2.y) / 2,
+      layer: ZOrder.ZPriority.WALL
+    });
 
     autorun(() => {
       this.texture = Texture.from(this.model.texture);
