@@ -214,6 +214,13 @@ export class GameCore {
     avatar.position.set(x, y);
     avatar.updateZIndex();
 
+    // Username label + cursor pointer
+    avatar.setUsername(options.username ?? id);
+
+    // Relay PIXI hover events → GameEvents (interceptable from outside)
+    avatar.on('pointerover',  () => this.events.emit('avatar:hover',    { avatar, id }));
+    avatar.on('pointerout',   () => this.events.emit('avatar:hoverend', { avatar, id }));
+
     // Add to houseView for correct z‐ordering vs furniture; fall back to gameScene.
     const container = this.houseView ?? this.gameScene;
     container.addChild(avatar);

@@ -26,6 +26,10 @@ export interface GameEventMap {
   'avatar:said':        { avatar: Avatar; id: string; text: string };
   /** Edit mode was toggled */
   'editmode:changed':   { enabled: boolean };
+  /** Mouse entered an avatar's hitbox */
+  'avatar:hover':       { avatar: Avatar; id: string };
+  /** Mouse left an avatar's hitbox */
+  'avatar:hoverend':    { avatar: Avatar; id: string };
 }
 
 // ─── Typed callback ──────────────────────────────────────────────────────────

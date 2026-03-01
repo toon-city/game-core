@@ -9,6 +9,8 @@ export interface AvatarSpawnOptions {
   direction?: number;
   skinColor?: number;
   clothing?: { [category: string]: string };
+  /** Pseudo affiché au-dessus de l'avatar au survol. Par défaut : l'id. */
+  username?: string;
 }
 
 export interface AvatarMoveResult {

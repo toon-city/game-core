@@ -1,4 +1,4 @@
-import {Application, Container, Sprite, Texture, Text} from 'pixi.js';
+import {Application, Container, Graphics, Sprite, Texture, Text, TextStyle} from 'pixi.js';
 import {IAvatarPart} from './structure/parts/IAvatarPart';
 import {IAvatar, IAvatarParams} from './IAvatar';
 import {IAvatarBodyPart} from './structure/parts/body/IAvatarBodyPart';
@@ -31,6 +31,7 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   // SPRITES
   socle: Sprite | null = null;
   private bubble: AvatarBubble | null = null;
+  private usernameNameplate: Container | null = null;
   legs: AvatarLegs | null = null;
   leftArm: Sprite | null = null;
   rightArm: Sprite | null = null;
@@ -77,8 +78,13 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
     this.height = 120;
     this.width = 80;
 
-    // Set the background color
-    this.interactive = true;
+    // Pointer interactivity
+    this.eventMode = 'dynamic';
+    this.cursor    = 'pointer';
+
+    // Hover → show/hide username label
+    this.on('pointerover',  () => { if (this.usernameNameplate) this.usernameNameplate.visible = true;  });
+    this.on('pointerout',   () => { if (this.usernameNameplate) this.usernameNameplate.visible = false; });
 
     // Add a background sprite
     const background = new Sprite(Texture.WHITE);
@@ -292,6 +298,53 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   /** Hide the speech bubble immediately. */
   public stopSaying(): void {
     this.bubble?.hide();
+  }
+
+  /**
+   * Set (or update) the pseudo displayed above the avatar on hover.
+   * @param name Pseudo text.
+   */
+  public setUsername(name: string): void {
+    const PADDING_X = 7;
+    const PADDING_Y = 3;
+    const RADIUS    = 4;
+
+    if (!this.usernameNameplate) {
+      this.usernameNameplate = new Container();
+      this.usernameNameplate.visible = false;
+      this.addChild(this.usernameNameplate);
+    }
+
+    this.usernameNameplate.removeChildren();
+
+    // ── Text ──────────────────────────────────────────────────
+    const label = new Text({
+      text: name,
+      style: new TextStyle({
+        fontSize:   11,
+        fill:       0x333333,
+        fontFamily: 'Arial, sans-serif',
+        fontWeight: 'bold',
+        align:      'center',
+      }),
+    });
+
+    const plateW = label.width  + PADDING_X * 2;
+    const plateH = label.height + PADDING_Y * 2;
+
+    // ── Background ──────────────────────────────────────────
+    const bg = new Graphics()
+      .roundRect(0, 0, plateW, plateH, RADIUS)
+      .fill({ color: 0xffffff, alpha: 0.75 });
+
+    label.x = PADDING_X;
+    label.y = PADDING_Y;
+
+    this.usernameNameplate.addChild(bg, label);
+
+    // Centre the nameplate horizontally above the head
+    this.usernameNameplate.x = (this.width - plateW) / 2;
+    this.usernameNameplate.y = -plateH - 2;  // 2 px gap above the avatar
   }
 
   /**
