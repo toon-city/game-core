@@ -1,12 +1,19 @@
 {
   "name": "game-core",
   "version": "1.0.0",
+  "main": "dist/game-core.js",
+  "types": "dist/types/api/index.d.ts",
   "scripts": {
     "dev": "webpack-dev-server --mode development",
-    "build": "webpack"
+    "build": "webpack",
+    "build:lib": "webpack --config webpack.config.lib.js"
   },
   "author": "Azrael",
   "license": "MIT",
+  "peerDependencies": {
+    "pixi.js": "^8",
+    "mobx": "^6"
+  },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "11.0.0",

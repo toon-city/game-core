@@ -215,7 +215,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     
     const currentOrientation = this.model.orientation;
     const newOrientation = (currentOrientation % 4) + 1;
-    this.controller.rotateFurniture(this.model, newOrientation);
+    this.controller.rotateFurniture(this.model, newOrientation, this);
     
     evt.stopPropagation();
   };

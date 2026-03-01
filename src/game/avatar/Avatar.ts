@@ -17,6 +17,7 @@ import { Point } from '../../core/types/Point';
 import { PARTS_CONFIG, getPartsInOrder, PartConfig } from './partsConfig';
 import ClotheRegistry from './ClotheRegistry';
 import * as ZOrder from '../../modules/common/ZOrder';
+import { AvatarBubble } from './AvatarBubble';
 
 // 10	2	6
 // 8	1	4
@@ -29,6 +30,7 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
 
   // SPRITES
   socle: Sprite | null = null;
+  private bubble: AvatarBubble | null = null;
   legs: AvatarLegs | null = null;
   leftArm: Sprite | null = null;
   rightArm: Sprite | null = null;
@@ -269,6 +271,27 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   private getPartConfig(part: IAvatarPart): PartConfig | undefined {
     const className = part.constructor.name;
     return PARTS_CONFIG.find(config => config.className === className);
+  }
+
+  /**
+   * Display a speech bubble above the avatar.
+   * @param text     Message to show.
+   * @param duration Duration in ms (default 3 s). Pass 0 to keep indefinitely.
+   */
+  public say(text: string, duration = 3000): void {
+    if (!this.bubble) {
+      this.bubble = new AvatarBubble();
+      // Tail tip anchored to the top-centre of the avatar body
+      this.bubble.x = this.width / 2;
+      this.bubble.y = 0;
+      this.addChild(this.bubble);
+    }
+    this.bubble.show(text, duration);
+  }
+
+  /** Hide the speech bubble immediately. */
+  public stopSaying(): void {
+    this.bubble?.hide();
   }
 
   /**

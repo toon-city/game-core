@@ -5,22 +5,30 @@ import {WallView} from './structure/WallView';
 import {DoorView} from './structure/DoorView';
 import {AreaView} from './structure/AreaView';
 import {FurnitureView} from '../furniture/FurnitureView';
+import {FurnitureController} from '../furniture/FurnitureController';
 import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
 import {aabbOverlap, getAABB, polygonsIntersect} from '../../utils/collision';
 import { Avatar } from '../../game/avatar/Avatar';
 import * as ZOrder from '../common/ZOrder';
+import { GameEvents } from '../../GameEvents';
 
 export class HouseView
   extends Container
   implements Drawable, IHasDepthCalculator
 {
   private readonly maxPoints: Point[] = [];
+  private readonly furnitureController: FurnitureController;
+  private _editMode = false;
 
-  constructor(private readonly model: House) {
+  constructor(
+    private readonly model: House,
+    private readonly events?: GameEvents,
+  ) {
     super();
-    this.sortableChildren = true; // Respect les z-index pour l'ordre de rendu
+    this.sortableChildren = true;
     this.maxPoints = model.maxPoints;
+    this.furnitureController = new FurnitureController(model, this, events);
     this.render();
   }
 
@@ -43,14 +51,41 @@ export class HouseView
     }
 
     for (const furn of this.model.furnitures) {
-      const view = new FurnitureView(furn, this);
-
+      const view = new FurnitureView(furn, this, this.furnitureController);
       this.addChild(view.draw());
     }
   }
 
   draw(): Container {
     return this;
+  }
+
+  // ─── Edit mode ──────────────────────────────────────────────────────────────
+
+  /**
+   * Enable or disable furniture drag & drop.
+   * When edit mode is OFF the furniture sprites no longer receive pointer events.
+   */
+  setEditMode(enabled: boolean): void {
+    this._editMode = enabled;
+
+    for (const child of this.children) {
+      if (child instanceof FurnitureView) {
+        child.sprite.eventMode = enabled ? 'dynamic' : 'none';
+        child.sprite.cursor    = enabled ? 'grab'    : 'default';
+      }
+    }
+
+    this.events?.emit('editmode:changed', { enabled });
+  }
+
+  get editMode(): boolean {
+    return this._editMode;
+  }
+
+  /** Expose the shared controller for programmatic furniture manipulation */
+  getFurnitureController(): FurnitureController {
+    return this.furnitureController;
   }
 
   public getDepthAtPointClip(points: Point[]): number {

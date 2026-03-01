@@ -3,6 +3,7 @@ import { Furniture } from '../../core/models/Furniture';
 import { FurnitureView } from './FurnitureView';
 import { IHasDepthCalculator } from '../common/abstract/IHasDepthCalculator';
 import { Point } from '../../core/types/Point';
+import { GameEvents } from '../../GameEvents';
 
 export interface FurniturePlacementOptions {
   checkCollisions?: boolean;
@@ -26,7 +27,8 @@ export class FurnitureController {
 
   constructor(
     private readonly house: House,
-    private readonly depthCalculator: IHasDepthCalculator
+    private readonly depthCalculator: IHasDepthCalculator,
+    private readonly events?: GameEvents
   ) {}
 
   /**
@@ -75,9 +77,17 @@ export class FurnitureController {
       this.draggedFurniture.sprite.cursor = 'not-allowed';
     } else {
       // Position valide : on la mémorise
+      const prev = { ...this.lastValidPosition };
       this.lastValidPosition = { x: targetX, y: targetY };
       this.draggedFurniture.alpha = 0.8;
       this.draggedFurniture.sprite.cursor = 'grabbing';
+
+      // Emit move event when position actually changes
+      this.events?.emit('furniture:moved', {
+        view: this.draggedFurniture,
+        from: prev,
+        to:   this.lastValidPosition,
+      });
     }
 
     return { success: !hasCollision, collision: hasCollision };
@@ -99,9 +109,17 @@ export class FurnitureController {
     // Pas besoin de re-vérifier la collision : le modèle est déjà à
     // lastValidPosition (ou initialPosition si cancel), les deux sans collision.
 
+    const placed = this.draggedFurniture;
     this.draggedFurniture.alpha = 1;
     this.draggedFurniture.sprite.cursor = 'grab';
     this.draggedFurniture = null;
+
+    if (!cancel) {
+      this.events?.emit('furniture:placed', {
+        view:     placed,
+        position: { x: placed.model.x, y: placed.model.y },
+      });
+    }
 
     return { success: !cancel, message: cancel ? 'Drag cancelled' : 'Furniture placed successfully' };
   }
@@ -144,11 +162,15 @@ export class FurnitureController {
   /**
    * Change l'orientation d'un meuble.
    */
-  rotateFurniture(furniture: Furniture, orientation: number): FurnitureMoveResult {
+  rotateFurniture(furniture: Furniture, orientation: number, view?: FurnitureView): FurnitureMoveResult {
     const validOrientations = [1, 2, 3, 4]; // Based on frameKeys length
     const targetOrientation = validOrientations.includes(orientation) ? orientation : 1;
     
     furniture.setOrientation(targetOrientation);
+
+    if (view) {
+      this.events?.emit('furniture:rotated', { view, orientation: targetOrientation });
+    }
     
     return {
       success: true,
@@ -172,6 +194,19 @@ export class FurnitureController {
         message: `Failed to remove furniture: ${error}`
       };
     }
+  }
+
+  /**
+   * Supprime un meuble via sa vue (retire aussi de la scène PIXI + émet furniture:removed).
+   */
+  removeFurnitureView(view: FurnitureView): FurnitureMoveResult {
+    const result = this.removeFurniture(view.model);
+    if (result.success) {
+      view.parent?.removeChild(view);
+      view.destroy({ children: true });
+      this.events?.emit('furniture:removed', { view });
+    }
+    return result;
   }
 
   /**
