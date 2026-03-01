@@ -271,8 +271,9 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   public updateZIndex(): void {
     this.zIndex = ZOrder.compute({
       x: this.x,
-      y: this.y + this.height, // Use bottom of avatar for ground position
-      layer: ZOrder.ZPriority.AVATAR
+      y: this.y + this.height, // bord avant (pieds) = profondeur iso
+      layer: ZOrder.ZPriority.SCENE,
+      offset: 1 // tiebreaker : avatar devant un meuble au même Y
     });
   }
 }

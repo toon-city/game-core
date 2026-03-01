@@ -21,6 +21,8 @@ export class FurnitureController {
   private draggedFurniture: FurnitureView | null = null;
   private dragOffset: Point = { x: 0, y: 0 };
   private initialPosition: Point = { x: 0, y: 0 };
+  /** Dernière position valide (sans collision) pendant le drag */
+  private lastValidPosition: Point = { x: 0, y: 0 };
 
   constructor(
     private readonly house: House,
@@ -36,12 +38,9 @@ export class FurnitureController {
       x: pointerX - furnitureView.model.x,
       y: pointerY - furnitureView.model.y
     };
-    this.initialPosition = {
-      x: furnitureView.model.x,
-      y: furnitureView.model.y
-    };
+    this.initialPosition = { x: furnitureView.model.x, y: furnitureView.model.y };
+    this.lastValidPosition = { x: furnitureView.model.x, y: furnitureView.model.y };
 
-    // Visual feedback
     furnitureView.alpha = 0.8;
     furnitureView.sprite.cursor = 'grabbing';
   }
@@ -57,89 +56,54 @@ export class FurnitureController {
     let targetX = pointerX - this.dragOffset.x;
     let targetY = pointerY - this.dragOffset.y;
 
-    // Apply grid snapping if enabled
     if (options.snapToGrid) {
       const gridSize = options.gridSize || 20;
       targetX = Math.round(targetX / gridSize) * gridSize;
       targetY = Math.round(targetY / gridSize) * gridSize;
     }
 
-    // Temporarily move furniture to check collision
-    const originalX = this.draggedFurniture.model.x;
-    const originalY = this.draggedFurniture.model.y;
-    
+    // Déplacer provisoirement le modèle pour tester la collision
     this.draggedFurniture.model.setPosition(targetX, targetY);
+    // MobX met à jour this._points synchronement via autorun
 
-    let hasCollision = false;
-    if (options.checkCollisions !== false) {
-      // Use ground anchoring points for collision detection
-      hasCollision = this.depthCalculator.checkCollision(this.draggedFurniture, null);
-      
-      // Additional validation: ensure furniture stays within valid placement area
-      const groundCenter = this.draggedFurniture.getGroundCenter();
-      if (groundCenter.x < 0 || groundCenter.y < 0) {
-        hasCollision = true;
-      }
+    const hasCollision = this.depthCalculator.checkCollision(this.draggedFurniture, null);
+
+    if (hasCollision) {
+      // Position invalide : revenir à la dernière position valide
+      this.draggedFurniture.model.setPosition(this.lastValidPosition.x, this.lastValidPosition.y);
+      this.draggedFurniture.alpha = 0.5;
+      this.draggedFurniture.sprite.cursor = 'not-allowed';
+    } else {
+      // Position valide : on la mémorise
+      this.lastValidPosition = { x: targetX, y: targetY };
+      this.draggedFurniture.alpha = 0.8;
+      this.draggedFurniture.sprite.cursor = 'grabbing';
     }
 
-    // Visual feedback based on collision and anchoring
-    this.draggedFurniture.alpha = hasCollision ? 0.5 : 0.8;
-    this.draggedFurniture.sprite.cursor = hasCollision ? 'not-allowed' : 'grabbing';
-
-    const result: FurnitureMoveResult = {
-      success: true,
-      collision: hasCollision,
-      snappedPosition: options.snapToGrid ? { x: targetX, y: targetY } : undefined
-    };
-
-    // Add ground anchoring info to result
-    if (this.draggedFurniture.hasCustomAnchorPoints()) {
-      const groundCenter = this.draggedFurniture.getGroundCenter();
-      (result as any).groundAnchor = groundCenter;
-    }
-
-    return result;
+    return { success: !hasCollision, collision: hasCollision };
   }
 
   /**
-   * End drag operation with proper collision handling
+   * Relâche le meuble.
+   * - Sans collision : pose à lastValidPosition (déjà en place dans le modèle)
+   * - cancel=true   : revient à initialPosition
    */
   endDrag(cancel: boolean = false): FurnitureMoveResult {
     if (!this.draggedFurniture) {
       return { success: false, message: 'No furniture being dragged' };
     }
 
-    let hasCollision = false;
-    if (!cancel) {
-      hasCollision = this.depthCalculator.checkCollision(this.draggedFurniture, null);
+    if (cancel) {
+      this.draggedFurniture.model.setPosition(this.initialPosition.x, this.initialPosition.y);
     }
+    // Pas besoin de re-vérifier la collision : le modèle est déjà à
+    // lastValidPosition (ou initialPosition si cancel), les deux sans collision.
 
-    if (cancel || hasCollision) {
-      // Revert to initial position
-      this.draggedFurniture.model.setPosition(
-        this.initialPosition.x,
-        this.initialPosition.y
-      );
-      console.log('Furniture reverted to original position due to:', cancel ? 'cancel' : 'collision');
-    }
-
-    // Reset visual state
     this.draggedFurniture.alpha = 1;
     this.draggedFurniture.sprite.cursor = 'grab';
-
-    const result: FurnitureMoveResult = {
-      success: !cancel && !hasCollision,
-      collision: hasCollision,
-      message: cancel 
-        ? 'Drag cancelled' 
-        : hasCollision 
-          ? 'Cannot place due to collision - reverted to original position' 
-          : 'Furniture placed successfully'
-    };
-
-    // Clear dragged furniture reference
     this.draggedFurniture = null;
-    return result;
+
+    return { success: !cancel, message: cancel ? 'Drag cancelled' : 'Furniture placed successfully' };
   }
 
   /**
@@ -158,9 +122,6 @@ export class FurnitureController {
 
     // Check collision if enabled
     if (options.checkCollisions !== false) {
-      const originalX = furniture.x;
-      const originalY = furniture.y;
-      
       furniture.setPosition(targetX, targetY);
       
       // Need to find the FurnitureView for collision check

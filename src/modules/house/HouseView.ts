@@ -19,6 +19,7 @@ export class HouseView
 
   constructor(private readonly model: House) {
     super();
+    this.sortableChildren = true; // Respect les z-index pour l'ordre de rendu
     this.maxPoints = model.maxPoints;
     this.render();
   }
@@ -55,30 +56,27 @@ export class HouseView
   public getDepthAtPointClip(points: Point[]): number {
     if (points.length === 0) return 0;
 
-    // Calculate average position
-    const avgX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
-    const avgY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
-
-    const baseZIndex = ZOrder.compute({
+    // Profondeur isométrique de l'avatar :
+    //   - Y MAX des pieds (bord avant en vue iso) → profondeur principale
+    //   - X moyen → fine correction gauche/droite (ISO_X_WEIGHT)
+    //   - offset: 1 → l'avatar gagne uniquement quand sa profondeur est
+    //     EXACTEMENT égale à celle d'un meuble (ex-æquo)
+    const maxY = Math.max(...points.map(p => p.y));
+    const avgX = points.reduce((s, p) => s + p.x, 0) / points.length;
+    return ZOrder.compute({
       x: avgX,
-      y: avgY,
-      layer: ZOrder.ZPriority.FURNITURE
+      y: maxY,
+      layer: ZOrder.ZPriority.SCENE,  // même couche que les meubles
+      offset: 1                        // tiebreaker : avatar devant si profondeur égale
     });
-
-    // Find available z-index to avoid conflicts
-    const existingZIndices = this.children.map(child => (child as any).zIndex || 0);
-    return ZOrder.findAvailable(baseZIndex, existingZIndices);
   }
 
   public getDepthAtPoint(point: Point): number {
-    const baseZIndex = ZOrder.compute({
+    return ZOrder.compute({
       x: point.x,
       y: point.y,
-      layer: ZOrder.ZPriority.FURNITURE
+      layer: ZOrder.ZPriority.SCENE
     });
-
-    const existingZIndices = this.children.map(child => (child as any).zIndex || 0);
-    return ZOrder.findAvailable(baseZIndex, existingZIndices);
   }
 
   public checkCollision(object: FurnitureView | Avatar, points: Point[] | null = null): boolean {

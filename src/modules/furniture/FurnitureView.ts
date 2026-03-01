@@ -12,7 +12,7 @@ import * as ZOrder from '../common/ZOrder';
 export class FurnitureView extends Container implements Drawable, IHasDepth {
   public readonly sprite: Sprite;
   private _points: Point[] = [];
-  private controller: FurnitureController;
+  private readonly controller: FurnitureController;
 
   constructor(
     public readonly model: Furniture,
@@ -63,17 +63,26 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
 
     if (base.type === 18) {
       this._points = this.computePoints();
-      
-      // Use ZOrder utility for stable z-index calculation
-      const baseZIndex = ZOrder.compute({
-        x: this.model.x,
-        y: this.model.y,
-        layer: ZOrder.ZPriority.FURNITURE
+
+      // Profondeur isométrique :
+      //   - Primaire  : Y MAX des anchor points du sol (bord avant en vue iso)
+      //   - Secondaire: X moyen des anchor points (départage gauche/droite,
+      //                 cf. ISO_X_WEIGHT dans ZOrder – la gauche est plus profonde)
+      const groundMaxY = this._points.length > 0
+        ? Math.max(...this._points.map(p => p.y))
+        : this.model.y + this.sprite.height;
+
+      const groundAvgX = this._points.length > 0
+        ? this._points.reduce((s, p) => s + p.x, 0) / this._points.length
+        : this.model.x;
+
+      this.zIndex = ZOrder.compute({
+        x: groundAvgX,
+        y: groundMaxY,
+        layer: ZOrder.ZPriority.SCENE  // même couche que l'avatar
       });
-      
-      this.zIndex = baseZIndex;
     } else {
-      // Floor elements get lower priority
+      // Éléments de sol : priorité plus basse
       this.zIndex = ZOrder.compute({
         x: this.model.x,
         y: this.model.y,
@@ -146,43 +155,55 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   }
 
   private readonly onPointerDown = (evt: FederatedPointerEvent): void => {
-    if (this.model.base.type !== 18) return; // Only allow dragging furniture, not floors
-    
-    // Check if another furniture is already being dragged
+    if (this.model.base.type !== 18) return;
+
     if (this.controller.getDraggedFurniture() && this.controller.getDraggedFurniture() !== this) {
-      return; // Don't allow multiple drags
+      return;
     }
-    
-    this.controller.startDrag(this, evt.globalX, evt.globalY);
-    
-    const stage = this.parent?.parent; // Get stage through parent hierarchy
-    if (!stage) return;
-    
-    const onPointerMove = (evt: FederatedPointerEvent) => {
-      this.controller.updateDrag(evt.globalX, evt.globalY, {
+
+    // HouseView = espace local des positions du modèle
+    const houseView = this.parent;
+    if (!houseView) return;
+
+    // Remonter jusqu'à app.stage (racine) qui a eventMode='static' en PIXI v8,
+    // seul container qui reçoit pointermove/pointerup même sur zone vide.
+    let root = houseView.parent;
+    while (root?.parent) root = root.parent;
+    if (!root) return;
+
+    const localStart = houseView.toLocal({ x: evt.globalX, y: evt.globalY });
+    this.controller.startDrag(this, localStart.x, localStart.y);
+
+    const onPointerMove = (moveEvt: FederatedPointerEvent) => {
+      const localPos = houseView.toLocal({ x: moveEvt.globalX, y: moveEvt.globalY });
+      this.controller.updateDrag(localPos.x, localPos.y, {
         checkCollisions: true,
-        snapToGrid: evt.shiftKey,
+        snapToGrid: moveEvt.shiftKey,
         gridSize: 20
       });
     };
-    
+
     const onPointerUp = () => {
-      const result = this.controller.endDrag();
-      if (!result.success) {
-        console.log('Drag failed:', result.message);
-      }
-      
-      // Clean up listeners
-      stage.off('pointermove', onPointerMove);
-      stage.off('pointerup', onPointerUp);
-      stage.off('pointerupoutside', onPointerUp);
+      this.controller.endDrag();
+      root.off('pointermove', onPointerMove);
+      root.off('pointerup', onPointerUp);
+      root.off('pointerupoutside', onPointerUp);
+      root.off('pointercancel', onPointerCancel);
     };
-    
-    // Use stage for reliable event capture
-    stage.on('pointermove', onPointerMove);
-    stage.on('pointerup', onPointerUp);
-    stage.on('pointerupoutside', onPointerUp);
-    
+
+    const onPointerCancel = () => {
+      this.controller.endDrag(true); // annule → revert à la position initiale
+      root.off('pointermove', onPointerMove);
+      root.off('pointerup', onPointerUp);
+      root.off('pointerupoutside', onPointerUp);
+      root.off('pointercancel', onPointerCancel);
+    };
+
+    root.on('pointermove', onPointerMove);
+    root.on('pointerup', onPointerUp);
+    root.on('pointerupoutside', onPointerUp);
+    root.on('pointercancel', onPointerCancel);
+
     evt.stopPropagation();
   };
 

@@ -205,8 +205,9 @@ export class AvatarManager {
   private updateAvatarDepth(avatar: Avatar): void {
     avatar.zIndex = ZOrder.compute({
       x: avatar.x,
-      y: avatar.y,
-      layer: ZOrder.ZPriority.AVATAR
+      y: avatar.y + avatar.height, // bord avant (pieds)
+      layer: ZOrder.ZPriority.SCENE,
+      offset: 1
     });
   }
 

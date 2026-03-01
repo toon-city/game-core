@@ -809,6 +809,7 @@ const main = async () => {
       }
 
       app.stage.sortChildren();
+      houseView!.sortChildren();
       //updateCamera();
     }
   });
