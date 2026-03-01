@@ -49,10 +49,16 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   }
 
   get points(): Point[] {
+    // Rectangle de collision centré aux pieds (en dessous du corps, sans le socle)
+    const feetY = this.socle ? this.socle.y : this.height;
+    const hitW = 40;
+    const hitX = (this.width - hitW) / 2; // centré horizontalement
     return [
-      {x: this.x, y: this.y + this.height},
-      {x: this.x + this.width, y: this.y + this.height},
-    ]
+      {x: this.x + hitX,         y: this.y + feetY - 2},
+      {x: this.x + hitX + hitW,  y: this.y + feetY - 2},
+      {x: this.x + hitX + hitW,  y: this.y + feetY},
+      {x: this.x + hitX,         y: this.y + feetY},
+    ];
   }
 
   public get direction(): number {
@@ -269,9 +275,11 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
    * Update Z-index based on current position (like furniture)
    */
   public updateZIndex(): void {
+    // Use body bottom (feet) for depth, excluding the socle which sits below the feet
+    const feetY = this.socle ? this.socle.y : this.height;
     this.zIndex = ZOrder.compute({
       x: this.x,
-      y: this.y + this.height, // bord avant (pieds) = profondeur iso
+      y: this.y + feetY, // bord avant (pieds sans socle) = profondeur iso
       layer: ZOrder.ZPriority.SCENE,
       offset: 1 // tiebreaker : avatar devant un meuble au même Y
     });

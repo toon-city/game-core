@@ -800,9 +800,14 @@ const main = async () => {
       if (avatar.direction & left) newX -= 10 / divider;
       if (avatar.direction & right) newX += 10 / divider;
 
+      const feetY = avatar.socle ? avatar.socle.y : avatar.height;
+      const hitW = 40;
+      const hitX = (avatar.width - hitW) / 2;
       const newPoints = [
-        {x: newX, y: newY + avatar.height},
-        {x: newX + avatar.width, y: newY + avatar.height},
+        {x: newX + hitX,        y: newY + feetY - 2},
+        {x: newX + hitX + hitW, y: newY + feetY - 2},
+        {x: newX + hitX + hitW, y: newY + feetY},
+        {x: newX + hitX,        y: newY + feetY},
       ];
 
       if (!houseView!.checkCollision(avatar, newPoints)) {
