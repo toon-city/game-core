@@ -29,6 +29,10 @@ const main = async () => {
 
   const gameScene = new PIXI.Container({sortableChildren: true});
   app.stage.addChild(gameScene);
+  // 'static' + hitArea couvrant tout le canvas = le stage reçoit
+  // pointermove/pointerup partout, indispensable pour le drag & drop en PIXI v8.
+  app.stage.eventMode = 'static';
+  app.stage.hitArea = app.screen;
 
   let avatar: Avatar = new Avatar(app, {showSocle: true, direction: down});
   avatar.scale.set(size, size);
