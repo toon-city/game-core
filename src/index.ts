@@ -85,7 +85,7 @@ const main = async () => {
     // Space → avatar says something
     if (e.key === ' ') {
       e.preventDefault();
-      const text = 'Hello! 👋';
+      const text = 'Hello! ejgznoujn gfonqzeo gnjzoqnjl gnfln zelnf leznl ze 👋';
       avatar.say(text, 2500);
       gc.events.emit('avatar:said', { avatar, id: 'player', text });
     }

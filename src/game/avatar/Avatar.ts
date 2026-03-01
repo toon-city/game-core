@@ -281,9 +281,9 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   public say(text: string, duration = 3000): void {
     if (!this.bubble) {
       this.bubble = new AvatarBubble();
-      // Tail tip anchored to the top-centre of the avatar body
-      this.bubble.x = this.width / 2;
-      this.bubble.y = 0;
+      // Tail tip anchored near the upper-right of the avatar's head
+      this.bubble.x = this.width * 0.55;
+      this.bubble.y = 20;
       this.addChild(this.bubble);
     }
     this.bubble.show(text, duration);

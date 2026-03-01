@@ -1,9 +1,17 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 
-const PADDING  = 10;
-const RADIUS   = 8;
-const TAIL_H   = 8;   // height of the triangular tail pointing downward
-const MAX_W    = 160; // maximum bubble width before wrapping
+const PADDING   = 10;
+const RADIUS    = 8;
+const MAX_W     = 160; // max bubble width before wrapping
+// Tail geometry: base sits at the bottom-left of the bubble body,
+// tip points down-left to (0, 0) – anchored near the avatar's head.
+const TAIL_TIP_X  =  0;  // tail tip  (anchor = head position)
+const TAIL_TIP_Y  =  0;
+const TAIL_BASE_X =  8;  // where the tail joins the bubble body (left edge offset)
+const TAIL_BASE_W = 10;  // width of the tail base
+const TAIL_H      = 10;  // vertical gap between bubble bottom and tail tip
+// Horizontal offset: bubble body starts this many px to the RIGHT of the anchor
+const BODY_OFFSET_X = 2;
 
 /**
  * A speech‑bubble overlay that can be attached as a child of an Avatar.
@@ -87,28 +95,33 @@ export class AvatarBubble extends Container {
     const bubbleW = Math.min(tw + PADDING * 2, MAX_W + PADDING * 2);
     const bubbleH = th + PADDING * 2;
 
-    // Bubble body sits above the tail (tail tip is at y = 0)
-    const bodyTopY    = -(bubbleH + TAIL_H);
-    const bodyBottomY = -TAIL_H;
+    // Bubble body: extends to the RIGHT of the anchor point.
+    // Bottom of body is TAIL_H above the tail tip.
+    const bodyX       = BODY_OFFSET_X;            // left edge of bubble body
+    const bodyTopY    = -(bubbleH + TAIL_H);       // top edge
+    const bodyBottomY = -TAIL_H;                   // bottom edge
 
-    // Centre the text horizontally
-    this.labelText.x = -bubbleW / 2 + PADDING;
+    // Text: top-left inside the bubble
+    this.labelText.x = bodyX + PADDING;
     this.labelText.y = bodyTopY + PADDING;
 
     this.bg.clear();
 
     // ── Body ────────────────────────────────────────────────────────────────
     this.bg
-      .roundRect(-bubbleW / 2, bodyTopY, bubbleW, bubbleH, RADIUS)
-      .fill({ color: 0xffffff, alpha: 0.93 })
-      .stroke({ color: 0xbbbbbb, width: 1.5, alignment: 1 });
+      .roundRect(bodyX, bodyTopY, bubbleW, bubbleH, RADIUS)
+      .fill({ color: 0xffffff, alpha: 0.95 })
+      .stroke({ color: 0xcccccc, width: 1.5, alignment: 1 });
 
-    // ── Tail (triangle pointing down to (0, 0)) ───────────────────────────
+    // ── Tail: triangle from bottom-left of body down-left to (0, 0) ────────
+    // Base of tail sits on the bottom edge of the bubble (bodyBottomY)
+    const tailBaseLeft  = bodyX + TAIL_BASE_X;
+    const tailBaseRight = bodyX + TAIL_BASE_X + TAIL_BASE_W;
     this.bg
-      .moveTo(-6, bodyBottomY)
-      .lineTo(6, bodyBottomY)
-      .lineTo(0, 0)
+      .moveTo(tailBaseLeft,  bodyBottomY)
+      .lineTo(tailBaseRight, bodyBottomY)
+      .lineTo(TAIL_TIP_X,    TAIL_TIP_Y)
       .closePath()
-      .fill({ color: 0xffffff, alpha: 0.93 });
+      .fill({ color: 0xffffff, alpha: 0.95 });
   }
 }
