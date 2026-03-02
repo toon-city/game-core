@@ -124,9 +124,10 @@ export class HouseView
     //     EXACTEMENT égale à celle d'un meuble (ex-æquo)
     const maxY = Math.max(...points.map(p => p.y));
     const avgX = points.reduce((s, p) => s + p.x, 0) / points.length;
+    // +0.5 px de biais identique à Avatar.updateZIndex pour rester cohérent
     return ZOrder.compute({
       x: avgX,
-      y: maxY,
+      y: maxY + 0.5,
       layer: ZOrder.ZPriority.SCENE,
       offset: 3  // avatar : toujours devant porte(2), plinthe(1), mur(0)
     });

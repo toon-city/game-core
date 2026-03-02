@@ -365,9 +365,11 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   public updateZIndex(): void {
     // Use body bottom (feet) for depth, excluding the socle which sits below the feet
     const feetY = this.socle ? this.socle.y : this.height;
+    // +0.5 px de biais : garantit que l'avatar est dans un bucket de profondeur
+    // supérieur à la porte même quand feetY ≈ doorMidY (round((y+0.5)*100) > round(y*100))
     this.zIndex = ZOrder.compute({
       x: this.x,
-      y: this.y + feetY, // bord avant (pieds sans socle) = profondeur iso
+      y: this.y + feetY + 0.5,
       layer: ZOrder.ZPriority.SCENE,
       offset: 3 // avatar : toujours devant porte(2), plinthe(1), mur(0)
     });

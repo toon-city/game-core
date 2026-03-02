@@ -47,6 +47,9 @@ export interface GameCoreOptions {
 interface PlayerState {
   arrows:       number;
   lastMoveTime: number;
+  /** Décalage look-ahead lissé en pixels écran (direction de déplacement). */
+  lookX: number;
+  lookY: number;
 }
 
 // ─── GameCore ─────────────────────────────────────────────────────────────────
@@ -276,7 +279,7 @@ export class GameCore {
    * @param keys      Key config (defaults to arrow keys).
    */
   bindPlayerInput(avatarId: string, keys: KeyConfig = DEFAULT_KEYS): void {
-    const state: PlayerState = { arrows: 0, lastMoveTime: 0 };
+    const state: PlayerState = { arrows: 0, lastMoveTime: 0, lookX: 0, lookY: 0 };
     this.playerStates.set(avatarId, state);
 
     if (this.followAvatarId === null) {
@@ -446,34 +449,70 @@ export class GameCore {
           from: prevPos,
           to:   { x: finalX, y: finalY },
         });
-
-        if (this.opts.followCamera && avatarId === this.followAvatarId) {
-          this.updateCamera(avatar);
-        }
       }
+    }
+
+    // ── Look-ahead : lerp vers la direction de déplacement, retour à 0 à l'arrêt ──
+    const LOOK_DIST   = 150; // décalage max en pixels
+    const LOOK_SMOOTH = 0.04; // vitesse de lerp (indépendante du margin)
+    for (const state of this.playerStates.values()) {
+      let tx = 0, ty = 0;
+      if (state.arrows & DIR_RIGHT) tx += 1;
+      if (state.arrows & DIR_LEFT)  tx -= 1;
+      if (state.arrows & DIR_DOWN)  ty += 1;
+      if (state.arrows & DIR_UP)    ty -= 1;
+      const len = Math.sqrt(tx * tx + ty * ty);
+      if (len > 0) { tx /= len; ty /= len; }
+      state.lookX += (tx * LOOK_DIST - state.lookX) * LOOK_SMOOTH;
+      state.lookY += (ty * LOOK_DIST - state.lookY) * LOOK_SMOOTH;
+    }
+
+    // Mise à jour caméra chaque tick pour garantir un suivi fluide
+    // même quand l'avatar vient de s'arrêter près d'un bord.
+    if (this.opts.followCamera && this.followAvatarId) {
+      const followed = this.avatarsById.get(this.followAvatarId);
+      const st = this.playerStates.get(this.followAvatarId);
+      if (followed) this.updateCamera(followed, st?.lookX ?? 0, st?.lookY ?? 0);
     }
 
     this.app.stage.sortChildren();
     this.houseView?.sortChildren();
   };
 
-  private updateCamera(avatar: Avatar): void {
+  private updateCamera(avatar: Avatar, lookX = 0, lookY = 0): void {
     const MARGIN  = this.opts.cameraMargin;
     const SMOOTH  = this.opts.cameraSmoothing;
     const screenW = this.app.screen.width;
     const screenH = this.app.screen.height;
 
-    const screenX = avatar.x + this.gameScene.x;
-    const screenY = avatar.y + avatar.height + this.gameScene.y;
+    // Point de référence : centre de l'avatar + décalage look-ahead
+    const refX = avatar.x + avatar.width  / 2 + lookX;
+    const refY = avatar.y + (avatar.socle ? avatar.socle.y : avatar.height) + lookY;
 
+    // Position écran actuelle du point de référence
+    const screenX = refX + this.gameScene.x;
+    const screenY = refY + this.gameScene.y;
+
+    // Distance au bord le plus proche sur chaque axe
     const distX = Math.min(screenX, screenW - screenX);
     const distY = Math.min(screenY, screenH - screenY);
 
-    if (distX < MARGIN || distY < MARGIN) {
-      const targetX = -avatar.x + screenW / 2;
-      const targetY = -(avatar.y + avatar.height) + screenH / 2;
-      this.gameScene.x += (targetX - this.gameScene.x) * SMOOTH;
-      this.gameScene.y += (targetY - this.gameScene.y) * SMOOTH;
-    }
+    // Facteur d'urgence [0, 1] : 0 = au bord du margin, 1 = sur le bord écran
+    // Utiliser easeIn (t²) pour une accélération douce.
+    const tX = distX < MARGIN ? Math.pow(1 - distX / MARGIN, 2) : 0;
+    const tY = distY < MARGIN ? Math.pow(1 - distY / MARGIN, 2) : 0;
+    const t  = Math.max(tX, tY);
+
+    if (t <= 0) return; // avatar dans la zone sûre, pas de mouvement caméra
+
+    // La caméra vise le centrage parfait de l'avatar
+    const targetX = screenW / 2 - refX;
+    const targetY = screenH / 2 - refY;
+
+    // Vitesse effective : de SMOOTH*0 (bord du margin) à SMOOTH*2 (bord écran)
+    const alpha = SMOOTH * 2 * t;
+
+    this.gameScene.x += (targetX - this.gameScene.x) * alpha;
+    this.gameScene.y += (targetY - this.gameScene.y) * alpha;
   }
 }

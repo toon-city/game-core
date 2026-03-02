@@ -102,6 +102,9 @@ export class DoorView {
       const midY = (a.y + b.y) / 2;
       const midX = (a.x + b.x) / 2;
 
+      // La porte utilise midY (sans réduction), ce qui la place toujours devant
+      // les murs hasDoor (qui utilisent midY - 20).  L'avatar le dépasse grâce
+      // au biais +0.5 dans Avatar.updateZIndex / getDepthAtPointClip.
       const seg = new Container();
       seg.zIndex = ZOrder.compute({
         x: midX,
