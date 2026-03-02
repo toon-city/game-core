@@ -96,6 +96,7 @@ const main = async () => {
     cameraMargin: 150,
     cameraSmoothing: 0.1,
     moveSpeed: 10,
+    cameraMode: 'lookahead',
   });
 
   gc.setCameraPosition(400, 400);

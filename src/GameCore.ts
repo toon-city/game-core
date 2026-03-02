@@ -17,6 +17,14 @@ const DIR_DOWN  = 0b0001;
 
 // ─── Options ─────────────────────────────────────────────────────────────────
 
+/**
+ * Mode de suivi de la caméra.
+ * - `'lookahead'` : la caméra reste proche du bord et anticipe la direction
+ *   du mouvement (décalage look-ahead).
+ * - `'center'` : la caméra suit l'avatar en le recentrant en permanence.
+ */
+export type CameraMode = 'lookahead' | 'center';
+
 export interface GameCoreOptions {
   /**
    * Whether the camera should automatically follow the first player-controlled
@@ -40,6 +48,13 @@ export interface GameCoreOptions {
    * Avatar movement speed in pixels per tick interval. Default: `10`.
    */
   moveSpeed?: number;
+
+  /**
+   * Camera follow mode.
+   * - `'lookahead'` (default) : décalage dans la direction du mouvement.
+   * - `'center'` : l'avatar reste toujours centré à l'écran.
+   */
+  cameraMode?: CameraMode;
 }
 
 // ─── Internal per-avatar input state ─────────────────────────────────────────
@@ -95,6 +110,11 @@ export class GameCore {
   private avatarsById:    Map<string, Avatar> = new Map();
   private playerStates:   Map<string, PlayerState> = new Map();
   private followAvatarId: string | null = null;
+  private _cameraMode:    CameraMode = 'lookahead';
+
+  /** Cible logique de la caméra (mise à jour instantanée avec l'avatar). */
+  private cameraTargetX = 0;
+  private cameraTargetY = 0;
 
   private _editMode = false;
 
@@ -109,8 +129,10 @@ export class GameCore {
       cameraMargin:    100,
       cameraSmoothing: 0.1,
       moveSpeed:       10,
+      cameraMode:      'lookahead',
       ...options,
     };
+    this._cameraMode = this.opts.cameraMode;
 
     this.events    = new GameEvents();
     this.gameScene = new Container();
@@ -166,7 +188,28 @@ export class GameCore {
 
     return this.houseView;
   }
+  // ─── Camera mode ─────────────────────────────────────────────────────────────
 
+  /** Retourne le mode de caméra actif. */
+  get cameraMode(): CameraMode { return this._cameraMode; }
+
+  /**
+   * Change le mode de suivi de la caméra.
+   * @param mode `'lookahead'` | `'center'`
+   */
+  setCameraMode(mode: CameraMode): void {
+    this._cameraMode = mode;
+    // Synchro la cible caméra pour éviter tout saut visuel au changement de mode
+    this.cameraTargetX = this.gameScene.x;
+    this.cameraTargetY = this.gameScene.y;
+    // Réinitialise les vecteurs look-ahead
+    if (mode === 'center') {
+      for (const st of this.playerStates.values()) {
+        st.lookX = 0;
+        st.lookY = 0;
+      }
+    }
+  }
   // ─── Edit mode ──────────────────────────────────────────────────────────────
 
   /**
@@ -325,6 +368,8 @@ export class GameCore {
   setCameraPosition(x: number, y: number): void {
     this.gameScene.x = x;
     this.gameScene.y = y;
+    this.cameraTargetX = x;
+    this.cameraTargetY = y;
   }
 
   /** Set which avatar the camera should follow (must be a spawned avatar id). */
@@ -439,9 +484,19 @@ export class GameCore {
       }
 
       if (moved) {
+        const dx = finalX - prevPos.x;
+        const dy = finalY - prevPos.y;
+
         avatar.x = finalX;
         avatar.y = finalY;
         avatar.zIndex = this.houseView.getDepthAtPointClip(avatar.points);
+
+        // En mode center : déplacer la cible caméra du même delta que l'avatar
+        // pour éliminer tout décalage discret visible.
+        if (this._cameraMode === 'center' && avatarId === this.followAvatarId) {
+          this.cameraTargetX -= dx;
+          this.cameraTargetY -= dy;
+        }
 
         this.events.emit('avatar:moved', {
           avatar,
@@ -457,12 +512,15 @@ export class GameCore {
     const LOOK_SMOOTH = 0.04; // vitesse de lerp (indépendante du margin)
     for (const state of this.playerStates.values()) {
       let tx = 0, ty = 0;
-      if (state.arrows & DIR_RIGHT) tx += 1;
-      if (state.arrows & DIR_LEFT)  tx -= 1;
-      if (state.arrows & DIR_DOWN)  ty += 1;
-      if (state.arrows & DIR_UP)    ty -= 1;
-      const len = Math.sqrt(tx * tx + ty * ty);
-      if (len > 0) { tx /= len; ty /= len; }
+      if (this._cameraMode === 'lookahead') {
+        if (state.arrows & DIR_RIGHT) tx += 1;
+        if (state.arrows & DIR_LEFT)  tx -= 1;
+        if (state.arrows & DIR_DOWN)  ty += 1;
+        if (state.arrows & DIR_UP)    ty -= 1;
+        const len = Math.sqrt(tx * tx + ty * ty);
+        if (len > 0) { tx /= len; ty /= len; }
+      }
+      // En mode 'center', tx/ty restent à 0 → lookX/Y convergent vers 0
       state.lookX += (tx * LOOK_DIST - state.lookX) * LOOK_SMOOTH;
       state.lookY += (ty * LOOK_DIST - state.lookY) * LOOK_SMOOTH;
     }
@@ -485,9 +543,28 @@ export class GameCore {
     const screenW = this.app.screen.width;
     const screenH = this.app.screen.height;
 
-    // Point de référence : centre de l'avatar + décalage look-ahead
-    const refX = avatar.x + avatar.width  / 2 + lookX;
-    const refY = avatar.y + (avatar.socle ? avatar.socle.y : avatar.height) + lookY;
+    const feetY = avatar.socle ? avatar.socle.y : avatar.height;
+    const avatarCX = avatar.x + avatar.width / 2;
+    const avatarCY = avatar.y + feetY;
+
+    if (this._cameraMode === 'center') {
+      // Mode recentrage : la cible logique est déjà mise à jour par le delta
+      // de l'avatar. On vise le centrage parfait, et on lerp la caméra vers
+      // cette cible pour lisser les micro-décalages inter-frame.
+      const perfectX = screenW / 2 - avatarCX;
+      const perfectY = screenH / 2 - avatarCY;
+      // Snap de la cible vers le centrage parfait (récupère les dérives)
+      this.cameraTargetX += (perfectX - this.cameraTargetX) * 0.05;
+      this.cameraTargetY += (perfectY - this.cameraTargetY) * 0.05;
+      // Lerp rapide de la caméra vers la cible
+      this.gameScene.x += (this.cameraTargetX - this.gameScene.x) * 0.5;
+      this.gameScene.y += (this.cameraTargetY - this.gameScene.y) * 0.5;
+      return;
+    }
+
+    // Mode look-ahead : décalage dans la direction du mouvement + margin
+    const refX = avatarCX + lookX;
+    const refY = avatarCY + lookY;
 
     // Position écran actuelle du point de référence
     const screenX = refX + this.gameScene.x;
@@ -498,18 +575,14 @@ export class GameCore {
     const distY = Math.min(screenY, screenH - screenY);
 
     // Facteur d'urgence [0, 1] : 0 = au bord du margin, 1 = sur le bord écran
-    // Utiliser easeIn (t²) pour une accélération douce.
     const tX = distX < MARGIN ? Math.pow(1 - distX / MARGIN, 2) : 0;
     const tY = distY < MARGIN ? Math.pow(1 - distY / MARGIN, 2) : 0;
     const t  = Math.max(tX, tY);
 
-    if (t <= 0) return; // avatar dans la zone sûre, pas de mouvement caméra
+    if (t <= 0) return;
 
-    // La caméra vise le centrage parfait de l'avatar
     const targetX = screenW / 2 - refX;
     const targetY = screenH / 2 - refY;
-
-    // Vitesse effective : de SMOOTH*0 (bord du margin) à SMOOTH*2 (bord écran)
     const alpha = SMOOTH * 2 * t;
 
     this.gameScene.x += (targetX - this.gameScene.x) * alpha;
