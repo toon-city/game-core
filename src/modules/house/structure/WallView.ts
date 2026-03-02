@@ -116,16 +116,17 @@ export class WallView {
       const midY = (sp1.y + sp2.y) / 2;
       const midX = (sp1.x + sp2.x) / 2;
 
-      // Si ce mur porte une porte, on réduit le midY de référence de 20px.
-      // Cela donne ~20 000 unités de marge en z-index, garantissant que les slices
-      // de la porte (offset=2, midY non réduit) passent toujours devant.
+      // Mur portant une porte : layer FLOOR pour être garanti derrière les avatars/meubles
+      // (qui sont à SCENE). midY - 20 assure que la porte (FLOOR + midY) le dépasse bien
+      // en z-index au sein du même layer FLOOR.
+      const layer = this.hasDoor ? ZOrder.ZPriority.FLOOR : ZOrder.ZPriority.SCENE;
       const depthY = this.hasDoor ? midY - 20 : midY;
 
       const seg = new Container();
       seg.zIndex = ZOrder.compute({
         x: midX,
         y: depthY,
-        layer: ZOrder.ZPriority.SCENE,
+        layer,
         offset: isBaseBoard ? 1 : 0,
       });
       seg.addChild(plane);

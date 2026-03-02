@@ -102,15 +102,16 @@ export class DoorView {
       const midY = (a.y + b.y) / 2;
       const midX = (a.x + b.x) / 2;
 
-      // La porte utilise midY (sans réduction), ce qui la place toujours devant
-      // les murs hasDoor (qui utilisent midY - 20).  L'avatar le dépasse grâce
-      // au biais +0.5 dans Avatar.updateZIndex / getDepthAtPointClip.
+      // La porte est au layer FLOOR : garantit qu'elle est toujours derrière
+      // avatars et meubles (layer SCENE = 2 × 10M > FLOOR = 1 × 10M).
+      // offset: 2 assure qu'elle reste devant le mur-avec-porte (offset: 0)
+      // au sein du même layer FLOOR.
       const seg = new Container();
       seg.zIndex = ZOrder.compute({
         x: midX,
         y: midY,
-        layer: ZOrder.ZPriority.SCENE,
-        offset: 2, // porte : devant mur(0) et plinthe(1), derrière avatar/meuble(3)
+        layer: ZOrder.ZPriority.FLOOR,
+        offset: 2,
       });
       seg.addChild(g);
       this.parent.addChild(seg);
