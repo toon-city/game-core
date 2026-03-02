@@ -505,6 +505,15 @@ export class GameCore {
           to:   { x: finalX, y: finalY },
         });
       }
+
+      // Toujours émettre avatar:walking tant que des touches sont appuyées,
+      // même si la collision a bloqué tout déplacement. Cela permet aux clients
+      // distants de maintenir l'animation de marche.
+      this.events.emit('avatar:walking', {
+        avatar,
+        id:        avatarId,
+        direction: avatar.direction,
+      });
     }
 
     // ── Look-ahead : lerp vers la direction de déplacement, retour à 0 à l'arrêt ──

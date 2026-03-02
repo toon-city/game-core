@@ -55,7 +55,11 @@ export abstract class Clothe extends Sprite implements IClothe {
     this._identifier = identifier;
     this._direction = direction;
     this._type = type;
-    if (!Assets.cache.has(this.fileURI)) {
+    if (Assets.cache.has(this.fileURI)) {
+      // Asset already in cache: apply position correction immediately
+      this.reloadPosition();
+      this.refreshTexture();
+    } else {
       Assets.load(this.fileURI).then(() => {
         this.reloadPosition();
         this.refreshTexture();

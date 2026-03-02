@@ -56,6 +56,9 @@ export abstract class AvatarAnimatedBodyPart
     this.texture = Texture.from(`${this._identifier}_${this._direction}_0.png`);
     this.textures = this._animations[this._direction - 1];
     this.resetAnimationSpeed();
+    // PIXI's AnimatedSprite stops when textures are replaced (internal gotoAndStop).
+    // If the part was walking, restart the animation with the new direction frames.
+    if (this._walking) this.play();
   }
 
   /**

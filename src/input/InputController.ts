@@ -166,12 +166,22 @@ export class InputController {
 
   // ─── Keyboard ──────────────────────────────────────────────────────────────
 
+  /** Returns true when keyboard focus is on a text input element */
+  private isInputFocused(): boolean {
+    const el = document.activeElement as HTMLElement | null;
+    if (!el) return false;
+    const tag = el.tagName.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || el.isContentEditable;
+  }
+
   private handleKeyDown(e: KeyboardEvent): void {
+    if (this.isInputFocused()) return;
     e.preventDefault();
     this.applyKey(e.code, true);
   }
 
   private handleKeyUp(e: KeyboardEvent): void {
+    if (this.isInputFocused()) return;
     e.preventDefault();
     this.applyKey(e.code, false);
   }
