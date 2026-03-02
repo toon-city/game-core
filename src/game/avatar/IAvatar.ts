@@ -1,6 +1,7 @@
 import {Application, Sprite} from 'pixi.js';
 import {IAvatarPart} from './structure/parts/IAvatarPart';
 import {AvatarLegs} from './structure/parts/body/parts/AvatarLegs';
+import {AvatarArms} from './structure/parts/body/parts/AvatarArms';
 
 export interface IAvatarParams {
   showSocle: boolean | null;
@@ -14,8 +15,7 @@ export interface IAvatar {
   app: Application;
   socle: Sprite | null;
   legs: AvatarLegs | null;
-  leftArm: Sprite | null;
-  rightArm: Sprite | null;
+  arms: AvatarArms[];
   head: Sprite | null;
   parts: IAvatarPart[];
   isWalking: boolean;

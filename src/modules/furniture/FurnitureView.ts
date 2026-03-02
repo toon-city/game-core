@@ -79,7 +79,8 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
       this.zIndex = ZOrder.compute({
         x: groundAvgX,
         y: groundMaxY,
-        layer: ZOrder.ZPriority.SCENE  // même couche que l'avatar
+        layer: ZOrder.ZPriority.SCENE,
+        offset: 3  // meuble : même priorité que l'avatar, toujours devant la porte(2)
       });
     } else {
       // Éléments de sol : priorité plus basse

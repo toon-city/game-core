@@ -1,4 +1,9 @@
 import { Point } from "../core/types/Point";
+import { Wall } from "../core/models/Wall";
+import { Door } from "../core/models/Door";
+
+const WALL_THICKNESS = 20;
+const DOOR_MARGIN = 8;
 
 export interface AABB {
   minX: number;
@@ -100,4 +105,109 @@ function pointInPolygon(point: Point, polygon: Point[]): boolean {
     if (intersect) inside = !inside;
   }
   return inside;
+}
+
+// ─── Collision de murs ───────────────────────────────────────────────────────
+
+/**
+ * Convertit un segment de mur en polygone de collision (rectangle fin perpendiculaire au mur).
+ * @param p1 Point de départ du segment
+ * @param p2 Point d'arrivée du segment
+ * @param thickness Épaisseur du rectangle de collision (défaut = WALL_THICKNESS)
+ */
+function segmentToPolygon(p1: Point, p2: Point, thickness: number = WALL_THICKNESS): Point[] {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len === 0) return [];
+
+  // vecteur normal perpendiculaire
+  const nx = -dy / len;
+  const ny = dx / len;
+  const half = thickness / 2;
+
+  return [
+    { x: p1.x + nx * half, y: p1.y + ny * half },
+    { x: p2.x + nx * half, y: p2.y + ny * half },
+    { x: p2.x - nx * half, y: p2.y - ny * half },
+    { x: p1.x - nx * half, y: p1.y - ny * half },
+  ];
+}
+
+/**
+ * Vérifie si un point se trouve sur un segment [A, B] avec une tolérance.
+ */
+function pointOnSegment(p: Point, a: Point, b: Point, tol = 4): boolean {
+  const len2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+  if (len2 === 0) return Math.hypot(p.x - a.x, p.y - a.y) <= tol;
+
+  const t = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / len2;
+  if (t < 0 || t > 1) return false;
+
+  const px = a.x + t * (b.x - a.x);
+  const py = a.y + t * (b.y - a.y);
+  return Math.hypot(p.x - px, p.y - py) <= tol;
+}
+
+/**
+ * Crée les polygones de collision pour tous les murs (en tenant compte des ouvertures de portes).
+ * - Murs cachés (extérieurs) : épaisseur doublée (barrière plus solide)
+ * - Murs visibles (internes) et plinthes : épaisseur normale
+ */
+export function buildWallPolygons(walls: Wall[], doors: Door[]): Point[][] {
+  const result: Point[][] = [];
+
+  for (const wall of walls) {
+    const thickness = wall.hidden ? WALL_THICKNESS * 2 : WALL_THICKNESS;
+
+    // Portes situées sur ce mur
+    const wallDoors = doors.filter(
+      (d) =>
+        pointOnSegment(d.p1, wall.p1, wall.p2) &&
+        pointOnSegment(d.p2, wall.p1, wall.p2)
+    );
+
+    if (wallDoors.length === 0) {
+      const poly = segmentToPolygon(wall.p1, wall.p2, thickness);
+      if (poly.length > 0) result.push(poly);
+      continue;
+    }
+
+    // Trier les portes par position le long du mur
+    const dx = wall.p2.x - wall.p1.x;
+    const dy = wall.p2.y - wall.p1.y;
+    const len2 = dx * dx + dy * dy;
+    const getT = (p: Point) =>
+      ((p.x - wall.p1.x) * dx + (p.y - wall.p1.y) * dy) / len2;
+
+    wallDoors.sort((a, b) => getT(a.p1) - getT(b.p1));
+
+    // Construire les segments autour des ouvertures de porte
+    const nx = dx / Math.sqrt(len2);
+    const ny = dy / Math.sqrt(len2);
+
+    let cursor: Point = wall.p1;
+    for (const door of wallDoors) {
+      const d1: Point = {
+        x: door.p1.x - nx * DOOR_MARGIN,
+        y: door.p1.y - ny * DOOR_MARGIN,
+      };
+      if (Math.hypot(d1.x - cursor.x, d1.y - cursor.y) > 1) {
+        const seg = segmentToPolygon(cursor, d1, thickness);
+        if (seg.length > 0) result.push(seg);
+      }
+      cursor = {
+        x: door.p2.x + nx * DOOR_MARGIN,
+        y: door.p2.y + ny * DOOR_MARGIN,
+      };
+    }
+
+    // Segment après la dernière porte
+    if (Math.hypot(wall.p2.x - cursor.x, wall.p2.y - cursor.y) > 1) {
+      const seg = segmentToPolygon(cursor, wall.p2, thickness);
+      if (seg.length > 0) result.push(seg);
+    }
+  }
+
+  return result;
 }

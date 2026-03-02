@@ -125,7 +125,9 @@ export class HouseParser {
         const ex = pA.projectedPoint.x + (off + doorW / 2) * nx;
         const ey = pA.projectedPoint.y + (off + doorW / 2) * ny;
 
-        const bottomY = Math.min(pA.projectedPoint.y, pB.projectedPoint.y);
+        // wallRefY = profondeur max du mur parent (endpoint le plus "avant" en iso)
+        // C'est la valeur utilisée par WallView pour son propre zIndex.
+        const wallRefY = Math.max(pA.projectedPoint.y, pB.projectedPoint.y);
 
         house.addDoor(
           new Door(
@@ -133,7 +135,7 @@ export class HouseParser {
             {x: ex, y: ey},
             {x: sx, y: -180 + sy},
             {x: ex, y: -180 + ey},
-            bottomY + 0.1
+            wallRefY
           )
         );
       }

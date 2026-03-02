@@ -5,9 +5,8 @@ import {IAvatarBodyPart} from './structure/parts/body/IAvatarBodyPart';
 import {
   AvatarBody,
   AvatarHead,
-  AvatarLeftArm,
+  AvatarArms,
   AvatarLegs,
-  AvatarRightArm,
 } from './structure/parts/body/parts';
 import {Tshirt} from './structure/parts/clothes/parts/Tshirt';
 import {Hat} from './structure/parts/clothes/parts/Hat';
@@ -33,8 +32,7 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
   private bubble: AvatarBubble | null = null;
   private usernameNameplate: Container | null = null;
   legs: AvatarLegs | null = null;
-  leftArm: Sprite | null = null;
-  rightArm: Sprite | null = null;
+  arms: AvatarArms[] = [];
   head: Sprite | null = null;
   hair: Hair | null = null;
   parts: IAvatarPart[] = [];
@@ -103,6 +101,7 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
 
     // Initialize parts based on configuration
     this.parts = this.initializeParts();
+    this.arms  = this.parts.filter((p): p is AvatarArms => p instanceof AvatarArms);
 
     // Initial Z-index calculation - will be updated when avatar moves
     this.updateZIndex();
@@ -183,6 +182,7 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
     });
 
     this.directionText.text = `${this._direction} ${this.zIndex}`;
+    this.repositionNameplate();
   }
 
   private initializeParts(): IAvatarPart[] {
@@ -210,14 +210,12 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
     // Handle body parts
     if (config.category === 'body') {
       switch (config.className) {
-        case 'AvatarRightArm':
-          return new AvatarRightArm(this._direction);
+        case 'AvatarArms':
+          return new AvatarArms(this._direction, (config.id ?? 'right') as 'left' | 'right');
         case 'AvatarLegs':
           return new AvatarLegs(this._direction);
         case 'AvatarBody':
           return new AvatarBody(this._direction);
-        case 'AvatarLeftArm':
-          return new AvatarLeftArm(this._direction);
         case 'AvatarHead':
           return new AvatarHead(this._direction);
         default:
@@ -343,8 +341,22 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
     this.usernameNameplate.addChild(bg, label);
 
     // Centre the nameplate horizontally above the head
-    this.usernameNameplate.x = (this.width - plateW) / 2;
+    this.repositionNameplate();
     this.usernameNameplate.y = -plateH - 2;  // 2 px gap above the avatar
+  }
+
+  /**
+   * Recalculate the nameplate X so it stays centred for every direction.
+   * Front/back (pure vertical directions 1 & 2) need a small leftward nudge
+   * because the avatar sprite is asymmetric in those poses.
+   */
+  private repositionNameplate(): void {
+    if (!this.usernameNameplate) return;
+    const plateW = this.usernameNameplate.width;
+    // Pure vertical direction = no left/right bit set
+    const isVertical = !(this._direction & 0b1100);
+    const nudge = isVertical ? -3 : 0;
+    this.usernameNameplate.x = (this.width - plateW) / 2 + nudge;
   }
 
   /**
@@ -357,7 +369,7 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
       x: this.x,
       y: this.y + feetY, // bord avant (pieds sans socle) = profondeur iso
       layer: ZOrder.ZPriority.SCENE,
-      offset: 1 // tiebreaker : avatar devant un meuble au même Y
+      offset: 3 // avatar : toujours devant porte(2), plinthe(1), mur(0)
     });
   }
 }

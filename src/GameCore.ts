@@ -395,23 +395,56 @@ export class GameCore {
       const feetY = avatar.socle ? avatar.socle.y : avatar.height;
       const hitW  = 40;
       const hitX  = (avatar.width - hitW) / 2;
-      const newPoints: Point[] = [
-        { x: newX + hitX,        y: newY + feetY - 2 },
-        { x: newX + hitX + hitW, y: newY + feetY - 2 },
-        { x: newX + hitX + hitW, y: newY + feetY },
-        { x: newX + hitX,        y: newY + feetY },
+
+      const buildHitbox = (px: number, py: number): Point[] => [
+        { x: px + hitX,        y: py + feetY - 2 },
+        { x: px + hitX + hitW, y: py + feetY - 2 },
+        { x: px + hitX + hitW, y: py + feetY },
+        { x: px + hitX,        y: py + feetY },
       ];
 
+      const newPoints = buildHitbox(newX, newY);
+
+      let finalX = avatar.x;
+      let finalY = avatar.y;
+      let moved  = false;
+
       if (!this.houseView.checkCollision(avatar, newPoints)) {
-        avatar.x = newX;
-        avatar.y = newY;
+        // No collision – move fully
+        finalX = newX;
+        finalY = newY;
+        moved  = true;
+      } else {
+        // Binary search for the closest valid position along the movement vector
+        let lo = 0;
+        let hi = 1;
+        for (let iter = 0; iter < 8; iter++) {
+          const mid   = (lo + hi) / 2;
+          const midX  = avatar.x + (newX - avatar.x) * mid;
+          const midY  = avatar.y + (newY - avatar.y) * mid;
+          if (!this.houseView.checkCollision(avatar, buildHitbox(midX, midY))) {
+            lo = mid;
+          } else {
+            hi = mid;
+          }
+        }
+        if (lo > 0.01) {
+          finalX = avatar.x + (newX - avatar.x) * lo;
+          finalY = avatar.y + (newY - avatar.y) * lo;
+          moved  = true;
+        }
+      }
+
+      if (moved) {
+        avatar.x = finalX;
+        avatar.y = finalY;
         avatar.zIndex = this.houseView.getDepthAtPointClip(avatar.points);
 
         this.events.emit('avatar:moved', {
           avatar,
           id:   avatarId,
           from: prevPos,
-          to:   { x: newX, y: newY },
+          to:   { x: finalX, y: finalY },
         });
 
         if (this.opts.followCamera && avatarId === this.followAvatarId) {
