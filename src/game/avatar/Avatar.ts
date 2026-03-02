@@ -175,6 +175,10 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
       return;
     }
 
+    // Ne rien faire si la direction est déjà celle-ci (évite de réinitialiser
+    // les AnimatedSprites et de bloquer l'animation de marche).
+    if (direction === this._direction) return;
+
     this._direction = direction;
 
     this.parts.forEach((part) => {

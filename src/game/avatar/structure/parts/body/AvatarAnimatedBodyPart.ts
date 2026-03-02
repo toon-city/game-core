@@ -52,6 +52,10 @@ export abstract class AvatarAnimatedBodyPart
    * @param {number} dir - The direction value.
    */
   public set direction(dir: number) {
+    // Ne rien faire si la direction n'a pas changé : évite de réassigner
+    // les textures (ce qui appelle gotoAndStop en interne PIXI et brise
+    // l'animation en cours).
+    if (dir === this._direction) return;
     this._direction = dir;
     this.texture = Texture.from(`${this._identifier}_${this._direction}_0.png`);
     this.textures = this._animations[this._direction - 1];
