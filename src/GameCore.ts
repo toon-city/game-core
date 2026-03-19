@@ -82,7 +82,7 @@ interface PlayerState {
  *
  * const gc = new GameCore(app);
  * gc.setCameraPosition(400, 300);
- * await gc.loadHouse(xmlString, 'assets/map_jardin.json');
+ * await gc.loadHouse(houseDataJsonString, 'assets/map_jardin.json');
  *
  * const avatar = gc.spawnAvatar('player', 100, 100, { showSocle: true });
  * gc.bindPlayerInput('player');
@@ -152,18 +152,18 @@ export class GameCore {
   // ─── House ──────────────────────────────────────────────────────────────────
 
   /**
-   * Parse an XML house description, optionally load furniture from a JSON URL,
+   * Parse a JSON house description, optionally load furniture from a JSON URL,
    * and mount the resulting `HouseView` into the scene.
    *
    * Textures are loaded automatically before creating views.
    *
-   * @param xml              Map XML string (same format as HouseParser).
+   * @param houseData        House layout as a JSON string (HouseLayout).
    * @param furnituresJsonUrl Optional URL to a furniture JSON file.
    */
-  async loadHouse(xml: string, furnituresJsonUrl?: string): Promise<HouseView> {
+  async loadHouse(houseData: string, furnituresJsonUrl?: string): Promise<HouseView> {
     await BaseTextureLoader.getInstance().load();
 
-    const house = HouseParser.parseStructure(xml);
+    const house = HouseParser.parseStructureFromJson(JSON.parse(houseData));
 
     if (furnituresJsonUrl) {
       const response   = await fetch(furnituresJsonUrl);

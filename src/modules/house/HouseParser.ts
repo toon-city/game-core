@@ -8,17 +8,28 @@ import {Furniture} from '../../core/models/Furniture';
 import {GameItemManager} from '../../game/textures/GameItemManager';
 import {Point} from '../../core/types/Point';
 
-export class HouseParser {
-  static parseStructure(xmlString: string): House {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
+// ─── House layout types (mirror of game-types HouseLayout) ──────────────────
+export interface HousePointDef { x: number; y: number; }
+export interface HouseFloorDef { points: number[]; }
+export interface HouseDoorDef  { offset: number; }
+export interface HouseWallDef  {
+  ptA: number; ptB: number; h: number;
+  enter?: boolean; door?: HouseDoorDef; hidden?: boolean;
+}
+export interface HouseLayout {
+  points: HousePointDef[];
+  walls: HouseWallDef[];
+  floors: HouseFloorDef[];
+}
 
+export class HouseParser {
+  static parseStructureFromJson(layout: HouseLayout): House {
     // 1) Collecte et projection z=0 pour tous les points
     type Pt = {point: Point; projectedPoint: Point};
     const pts: Pt[] = [];
-    xmlDoc.querySelectorAll('P').forEach((node) => {
-      const rawX = parseFloat(node.getAttribute('YPOS') ?? '0');
-      const rawY = parseFloat(node.getAttribute('XPOS') ?? '0');
+    layout.points.forEach((p) => {
+      const rawX = p.x;
+      const rawY = p.y;
 
       // Rotation de 90°
       const {x: xr, y: yr} = rotatePoint(rawX, rawY, -90);
@@ -68,27 +79,24 @@ export class HouseParser {
       offsetY
     );
 
-    xmlDoc.querySelectorAll('F').forEach((nodeF) => {
+    layout.floors.forEach((floorDef) => {
       const floorPts: {x: number; y: number}[] = [];
-      let i = 0;
-      while (nodeF.hasAttribute(`PT${i}`)) {
-        const idx = parseInt(nodeF.getAttribute(`PT${i}`)!, 10);
+      floorDef.points.forEach((idx) => {
         const p = pts[idx];
         if (p) {
           floorPts.push({x: p.projectedPoint.x, y: p.projectedPoint.y});
         }
-        i++;
-      }
+      });
       house.addArea(
         new Area(floorPts, house.maxPoints, 'assets/house/quizz_sol.jpg')
       );
     });
 
     // 7) Extraction des murs et portes (W)
-    xmlDoc.querySelectorAll('W').forEach((nodeW) => {
-      const iA = +nodeW.getAttribute('PTA')!;
-      const iB = +nodeW.getAttribute('PTB')!;
-      const h = parseFloat(nodeW.getAttribute('H') ?? '100');
+    layout.walls.forEach((wallDef) => {
+      const iA = wallDef.ptA;
+      const iB = wallDef.ptB;
+      const h = wallDef.h;
       const pA = pts[iA];
       const pB = pts[iB];
       if (!pA || !pB) return;
@@ -105,14 +113,14 @@ export class HouseParser {
           isBaseBoard
             ? 'assets/house/baseboard.png'
             : 'assets/house/base_wall.png',
-          nodeW.hasAttribute('HDN'),
+          wallDef.hidden === true,
           isBaseBoard
         )
       );
 
       // Porte éventuelle
-      if (nodeW.hasAttribute('ENTER') && nodeW.hasAttribute('D0')) {
-        const off = parseFloat(nodeW.getAttribute('D0')!);
+      if (wallDef.enter && wallDef.door) {
+        const off = wallDef.door.offset;
         const dx = pB.projectedPoint.x - pA.projectedPoint.x;
         const dy = pB.projectedPoint.y - pA.projectedPoint.y;
         const L = Math.hypot(dx, dy);
@@ -125,8 +133,6 @@ export class HouseParser {
         const ex = pA.projectedPoint.x + (off + doorW / 2) * nx;
         const ey = pA.projectedPoint.y + (off + doorW / 2) * ny;
 
-        // wallRefY = profondeur max du mur parent (endpoint le plus "avant" en iso)
-        // C'est la valeur utilisée par WallView pour son propre zIndex.
         const wallRefY = Math.max(pA.projectedPoint.y, pB.projectedPoint.y);
 
         house.addDoor(
@@ -141,7 +147,7 @@ export class HouseParser {
       }
 
       // Plinthe pour h>10
-      if (h > 10 && !nodeW.hasAttribute('HDN')) {
+      if (h > 10 && !wallDef.hidden) {
         house.addWall(
           new Wall(
             {x: pA.projectedPoint.x, y: pA.projectedPoint.y},
