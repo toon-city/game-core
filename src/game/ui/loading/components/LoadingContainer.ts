@@ -9,8 +9,15 @@ export class LoadingContainer extends Container {
     super();
     this.progress = progress;
 
-    const sprite = new Sprite(Texture.from('assets/ui/loading.webm'));
-    sprite.texture.source.resource.loop = true;
+    const texture = Texture.from('assets/ui/loading.webm');
+    const sprite = new Sprite(texture);
+    // La texture vidéo doit être muette pour que l'autoplay navigateur fonctionne.
+    const el = sprite.texture.source?.resource as HTMLVideoElement | undefined;
+    if (el) {
+      el.loop   = true;
+      el.muted  = true;
+      el.play().catch(() => { /* ignore autoplay refusé */ });
+    }
 
     this.addChild(sprite);
 

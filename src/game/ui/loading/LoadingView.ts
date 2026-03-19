@@ -10,10 +10,8 @@ export class LoadingView extends Container {
         this.loadingContainer = new LoadingContainer("Chargement en cours", null);
     }
 
-    public draw(): void {
+    public draw(width = 800, height = 600): void {
         this.removeChildren();
-        const height = 600;
-        const width = 800;
 
         const bg = new Graphics()
             .rect(0, 0, width, height)
@@ -22,7 +20,7 @@ export class LoadingView extends Container {
 
         this.loadingContainer.x = (width - this.loadingContainer.width) / 2;
         this.loadingContainer.y = (height - this.loadingContainer.height) / 2;
-        
+
         this.addChild(this.loadingContainer);
     }
 

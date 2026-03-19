@@ -47,3 +47,6 @@ export * as ZOrder from '../modules/common/ZOrder';
 
 // ─── Textures ────────────────────────────────────────────────────────────────
 export { BaseTextureLoader } from '../game/textures/BaseTextureLoader';
+
+// ─── UI ──────────────────────────────────────────────────────────────────────
+export { LoadingView } from '../game/ui/loading/LoadingView';
