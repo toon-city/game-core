@@ -7,6 +7,7 @@ import { BaseTextureLoader } from './game/textures/BaseTextureLoader';
 import { GameEvents, GameEventMap } from './GameEvents';
 import { InputController, KeyConfig, DEFAULT_KEYS } from './input/InputController';
 import { Point } from './core/types/Point';
+import { AssetBaseUrl } from './core/AssetBaseUrl';
 
 // ─── Direction constants ─────────────────────────────────────────────────────
 
@@ -55,6 +56,13 @@ export interface GameCoreOptions {
    * - `'center'` : l'avatar reste toujours centré à l'écran.
    */
   cameraMode?: CameraMode;
+
+  /**
+   * URL de base du serveur d'assets dynamiques (vêtements, meubles, textures).
+   * Ex : `'http://localhost:3001'`.
+   * Si absent, les chemins relatifs locaux sont utilisés.
+   */
+  assetsUrl?: string;
 }
 
 // ─── Internal per-avatar input state ─────────────────────────────────────────
@@ -104,7 +112,7 @@ export class GameCore {
   // ─── Private ───────────────────────────────────────────────────────────────
 
   private readonly input: InputController;
-  private readonly opts:  Required<GameCoreOptions>;
+  private readonly opts:  Required<Omit<GameCoreOptions, 'assetsUrl'>> & { assetsUrl: string };
 
   private houseView:      HouseView | null = null;
   private avatarsById:    Map<string, Avatar> = new Map();
@@ -130,9 +138,14 @@ export class GameCore {
       cameraSmoothing: 0.1,
       moveSpeed:       10,
       cameraMode:      'lookahead',
+      assetsUrl:       '',
       ...options,
     };
     this._cameraMode = this.opts.cameraMode;
+
+    if (this.opts.assetsUrl) {
+      AssetBaseUrl.setDynamic(this.opts.assetsUrl);
+    }
 
     this.events    = new GameEvents();
     this.gameScene = new Container();

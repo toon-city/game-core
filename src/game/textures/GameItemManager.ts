@@ -1,6 +1,7 @@
 import { Assets, Texture } from "pixi.js";
 import { FurnitureBaseManager } from "../../core/manager/FurnitureBaseManager";
 import { FurnitureBase } from "../../core/models/FurnitureBase";
+import { AssetBaseUrl } from "../../core/AssetBaseUrl";
 
 export class GameItemManager {
     private static instance: GameItemManager;
@@ -22,9 +23,10 @@ export class GameItemManager {
     
     public async getFurnitureBase(id: number, type: number, file: string): Promise<FurnitureBase | null> {
         if (!this.furnitureBaseManager.getFurnitureBase(id)) {
+            const uri = AssetBaseUrl.resolve(`furnitures/${file}.json`);
             try {
-                await Assets.load(`assets/furnitures/${file}.json`);
-                const furnitureBaseData = Assets.get(`assets/furnitures/${file}.json`).data;
+                await Assets.load(uri);
+                const furnitureBaseData = Assets.get(uri).data;
                 this.furnitureBaseManager.addFurnitureBase(new FurnitureBase(id, type, furnitureBaseData));
             } catch (error) {
                 console.error(`Error loading furniture base with id ${id} from file ${file}:`, error);
@@ -37,8 +39,9 @@ export class GameItemManager {
 
     public async getFloorTexture(id: number, file: string): Promise<Texture | null> {
         if (!this.floorTextures.has(id)) {
+            const uri = AssetBaseUrl.resolve(`textures/floors/${file}`);
             try {
-                const texture = await Assets.load(`assets/textures/floors/${file}`);
+                const texture = await Assets.load(uri);
                 this.floorTextures.set(id, texture);
             } catch (error) {
                 console.error(`Error loading floor texture with id ${id} from file ${file}:`, error);

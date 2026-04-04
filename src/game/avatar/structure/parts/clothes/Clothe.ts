@@ -1,5 +1,6 @@
 import {Assets, Sprite, Texture} from 'pixi.js';
 import {IClothe} from './IClothe';
+import {AssetBaseUrl} from '../../../../../core/AssetBaseUrl';
 
 // Define the abstract class Clothe that extends Sprite and implements IClothe
 export abstract class Clothe extends Sprite implements IClothe {
@@ -11,7 +12,7 @@ export abstract class Clothe extends Sprite implements IClothe {
   }; // The position of the clothe
 
   public get fileURI(): string {
-    return `assets/clothes/${this._type}/${this._identifier}.json`;
+    return AssetBaseUrl.resolve(`clothes/${this._type}/${this._identifier}.json`);
   }
 
   private reloadPosition() {
