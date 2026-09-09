@@ -2,22 +2,31 @@ import {Assets, Sprite, Texture} from 'pixi.js';
 import {IClothe} from './IClothe';
 import {AssetBaseUrl} from '../../../../../core/AssetBaseUrl';
 
-// Define the abstract class Clothe that extends Sprite and implements IClothe
+/**
+ * Base class for a clothing layer (hair, hat, tshirt, ...) rendered over the
+ * avatar's body.
+ *
+ * Placement contract: every frame in a clothe's spritesheet JSON must declare
+ * standard TexturePacker trim metadata —
+ *   "trimmed": true,
+ *   "spriteSourceSize": { "x": <offset>, "y": <offset>, "w": <crop w>, "h": <crop h> },
+ *   "sourceSize": { "w": 80, "h": 120 }
+ * — where sourceSize matches the avatar's fixed 80x120 canvas (see
+ * assets/toon/toon.json, which the base body already follows) and
+ * spriteSourceSize.x/y is where the cropped artwork sits within that canvas.
+ * PixiJS then positions the sprite on its own: a plain `Texture.from(name)`
+ * built from that metadata renders at the right spot with anchor (0,0), no
+ * app-side offset needed. This is what a generator should target — export
+ * every direction on the same 80x120 canvas and there is nothing left to
+ * tune by hand.
+ */
 export abstract class Clothe extends Sprite implements IClothe {
   private _identifier: string; // The identifier of the clothe
   private _direction: number; // The direction of the clothe
   private _type: string; // The type of the clothe
-  private _positionCorrection: {[key: number]: {x: number; y: number}} = {
-    1: {x: 0, y: 0},
-  }; // The position of the clothe
 
   public get fileURI(): string {
     return AssetBaseUrl.resolve(`clothes/${this._type}/${this._identifier}.json`);
-  }
-
-  private reloadPosition() {
-    this._positionCorrection =
-      Assets.get(this.fileURI)?.data?.position ?? this._positionCorrection;
   }
 
   // Get the URL of the texture based on the identifier and direction
@@ -38,9 +47,8 @@ export abstract class Clothe extends Sprite implements IClothe {
   }
 
   private refreshTexture() {
-    let positionCorrection =
-      this._positionCorrection[this._direction] ?? this._positionCorrection[1];
-    this.position.set(positionCorrection.x, positionCorrection.y);
+    // Trim offset lives in the texture's own metadata (see class doc) — Pixi
+    // applies it automatically, nothing to compute or set here.
     this.texture = Assets.cache.has(this.fileURI)
       ? Texture.from(this.textureUrl)
       : Texture.EMPTY;
@@ -58,14 +66,9 @@ export abstract class Clothe extends Sprite implements IClothe {
     this._direction = direction;
     this._type = type;
     if (Assets.cache.has(this.fileURI)) {
-      // Asset already in cache: apply position correction immediately
-      this.reloadPosition();
       this.refreshTexture();
     } else {
-      Assets.load(this.fileURI).then(() => {
-        this.reloadPosition();
-        this.refreshTexture();
-      });
+      Assets.load(this.fileURI).then(() => this.refreshTexture());
     }
   }
 
