@@ -32,6 +32,7 @@ export abstract class Clothe extends Sprite implements IClothe {
 
   // Set the direction of the clothe and update the texture
   public set direction(dir: number) {
+    if (dir === this._direction) return;
     this._direction = dir;
     this.refreshTexture();
   }

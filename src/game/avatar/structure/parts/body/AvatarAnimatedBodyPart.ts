@@ -56,9 +56,18 @@ export abstract class AvatarAnimatedBodyPart
     // les textures (ce qui appelle gotoAndStop en interne PIXI et brise
     // l'animation en cours).
     if (dir === this._direction) return;
+
+    // `_animations` is indexed by `direction - 1` and is sparse: the slots for
+    // impossible bitmasks (3 = up+down, 7 = up+down+right) stay empty. Assigning
+    // an empty frame list to an AnimatedSprite blanks it, so a direction without
+    // artwork — a malformed value off the network included — keeps the current
+    // facing instead.
+    const frames = this._animations[dir - 1];
+    if (!frames || frames.length === 0) return;
+
     this._direction = dir;
     this.texture = Texture.from(`${this._identifier}_${this._direction}_0.png`);
-    this.textures = this._animations[this._direction - 1];
+    this.textures = frames;
     this.resetAnimationSpeed();
     // PIXI's AnimatedSprite stops when textures are replaced (internal gotoAndStop).
     // If the part was walking, restart the animation with the new direction frames.
@@ -80,6 +89,12 @@ export abstract class AvatarAnimatedBodyPart
     super(_animations[0]);
     this._identifier = identifier;
     this._direction = direction ?? 1;
+    // super() seeded the frames of direction 1. Without this, an avatar spawned
+    // facing any other direction — every player already in the room when you
+    // walk in — kept animating with direction 1's frames, because the setter
+    // below rightly treats its direction as already applied.
+    const frames = _animations[this._direction - 1];
+    if (frames && frames.length > 0) this.textures = frames;
     this.texture = Texture.from(`${this._identifier}_${this._direction}_0.png`);
   }
 

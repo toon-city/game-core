@@ -22,6 +22,7 @@ export abstract class AvatarBodyPart extends Sprite implements IAvatarBodyPart {
   }
 
   public set direction(dir: number) {
+    if (dir === this._direction) return;
     this._direction = dir;
     this.texture = Texture.from(this.textureUrl);
   }
@@ -29,7 +30,9 @@ export abstract class AvatarBodyPart extends Sprite implements IAvatarBodyPart {
   constructor(identifier: string, direction: number) {
     super(Texture.from(`${identifier}_${direction}_0.png`));
     this._identifier = identifier;
-    this._direction = 1;
+    // Must match the texture handed to super(): claiming direction 1 while
+    // rendering another one makes the setter's no-op guard skip the correction.
+    this._direction = direction;
   }
 
   public get walking() {

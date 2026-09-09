@@ -162,31 +162,54 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
     });
   }
 
+  /** Bitmask values that actually have artwork — see the diagram at the top of this file. */
+  private static readonly VALID_DIRECTIONS = new Set([1, 2, 4, 5, 6, 8, 9, 10]);
+
+  /**
+   * Face the avatar towards `direction` (a LEFT/RIGHT/UP/DOWN bitmask).
+   *
+   * `0` means "no movement key held" and keeps the current facing: an idle
+   * avatar keeps looking where it walked. It must NOT rewrite `_direction`
+   * without also updating the parts — doing so left the rendered sprite on the
+   * old facing while `_direction` claimed another one, and the next
+   * changeDirection() to that claimed value was then skipped as a no-op,
+   * leaving the avatar walking one way while displaying another.
+   */
   public changeDirection(direction: number) {
-    if (
-      (direction & 0b1000 && direction & 0b0100) ||
-      (direction & 0b0010 && direction & 0b0001)
-    ) {
+    const next = Avatar.sanitizeDirection(direction, this._direction);
+
+    if (next === this._direction) {
+      // Parts may still lag behind the state (a part added after the last
+      // change, or one built before its artwork was loaded), so let them
+      // re-sync before bailing out. Each part no-ops if already correct.
+      this.syncPartsDirection();
       return;
     }
 
-    if (direction == 0) {
-      this._direction = 1;
-      return;
-    }
-
-    // Ne rien faire si la direction est déjà celle-ci (évite de réinitialiser
-    // les AnimatedSprites et de bloquer l'animation de marche).
-    if (direction === this._direction) return;
-
-    this._direction = direction;
-
-    this.parts.forEach((part) => {
-      part.direction = this._direction;
-    });
+    this._direction = next;
+    this.syncPartsDirection();
 
     this.directionText.text = `${this._direction} ${this.zIndex}`;
     this.repositionNameplate();
+  }
+
+  /**
+   * Reduce an input bitmask to a direction that has artwork.
+   * Opposite bits on the same axis cancel out; anything left over that has no
+   * artwork — including 0 — keeps the current facing rather than blanking it.
+   */
+  private static sanitizeDirection(direction: number, current: number): number {
+    let d = direction & 0b1111;
+    if (d & 0b1000 && d & 0b0100) d &= ~0b1100; // left + right cancel out
+    if (d & 0b0010 && d & 0b0001) d &= ~0b0011; // up + down cancel out
+    return Avatar.VALID_DIRECTIONS.has(d) ? d : current;
+  }
+
+  /** Push the current direction down to every part. */
+  private syncPartsDirection() {
+    this.parts.forEach((part) => {
+      part.direction = this._direction;
+    });
   }
 
   private initializeParts(): IAvatarPart[] {
