@@ -24,6 +24,8 @@ export interface GameEventMap {
   'avatar:moved':       { avatar: Avatar; id: string; from: Point; to: Point };
   /** An avatar has movement keys held (emitted every tick, even if blocked by collision) */
   'avatar:walking':     { avatar: Avatar; id: string; direction: number };
+  /** An avatar just released all movement keys (emitted once, on the transition) */
+  'avatar:stopped':     { avatar: Avatar; id: string };
   /** An avatar displayed a speech bubble */
   'avatar:said':        { avatar: Avatar; id: string; text: string };
   /** Edit mode was toggled */

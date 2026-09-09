@@ -197,9 +197,23 @@ export class InputController {
       if (bit === 0) continue;
 
       const prev = binding.arrows;
-      binding.arrows = active
+      let next = active
         ? (prev | bit)
         : (prev & ~bit & 0b1111);
+
+      // Pressing a direction always wins over its opposite: without this,
+      // briefly holding both Left and Right (very common on a quick direction
+      // reversal) leaves both bits set, and the avatar sprite freezes on its
+      // previous facing (Avatar.changeDirection refuses impossible combos)
+      // while movement keeps updating — sprite and position go out of sync.
+      if (active) {
+        if (bit === DIR_LEFT)  next &= ~DIR_RIGHT;
+        if (bit === DIR_RIGHT) next &= ~DIR_LEFT;
+        if (bit === DIR_UP)    next &= ~DIR_DOWN;
+        if (bit === DIR_DOWN)  next &= ~DIR_UP;
+      }
+
+      binding.arrows = next;
 
       if (binding.arrows !== prev) {
         binding.onChange(binding.arrows);

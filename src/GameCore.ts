@@ -355,6 +355,7 @@ export class GameCore {
         avatar.walk();
       } else {
         avatar.stopWalk();
+        this.events.emit('avatar:stopped', { avatar, id: avatarId });
       }
     }, keys);
   }
