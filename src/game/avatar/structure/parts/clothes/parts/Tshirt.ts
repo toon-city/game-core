@@ -7,7 +7,7 @@ export class Tshirt extends Clothe {
   }
 
   // Get the URL of the texture based on the identifier and direction
-  protected get textureUrl(): string {
+  protected override get textureUrl(): string {
     return `${this.identifier}_bd_${this.direction}.png`;
   }
 }

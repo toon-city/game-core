@@ -5,7 +5,7 @@ export class Hair extends Clothe {
     super('hair', identifier, direction ?? 1);
   }
 
-  public setTint(tint: number) {
+  public override setTint(tint: number) {
     this.tint = tint;
   }
 }

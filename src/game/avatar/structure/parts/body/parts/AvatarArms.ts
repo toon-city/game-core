@@ -22,7 +22,7 @@ export class AvatarArms extends AvatarAnimatedBodyPart {
     super(animations, identifier, direction);
   }
 
-  public resetAnimationSpeed(): void {
+  public override resetAnimationSpeed(): void {
     // Preserve the original per-side speed
     if (this.side === 'left') {
       this.animationSpeed = 0.05 * this.animationFrameCount - 0.15;
