@@ -11,6 +11,7 @@ import {
 import {Tshirt} from './structure/parts/clothes/parts/Tshirt';
 import {Hat} from './structure/parts/clothes/parts/Hat';
 import {Hair} from './structure/parts/clothes/parts/Hair';
+import {ClotheSleeve} from './structure/parts/clothes/ClotheSleeve';
 import { IHasPoints } from '../../modules/common/abstract/IHasPoints';
 import { Point } from '../../core/types/Point';
 import { PARTS_CONFIG, getPartsInOrder, PartConfig } from './partsConfig';
@@ -260,16 +261,13 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
    * Change a specific clothing item
    */
   public changeClothing(category: string, id?: string): boolean {
-    // Remove existing clothing of this category
-    const existingIndex = this.parts.findIndex(part => 
-      part.constructor.name.toLowerCase().includes(category.toLowerCase())
-    );
-
-    if (existingIndex !== -1) {
-      const existingPart = this.parts[existingIndex];
-      this.removeChild(existingPart);
-      this.parts.splice(existingIndex, 1);
-    }
+    // Remove existing clothing of this category, and any sleeve overlays it owns.
+    this.parts = this.parts.filter(part => {
+      const owned = part.constructor.name.toLowerCase().includes(category.toLowerCase())
+        || (part instanceof ClotheSleeve && part.category === category);
+      if (owned) this.removeChild(part);
+      return !owned;
+    });
 
     // Add new clothing if id provided
     if (id) {
@@ -278,8 +276,9 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
         // Find the correct position to insert based on configuration
         const config = PARTS_CONFIG.find(p => p.category === category);
         const insertIndex = config ? this.findInsertionIndex(config.order) : this.parts.length;
-        
+
         this.parts.splice(insertIndex, 0, newClothe);
+        if (config?.hasSleeves) this.attachSleeves(category, id);
         this.renderParts();
         return true;
       }
@@ -287,6 +286,24 @@ export class Avatar extends Container implements IAvatar, IHasPoints {
 
     this.renderParts();
     return false;
+  }
+
+  /**
+   * Insert left/right sleeve overlays for a just-equipped item, each right
+   * next to the AvatarArms instance it must share a z-order with (right
+   * sleeve behind the torso like the back arm, left sleeve in front of it
+   * like the front arm) — see ClotheSleeve's class doc.
+   */
+  private attachSleeves(category: string, clothingId: string): void {
+    (['right', 'left'] as const).forEach(side => {
+      const armIndex = this.parts.findIndex(p => p instanceof AvatarArms && p.side === side);
+      if (armIndex === -1) {
+        console.warn(`[Avatar] no AvatarArms('${side}') found — sleeve for ${clothingId} skipped`);
+        return;
+      }
+      const sleeve = new ClotheSleeve(clothingId, category, side, this._direction);
+      this.parts.splice(armIndex + 1, 0, sleeve);
+    });
   }
 
   private findInsertionIndex(targetOrder: number): number {
