@@ -326,6 +326,7 @@ export class GameCore {
     // Relay PIXI hover events → GameEvents (interceptable from outside)
     avatar.on('pointerover',  () => this.events.emit('avatar:hover',    { avatar, id }));
     avatar.on('pointerout',   () => this.events.emit('avatar:hoverend', { avatar, id }));
+    avatar.on('pointertap',   () => this.events.emit('avatar:click',    { avatar, id }));
 
     // Add to houseView for correct z‐ordering vs furniture; fall back to gameScene.
     const container = this.houseView ?? this.gameScene;

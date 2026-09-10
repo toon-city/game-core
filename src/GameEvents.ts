@@ -34,6 +34,8 @@ export interface GameEventMap {
   'avatar:hover':       { avatar: Avatar; id: string };
   /** Mouse left an avatar's hitbox */
   'avatar:hoverend':    { avatar: Avatar; id: string };
+  /** Avatar clicked/tapped — opens the user-action dialog. */
+  'avatar:click':       { avatar: Avatar; id: string };
 }
 
 // ─── Typed callback ──────────────────────────────────────────────────────────
