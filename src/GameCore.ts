@@ -2,6 +2,9 @@ import { Application, Container } from 'pixi.js';
 import { Avatar, AvatarSpawnOptions, BaseTextureLoader, AssetBaseUrl } from '@toon-live/game-avatar';
 import { HouseView } from './modules/house/HouseView';
 import { HouseParser } from './modules/house/HouseParser';
+import { Furniture } from './core/models/Furniture';
+import { GameItemManager } from './game/textures/GameItemManager';
+import { FurnitureView } from './modules/furniture/FurnitureView';
 import { GameEvents, GameEventMap } from './GameEvents';
 import { InputController, KeyConfig, DEFAULT_KEYS } from './input/InputController';
 import { Point } from './core/types/Point';
@@ -87,7 +90,7 @@ interface PlayerState {
  *
  * const gc = new GameCore(app);
  * gc.setCameraPosition(400, 300);
- * await gc.loadHouse(houseDataJsonString, 'assets/map_jardin.json');
+ * await gc.loadHouse(houseDataJsonString);
  *
  * const avatar = gc.spawnAvatar('player', 100, 100, { showSocle: true });
  * gc.bindPlayerInput('player');
@@ -162,24 +165,18 @@ export class GameCore {
   // ─── House ──────────────────────────────────────────────────────────────────
 
   /**
-   * Parse a JSON house description, optionally load furniture from a JSON URL,
-   * and mount the resulting `HouseView` into the scene.
+   * Parse a JSON house description and mount the resulting `HouseView` into
+   * the scene. Textures are loaded automatically before creating views.
    *
-   * Textures are loaded automatically before creating views.
+   * Furniture already placed in the room is NOT loaded here — it comes from
+   * the room's own network state (see `spawnFurniture`), not the house shape.
    *
-   * @param houseData        House layout as a JSON string (HouseLayout).
-   * @param furnituresJsonUrl Optional URL to a furniture JSON file.
+   * @param houseData House layout as a JSON string (HouseLayout).
    */
-  async loadHouse(houseData: string, furnituresJsonUrl?: string): Promise<HouseView> {
+  async loadHouse(houseData: string): Promise<HouseView> {
     await BaseTextureLoader.getInstance().load();
 
     const house = HouseParser.parseStructureFromJson(JSON.parse(houseData));
-
-    if (furnituresJsonUrl) {
-      const response   = await fetch(furnituresJsonUrl);
-      const jsonString = await response.text();
-      await HouseParser.parseFurnitures(house, jsonString);
-    }
 
     // Remove previous house if any
     if (this.houseView) {
@@ -197,6 +194,59 @@ export class GameCore {
     }
 
     return this.houseView;
+  }
+
+  // ─── Furniture ────────────────────────────────────────────────────────────────
+
+  /**
+   * Spawn a piece of furniture into the current house — either one already
+   * placed in the room (loaded from the join snapshot) or one just placed
+   * live by someone (a `furniture-place` broadcast). `id` is the placement's
+   * stable identity (the real `user_items.id`, not a throwaway client id).
+   *
+   * @param id          Placement instance id.
+   * @param baseId      Catalog item id (`items.id`) — cached per-id by GameItemManager,
+   *                    so spawning several instances of the same base only loads once.
+   * @param type        Legacy numeric furniture type (18 = draggable/blocking "PIECE").
+   * @param file        `"{spriteKey}/{spritePath}"`, resolved against the asset server.
+   * @param x           World X.
+   * @param y           World Y.
+   * @param orientation 1-4.
+   */
+  async spawnFurniture(
+    id: number, baseId: number, type: number, file: string,
+    x: number, y: number, orientation: number,
+  ): Promise<FurnitureView | null> {
+    if (!this.houseView) return null;
+
+    const base = await GameItemManager.getInstance().getFurnitureBase(baseId, type, file);
+    if (!base) return null;
+
+    const furniture = new Furniture(id, base, x, y, orientation, 0, 0);
+    this.houseView.getFurnitureController().addFurniture(furniture);
+    return this.houseView.spawnFurnitureView(furniture);
+  }
+
+  /**
+   * Apply a server-confirmed move for a piece placed by someone else.
+   * Skips collision re-checking — the placing client already validated it
+   * locally while dragging; re-validating on every other client against
+   * their own (possibly not yet fully loaded) house state would only risk
+   * silently diverging from what the placer actually saw.
+   */
+  moveFurniture(id: number, x: number, y: number): void {
+    const view = this.houseView?.getFurnitureView(id);
+    if (view) this.houseView!.getFurnitureController().moveFurniture(view.model, x, y, { checkCollisions: false });
+  }
+
+  rotateFurniture(id: number, orientation: number): void {
+    const view = this.houseView?.getFurnitureView(id);
+    if (view) this.houseView!.getFurnitureController().rotateFurniture(view.model, orientation, view);
+  }
+
+  removeFurniture(id: number): void {
+    const view = this.houseView?.getFurnitureView(id);
+    if (view) this.houseView!.getFurnitureController().removeFurnitureView(view);
   }
   // ─── Camera mode ─────────────────────────────────────────────────────────────
 
