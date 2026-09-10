@@ -438,6 +438,50 @@ export class GameCore {
     this.followAvatarId = id;
   }
 
+  /**
+   * Enable/disable the automatic camera-follows-avatar tick (see the
+   * `this.opts.followCamera` check in the ticker). Off while free-panning
+   * (edit mode) — otherwise the follow tick fights every panCamera() call
+   * right back toward the avatar on the very next frame.
+   */
+  setFollowCamera(enabled: boolean): void {
+    this.opts.followCamera = enabled;
+  }
+
+  get followCamera(): boolean {
+    return this.opts.followCamera;
+  }
+
+  /**
+   * Snap the camera to center a given avatar on screen — same centering math
+   * as updateCamera()'s 'center' mode, but instant (no lerp) and independent
+   * of follow mode. Used to recenter after free-panning in edit mode.
+   */
+  centerCameraOnAvatar(id: string): void {
+    const avatar = this.avatarsById.get(id);
+    if (!avatar) return;
+    const feetY = avatar.socle ? avatar.socle.y : avatar.height;
+    const avatarCX = avatar.x + avatar.width / 2;
+    const avatarCY = avatar.y + feetY;
+    this.setCameraPosition(
+      this.app.screen.width / 2 - avatarCX,
+      this.app.screen.height / 2 - avatarCY,
+    );
+  }
+
+  /**
+   * Pan the camera by a pixel delta — for manual scrolling (edit mode's camera
+   * pad). (dx, dy) is the camera's own movement (positive dx = camera moves
+   * right), which is the opposite sign of gameScene's offset: moving the
+   * camera right shifts the world content left on screen.
+   */
+  panCamera(dx: number, dy: number): void {
+    this.gameScene.x -= dx;
+    this.gameScene.y -= dy;
+    this.cameraTargetX = this.gameScene.x;
+    this.cameraTargetY = this.gameScene.y;
+  }
+
   // ─── Events shortcut ────────────────────────────────────────────────────────
 
   on<K extends keyof GameEventMap>(
