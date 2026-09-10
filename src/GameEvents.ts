@@ -2,7 +2,7 @@ import { Point } from './core/types/Point';
 
 // Forward declarations to avoid circular imports at event‑definition level.
 // The actual Avatar / FurnitureView classes are only used as type parameters.
-import type { Avatar } from './game/avatar/Avatar';
+import type { Avatar } from '@toon-live/game-avatar';
 import type { FurnitureView } from './modules/furniture/FurnitureView';
 
 // ─── Event payload types ─────────────────────────────────────────────────────

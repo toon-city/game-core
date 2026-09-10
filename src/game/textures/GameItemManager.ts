@@ -1,7 +1,7 @@
 import { Assets, Texture } from "pixi.js";
 import { FurnitureBaseManager } from "../../core/manager/FurnitureBaseManager";
 import { FurnitureBase } from "../../core/models/FurnitureBase";
-import { AssetBaseUrl } from "../../core/AssetBaseUrl";
+import { AssetBaseUrl } from "@toon-live/game-avatar";
 
 export class GameItemManager {
     private static instance: GameItemManager;

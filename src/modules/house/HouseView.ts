@@ -9,7 +9,7 @@ import {FurnitureController} from '../furniture/FurnitureController';
 import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
 import {aabbOverlap, buildWallPolygons, getAABB, polygonsIntersect} from '../../utils/collision';
-import { Avatar } from '../../game/avatar/Avatar';
+import { Avatar } from '@toon-live/game-avatar';
 import * as ZOrder from '../common/ZOrder';
 import { GameEvents } from '../../GameEvents';
 

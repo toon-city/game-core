@@ -1,13 +1,10 @@
 import { Application, Container } from 'pixi.js';
-import { Avatar } from './game/avatar/Avatar';
-import { AvatarSpawnOptions } from './game/avatar/AvatarManager';
+import { Avatar, AvatarSpawnOptions, BaseTextureLoader, AssetBaseUrl } from '@toon-live/game-avatar';
 import { HouseView } from './modules/house/HouseView';
 import { HouseParser } from './modules/house/HouseParser';
-import { BaseTextureLoader } from './game/textures/BaseTextureLoader';
 import { GameEvents, GameEventMap } from './GameEvents';
 import { InputController, KeyConfig, DEFAULT_KEYS } from './input/InputController';
 import { Point } from './core/types/Point';
-import { AssetBaseUrl } from './core/AssetBaseUrl';
 
 // ─── Direction constants ─────────────────────────────────────────────────────
 
