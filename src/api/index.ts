@@ -19,11 +19,10 @@ export type { GameEventMap }      from '../GameEvents';
 export { InputController, DEFAULT_KEYS, WASD_KEYS, DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN } from '../input/InputController';
 export type { KeyConfig, DirectionChangedFn } from '../input/InputController';
 
-// ─── Avatar ──────────────────────────────────────────────────────────────────
-export { Avatar }                        from '../game/avatar/Avatar';
-export { AvatarBubble }                  from '../game/avatar/AvatarBubble';
-export type { IAvatar, IAvatarParams }   from '../game/avatar/IAvatar';
-export type { AvatarSpawnOptions, AvatarMoveResult } from '../game/avatar/AvatarManager';
+// ─── Avatar (from @toon-live/game-avatar — re-exported so existing 'game-core'
+// consumers, e.g. game-web's game-canvas.component.ts, need no changes) ───────
+export { Avatar, AvatarBubble, AvatarManager, ClotheRegistry } from '@toon-live/game-avatar';
+export type { IAvatar, IAvatarParams, AvatarSpawnOptions, AvatarMoveResult } from '@toon-live/game-avatar';
 
 // ─── House ───────────────────────────────────────────────────────────────────
 export { HouseView }   from '../modules/house/HouseView';
@@ -45,8 +44,8 @@ export type { Point } from '../core/types/Point';
 // ─── Z-order ─────────────────────────────────────────────────────────────────
 export * as ZOrder from '../modules/common/ZOrder';
 
-// ─── Textures ────────────────────────────────────────────────────────────────
-export { BaseTextureLoader } from '../game/textures/BaseTextureLoader';
+// ─── Textures / Assets (from @toon-live/game-avatar) ─────────────────────────
+export { BaseTextureLoader, AssetBaseUrl } from '@toon-live/game-avatar';
 
 // ─── UI ──────────────────────────────────────────────────────────────────────
 export { LoadingView } from '../game/ui/loading/LoadingView';

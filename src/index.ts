@@ -131,7 +131,7 @@ const main = async () => {
   gc.on('avatar:said', ({id, text}) => console.log(`[${id}] says: ${text}`));
 
   // ── Keyboard shortcuts ───────────────────────────────────────────────────
-  globalThis.addEventListener('keydown', (e) => {
+  globalThis.addEventListener('keydown', (e: KeyboardEvent) => {
     // E → toggle edit mode
     if (e.key === 'e' || e.key === 'E') {
       gc.setEditMode(!gc.editMode);

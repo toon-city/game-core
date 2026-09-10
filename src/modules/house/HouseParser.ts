@@ -4,8 +4,6 @@ import {Door} from '../../core/models/Door';
 import {Area} from '../../core/models/Area';
 import {project} from '../../utils/project';
 import {rotatePoint} from '../../utils/geometry';
-import {Furniture} from '../../core/models/Furniture';
-import {GameItemManager} from '../../game/textures/GameItemManager';
 import {Point} from '../../core/types/Point';
 
 // ─── House layout types (mirror of game-types HouseLayout) ──────────────────
@@ -163,65 +161,5 @@ export class HouseParser {
     });
 
     return house;
-  }
-
-  static async parseFurnitures(house: House, json: string): Promise<void> {
-    const data = JSON.parse(json);
-    for (const furnitureData of data) {
-      if (furnitureData.SURL && !furnitureData.SURL.includes('.swf')) {
-        const type = parseInt(furnitureData.STYPE);
-        if ([16, 19].includes(type)) {
-          // Sol
-        } else if (type === 17) {
-          this.addFloorTexture(house, furnitureData);
-        } else if (type === 18 || type === 20) {
-          await this.addFurniture(house, furnitureData);
-        } else {
-          // Sol
-        }
-      }
-    }
-  }
-
-  private static async addFurniture(
-    house: House,
-    furnitureData: any
-  ): Promise<void> {
-    const furnitureBase = await GameItemManager.getInstance().getFurnitureBase(
-      Number(furnitureData.SOID),
-      Number(furnitureData.STYPE),
-      furnitureData.SURL
-    );
-
-    if (furnitureBase) {
-      const furniture = new Furniture(
-        furnitureData.SID,
-        furnitureBase,
-        parseFloat(furnitureData.PXP) * 2.5 + house.offsetX - 380,
-        parseFloat(furnitureData.PYP) * 2.5 + house.offsetY - 200,
-        parseInt(furnitureData.PR),
-        0,
-        0
-      );
-      house.addFurniture(furniture);
-    }
-  }
-
-  private static async addFloorTexture(
-    house: House,
-    furnitureData: any
-  ): Promise<void> {
-    if (furnitureData.AREA !== undefined && house.areas[furnitureData.AREA]) {
-      const areaTexture = await GameItemManager.getInstance().getFloorTexture(
-        Number(furnitureData.SOID),
-        furnitureData.SURL
-      );
-
-      if (areaTexture) {
-        house.areas[furnitureData.AREA].setTexture(
-          `assets/textures/floors/${furnitureData.SURL}`
-        );
-      }
-    }
   }
 }

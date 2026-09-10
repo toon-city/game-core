@@ -26,6 +26,7 @@
     "webpack-dev-server": "^6.0.0"
   },
   "dependencies": {
+    "@toon-live/game-avatar": "workspace:*",
     "mobx": "^6",
     "pixi.js": "^8"
   }

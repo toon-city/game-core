@@ -1,6 +1,7 @@
 import {Container} from 'pixi.js';
 import type {Drawable} from '../../core/abstract/Drawable';
 import type {House} from '../../core/models/House';
+import type {Furniture} from '../../core/models/Furniture';
 import {WallView} from './structure/WallView';
 import {DoorView} from './structure/DoorView';
 import {AreaView} from './structure/AreaView';
@@ -9,7 +10,7 @@ import {FurnitureController} from '../furniture/FurnitureController';
 import {Point} from '../../core/types/Point';
 import {IHasDepthCalculator} from '../common/abstract/IHasDepthCalculator';
 import {aabbOverlap, buildWallPolygons, getAABB, polygonsIntersect} from '../../utils/collision';
-import { Avatar } from '../../game/avatar/Avatar';
+import { Avatar } from '@toon-live/game-avatar';
 import * as ZOrder from '../common/ZOrder';
 import { GameEvents } from '../../GameEvents';
 
@@ -77,9 +78,30 @@ export class HouseView
     }
 
     for (const furn of this.model.furnitures) {
-      const view = new FurnitureView(furn, this, this.furnitureController);
-      this.addChild(view.draw());
+      this.spawnFurnitureView(furn);
     }
+  }
+
+  /**
+   * Create and mount a FurnitureView for a Furniture model already present
+   * (or just added) in `this.model.furnitures`. The constructor's initial
+   * render() calls this for every piece the house model started with; this
+   * is also the only way to make a piece added to the model *afterward*
+   * (a live network placement) actually show up — `house.addFurniture()`
+   * alone only mutates the MobX model, it doesn't spawn a view.
+   */
+  spawnFurnitureView(furniture: Furniture): FurnitureView {
+    const view = new FurnitureView(furniture, this, this.furnitureController);
+    this.addChild(view.draw());
+    return view;
+  }
+
+  /** Find the FurnitureView for a given placement instance id (Furniture.id), if it's in this scene. */
+  getFurnitureView(instanceId: number): FurnitureView | undefined {
+    for (const child of this.children) {
+      if (child instanceof FurnitureView && child.model.id === instanceId) return child;
+    }
+    return undefined;
   }
 
   draw(): Container {

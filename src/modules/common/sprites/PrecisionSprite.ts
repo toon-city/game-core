@@ -6,7 +6,7 @@ export class PrecisionSprite extends Sprite {
     super(texture);
   }
 
-  containsPoint(point: Point) {
+  override containsPoint(point: Point) {
     if (
       point.x < 0 ||
       point.y < 0 ||

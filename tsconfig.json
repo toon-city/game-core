@@ -10,6 +10,9 @@
       "strict": true,
       "skipLibCheck": true,
       "noFallthroughCasesInSwitch": true,
-      "esModuleInterop": true
+      "esModuleInterop": true,
+      "paths": {
+        "@toon-live/game-avatar": ["../game-avatar/src/index.ts"]
+      }
   }
 }
