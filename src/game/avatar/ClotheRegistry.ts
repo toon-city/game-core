@@ -2,6 +2,8 @@ import { Clothe } from './structure/parts/clothes/Clothe';
 import { Hair } from './structure/parts/clothes/parts/Hair';
 import { Hat } from './structure/parts/clothes/parts/Hat';
 import { Tshirt } from './structure/parts/clothes/parts/Tshirt';
+import { Face } from './structure/parts/clothes/parts/Face';
+import { Pant } from './structure/parts/clothes/parts/Pant';
 
 export type ClotheConstructor = new (id: string, direction?: number) => Clothe;
 
@@ -13,6 +15,8 @@ class ClotheRegistry {
     this.register('hair', Hair);
     this.register('hat', Hat);
     this.register('tshirt', Tshirt);
+    this.register('face', Face);
+    this.register('pant', Pant);
   }
 
   register(category: string, constructor: ClotheConstructor): void {
@@ -26,8 +30,9 @@ class ClotheRegistry {
       return null;
     }
     
+    if (!id) return null;
     try {
-      return new constructor(id || 'default', direction);
+      return new constructor(id, direction);
     } catch (error) {
       console.error(`Failed to create clothe ${category}:${id}`, error);
       return null;

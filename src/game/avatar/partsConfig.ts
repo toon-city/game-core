@@ -17,11 +17,16 @@ export type PartConfig = {
 export const PARTS_CONFIG: PartConfig[] = [
   { category: 'body', className: 'AvatarArms', id: 'right', order: 0, required: true },
   { category: 'body', className: 'AvatarLegs',             order: 1, required: true },
+  // Pants sit on the legs, under the torso — a shirt tucked over a waistband.
+  { category: 'pant', className: 'Pant', order: 1.5 },
   { category: 'body', className: 'AvatarBody',             order: 2, required: true },
   { category: 'tshirt', className: 'Tshirt', order: 3, hasSleeves: true },
   { category: 'body', className: 'AvatarArms', id: 'left',  order: 4, required: true },
   { category: 'body', className: 'AvatarHead',             order: 5, required: true },
   { category: 'hair', className: 'Hair', order: 6 },
+  // Face accessories (glasses, mask) sit over hair but under a hat's brim.
+  // Default order, easy to flip to 5.5 (before hair) if a design needs it.
+  { category: 'face', className: 'Face', order: 6.5 },
   { category: 'hat',  className: 'Hat',  order: 7 }
 ];
 
