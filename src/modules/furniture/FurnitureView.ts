@@ -214,6 +214,11 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
 
     const onPointerUp = () => {
       this.controller.endDrag();
+      // Covers both an actual move/placement AND a plain click that never
+      // moved (startDrag/endDrag still ran either way) — the preview panel
+      // should track "the last piece placed/moved/clicked" while editing,
+      // not just outside edit mode (that path is onPointerTap below).
+      this.controller.emitFurnitureClick(this);
       root.off('pointermove', onPointerMove);
       root.off('pointerup', onPointerUp);
       root.off('pointerupoutside', onPointerUp);
@@ -245,7 +250,8 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     const currentOrientation = this.model.orientation;
     const newOrientation = (currentOrientation % 4) + 1;
     this.controller.rotateFurniture(this.model, newOrientation, this);
-    
+    this.controller.emitFurnitureClick(this);
+
     evt.stopPropagation();
   };
 
