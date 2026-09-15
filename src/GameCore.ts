@@ -471,6 +471,26 @@ export class GameCore {
   }
 
   /**
+   * Convert a client-space point (e.g. a native DOM DragEvent's clientX/
+   * clientY — not a PIXI FederatedPointerEvent, which already carries
+   * globalX/globalY) into the current house's local coordinate space, the
+   * same space spawnFurniture's x/y expect. Returns null if no house is
+   * loaded yet. Mirrors FurnitureView's own
+   * `houseView.toLocal({ x: evt.globalX, y: evt.globalY })` — global here is
+   * computed from the canvas' own screen rect instead of coming pre-computed
+   * off a PIXI event.
+   */
+  screenToHouseLocal(clientX: number, clientY: number): { x: number; y: number } | null {
+    if (!this.houseView) return null;
+    const rect = (this.app.canvas as HTMLCanvasElement).getBoundingClientRect();
+    const scaleX = this.app.screen.width / rect.width;
+    const scaleY = this.app.screen.height / rect.height;
+    const globalX = (clientX - rect.left) * scaleX;
+    const globalY = (clientY - rect.top) * scaleY;
+    return this.houseView.toLocal({ x: globalX, y: globalY });
+  }
+
+  /**
    * Pan the camera by a pixel delta — for manual scrolling (edit mode's camera
    * pad). (dx, dy) is the camera's own movement (positive dx = camera moves
    * right), which is the opposite sign of gameScene's offset: moving the
