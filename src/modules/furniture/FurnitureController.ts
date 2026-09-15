@@ -251,4 +251,9 @@ export class FurnitureController {
       this.endDrag(true);
     }
   }
+
+  /** Outside edit mode, a tap on a piece opens its preview panel instead of dragging it. */
+  emitFurnitureClick(view: FurnitureView): void {
+    this.events?.emit('furniture:click', { view, instanceId: view.model.id });
+  }
 }

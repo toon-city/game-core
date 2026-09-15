@@ -36,6 +36,8 @@ export interface GameEventMap {
   'avatar:hoverend':    { avatar: Avatar; id: string };
   /** Avatar clicked/tapped — opens the user-action dialog. */
   'avatar:click':       { avatar: Avatar; id: string };
+  /** Furniture piece clicked/tapped outside edit mode — opens its preview panel. */
+  'furniture:click':    { view: FurnitureView; instanceId: number };
 }
 
 // ─── Typed callback ──────────────────────────────────────────────────────────

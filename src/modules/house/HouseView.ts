@@ -92,6 +92,10 @@ export class HouseView
    */
   spawnFurnitureView(furniture: Furniture): FurnitureView {
     const view = new FurnitureView(furniture, this, this.furnitureController);
+    // Otherwise a piece placed live (network broadcast) while not editing
+    // stayed on the constructor's inert default forever, until the next
+    // explicit setEditMode() toggle.
+    view.setInteractionMode(this._editMode);
     this.addChild(view.draw());
     return view;
   }
@@ -111,16 +115,17 @@ export class HouseView
   // ─── Edit mode ──────────────────────────────────────────────────────────────
 
   /**
-   * Enable or disable furniture drag & drop.
-   * When edit mode is OFF the furniture sprites no longer receive pointer events.
+   * Enable or disable furniture drag & drop. Furniture sprites stay
+   * interactive either way now — edit mode ON means a click drags/rotates
+   * the piece, OFF means it opens the preview panel instead (see
+   * FurnitureView.setInteractionMode).
    */
   setEditMode(enabled: boolean): void {
     this._editMode = enabled;
 
     for (const child of this.children) {
       if (child instanceof FurnitureView) {
-        child.sprite.eventMode = enabled ? 'dynamic' : 'none';
-        child.sprite.cursor    = enabled ? 'grab'    : 'default';
+        child.setInteractionMode(enabled);
       }
     }
 

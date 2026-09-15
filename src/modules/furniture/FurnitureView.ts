@@ -13,6 +13,9 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   public readonly sprite: Sprite;
   private _points: Point[] = [];
   private readonly controller: FurnitureController;
+  /** Set by HouseView (setEditMode / spawnFurnitureView) — drag+rotate own the
+   *  interaction while true, a plain click opens the preview panel while false. */
+  private editMode = false;
 
   constructor(
     public readonly model: Furniture,
@@ -21,8 +24,10 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   ) {
     super();
     this.sprite = new PrecisionSprite(Texture.EMPTY);
-    this.sprite.eventMode = 'dynamic';
-    this.sprite.cursor = 'grab';
+    // Left inert until HouseView calls setInteractionMode() right after
+    // construction (setEditMode's loop, or spawnFurnitureView for a piece
+    // placed live) — no flash of the wrong cursor/interactivity.
+    this.sprite.eventMode = 'none';
     this.addChild(this.sprite);
 
     // Create controller if not provided (backwards compatibility)
@@ -150,13 +155,36 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     return Array.isArray(anchorPoints) && anchorPoints.length > 0;
   }
 
+  /**
+   * Interactive only for type 18 (placeable pieces — same rule drag/rotate
+   * already followed). Edit mode picks which gesture a click means: drag+
+   * rotate while editing, a plain preview-panel tap otherwise — never both,
+   * so this also gates onPointerDown/onRightClick below.
+   */
+  public setInteractionMode(editMode: boolean): void {
+    this.editMode = editMode;
+    if (this.model.base.type !== 18) {
+      this.sprite.eventMode = 'none';
+      return;
+    }
+    this.sprite.eventMode = 'dynamic';
+    this.sprite.cursor = editMode ? 'grab' : 'pointer';
+  }
+
   private registerPointerEvents(): void {
     this.sprite.on('pointerdown', this.onPointerDown);
     this.sprite.on('rightclick', this.onRightClick);
+    this.sprite.on('pointertap', this.onPointerTap);
   }
 
+  private readonly onPointerTap = (evt: FederatedPointerEvent): void => {
+    if (this.model.base.type !== 18 || this.editMode) return;
+    this.controller.emitFurnitureClick(this);
+    evt.stopPropagation();
+  };
+
   private readonly onPointerDown = (evt: FederatedPointerEvent): void => {
-    if (this.model.base.type !== 18) return;
+    if (this.model.base.type !== 18 || !this.editMode) return;
 
     if (this.controller.getDraggedFurniture() && this.controller.getDraggedFurniture() !== this) {
       return;
@@ -209,8 +237,8 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   };
 
   private readonly onRightClick = (evt: FederatedPointerEvent): void => {
-    if (this.model.base.type !== 18) return;
-    
+    if (this.model.base.type !== 18 || !this.editMode) return;
+
     // Don't rotate if being dragged
     if (this.controller.getDraggedFurniture() === this) return;
     
