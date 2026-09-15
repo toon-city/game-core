@@ -213,12 +213,15 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     };
 
     const onPointerUp = () => {
-      this.controller.endDrag();
+      const result = this.controller.endDrag();
       // Covers both an actual move/placement AND a plain click that never
       // moved (startDrag/endDrag still ran either way) — the preview panel
       // should track "the last piece placed/moved/clicked" while editing,
-      // not just outside edit mode (that path is onPointerTap below).
-      this.controller.emitFurnitureClick(this);
+      // not just outside edit mode (that path is onPointerTap below). Only
+      // for a result endDrag actually accepted — a drop rejected outright
+      // (invalid spot, nothing valid to fall back to) has nothing worth
+      // previewing.
+      if (result.success) this.controller.emitFurnitureClick(this);
       root.off('pointermove', onPointerMove);
       root.off('pointerup', onPointerUp);
       root.off('pointerupoutside', onPointerUp);
