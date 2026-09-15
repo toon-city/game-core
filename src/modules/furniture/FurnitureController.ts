@@ -24,6 +24,8 @@ export class FurnitureController {
   private initialPosition: Point = { x: 0, y: 0 };
   /** Dernière position valide (sans collision) pendant le drag */
   private lastValidPosition: Point = { x: 0, y: 0 };
+  /** Collision à la position courante (mise à jour à chaque updateDrag, lue par endDrag). */
+  private currentHasCollision = false;
 
   constructor(
     private readonly house: House,
@@ -42,6 +44,7 @@ export class FurnitureController {
     };
     this.initialPosition = { x: furnitureView.model.x, y: furnitureView.model.y };
     this.lastValidPosition = { x: furnitureView.model.x, y: furnitureView.model.y };
+    this.currentHasCollision = false;
 
     furnitureView.alpha = 0.8;
     furnitureView.sprite.cursor = 'grabbing';
@@ -64,39 +67,45 @@ export class FurnitureController {
       targetY = Math.round(targetY / gridSize) * gridSize;
     }
 
-    // Déplacer provisoirement le modèle pour tester la collision
+    // Suit le curseur inconditionnellement, y compris au-dessus d'une zone
+    // invalide (mur, hors room) — seul endDrag() refuse le DROP là-dessus.
+    // Avant, une collision faisait revenir le meuble à lastValidPosition ici
+    // même, ce qui le "collait" au bord du mur pendant que le curseur
+    // continuait d'avancer : plus la souris s'éloignait, plus il fallait
+    // revenir en arrière pour reprendre le contrôle — donnait l'impression
+    // d'être bloqué, alors que seul le fait de POSER là devrait être refusé.
+    const prev = { x: this.draggedFurniture.model.x, y: this.draggedFurniture.model.y };
     this.draggedFurniture.model.setPosition(targetX, targetY);
     // MobX met à jour this._points synchronement via autorun
 
     const hasCollision = this.depthCalculator.checkCollision(this.draggedFurniture, null);
+    this.currentHasCollision = hasCollision;
 
     if (hasCollision) {
-      // Position invalide : revenir à la dernière position valide
-      this.draggedFurniture.model.setPosition(this.lastValidPosition.x, this.lastValidPosition.y);
-      this.draggedFurniture.alpha = 0.5;
+      this.draggedFurniture.alpha = 0.4;
       this.draggedFurniture.sprite.cursor = 'not-allowed';
     } else {
-      // Position valide : on la mémorise
-      const prev = { ...this.lastValidPosition };
       this.lastValidPosition = { x: targetX, y: targetY };
       this.draggedFurniture.alpha = 0.8;
       this.draggedFurniture.sprite.cursor = 'grabbing';
-
-      // Emit move event when position actually changes
-      this.events?.emit('furniture:moved', {
-        view: this.draggedFurniture,
-        from: prev,
-        to:   this.lastValidPosition,
-      });
     }
+
+    this.events?.emit('furniture:moved', {
+      view: this.draggedFurniture,
+      from: prev,
+      to:   { x: targetX, y: targetY },
+    });
 
     return { success: !hasCollision, collision: hasCollision };
   }
 
   /**
    * Relâche le meuble.
-   * - Sans collision : pose à lastValidPosition (déjà en place dans le modèle)
-   * - cancel=true   : revient à initialPosition
+   * - Position valide : pose là où le curseur l'a laissé
+   * - Position invalide (mur, hors room) : snap à lastValidPosition — le
+   *   drag laisse maintenant le meuble suivre le curseur même sur une zone
+   *   invalide (voir updateDrag), donc ce n'est plus garanti à la relâche
+   * - cancel=true : revient à initialPosition
    */
   endDrag(cancel: boolean = false): FurnitureMoveResult {
     if (!this.draggedFurniture) {
@@ -105,9 +114,9 @@ export class FurnitureController {
 
     if (cancel) {
       this.draggedFurniture.model.setPosition(this.initialPosition.x, this.initialPosition.y);
+    } else if (this.currentHasCollision) {
+      this.draggedFurniture.model.setPosition(this.lastValidPosition.x, this.lastValidPosition.y);
     }
-    // Pas besoin de re-vérifier la collision : le modèle est déjà à
-    // lastValidPosition (ou initialPosition si cancel), les deux sans collision.
 
     const placed = this.draggedFurniture;
     this.draggedFurniture.alpha = 1;
