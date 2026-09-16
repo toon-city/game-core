@@ -28,6 +28,6 @@
   "dependencies": {
     "@toon-live/game-avatar": "workspace:*",
     "mobx": "^6",
-    "pixi.js": "^8"
+    "pixi.js": "^8.20.1"
   }
 }
