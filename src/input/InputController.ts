@@ -176,14 +176,37 @@ export class InputController {
 
   private handleKeyDown(e: KeyboardEvent): void {
     if (this.isInputFocused()) return;
+    // A modifier means this is a browser/OS chord, not a walk request —
+    // Ctrl+Left jumps a word, Ctrl+Shift+R hard-reloads.
+    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (!this.isBoundKey(e.code)) return;
     e.preventDefault();
     this.applyKey(e.code, true);
   }
 
   private handleKeyUp(e: KeyboardEvent): void {
     if (this.isInputFocused()) return;
+    // No modifier check here on purpose: press Left, then press Ctrl, then
+    // release Left, and skipping this would leave the left bit set forever
+    // — the avatar would walk into the wall until another key cleared it.
+    // A release is always safe to process.
+    if (!this.isBoundKey(e.code)) return;
     e.preventDefault();
     this.applyKey(e.code, false);
+  }
+
+  /**
+   * Whether any binding maps this key at all. Only those get swallowed:
+   * preventDefault() used to run on every single keydown while the game had
+   * focus, which ate the browser's own shortcuts — Ctrl+Shift+R, Ctrl+R, F5,
+   * Ctrl+F and the rest all silently did nothing.
+   */
+  private isBoundKey(code: string): boolean {
+    for (const { keys } of this.bindings.values()) {
+      if (code === keys.up || code === keys.down ||
+          code === keys.left || code === keys.right) return true;
+    }
+    return false;
   }
 
   private applyKey(code: string, active: boolean): void {

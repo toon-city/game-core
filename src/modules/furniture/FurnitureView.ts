@@ -6,7 +6,7 @@ import { Point } from '../../core/types/Point';
 import { convexHull } from '../../utils/collision';
 import { IHasDepth } from '../common/abstract/IHasDepth';
 import { IHasDepthCalculator } from '../common/abstract/IHasDepthCalculator';
-import { PrecisionSprite } from '../common/sprites/PrecisionSprite';
+import { PrecisionAnimatedSprite, PrecisionSprite } from '../common/sprites/PrecisionSprite';
 import { FurnitureController } from './FurnitureController';
 import * as ZOrder from '../common/ZOrder';
 
@@ -24,7 +24,13 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     controller?: FurnitureController
   ) {
     super();
-    this.sprite = new PrecisionSprite(Texture.EMPTY);
+    // An item whose art is a running MovieClip (dancefloor's light cycle)
+    // needs an AnimatedSprite; everything else stays a plain Sprite. Decided
+    // once, from the sheet, because a piece can't gain or lose its animation
+    // by being rotated.
+    this.sprite = model.base.isAnimated
+      ? new PrecisionAnimatedSprite([Texture.EMPTY])
+      : new PrecisionSprite(Texture.EMPTY);
     // Left inert until HouseView calls setInteractionMode() right after
     // construction (setEditMode's loop, or spawnFurnitureView for a piece
     // placed live) — no flash of the wrong cursor/interactivity.
@@ -53,9 +59,21 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
 
   private updateTexture(): void {
     const { base, orientation } = this.model;
-    const keyIndex = orientation - 1;
-    const frameKey = base.frameKeys[keyIndex] ?? base.frameKeys[0];
-    this.sprite.texture = Texture.from(frameKey);
+    const frames = base.framesFor(orientation);
+    if (frames.length === 0) return;
+
+    if (this.sprite instanceof PrecisionAnimatedSprite) {
+      // Reassigning `textures` stops playback (PIXI calls gotoAndStop
+      // internally), so restart it — otherwise the piece animates until the
+      // first time anyone rotates it and then freezes.
+      this.sprite.textures = frames.map(key => Texture.from(key));
+      this.sprite.animationSpeed = base.animationFps / 60;
+      this.sprite.loop = true;
+      this.sprite.play();
+      return;
+    }
+
+    this.sprite.texture = Texture.from(frames[0]);
   }
 
   private updatePosition(): void {
@@ -106,9 +124,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
    * - Placement validation
    */
   private computePoints(): Point[] {
-    const frameKey =
-      this.model.base.frameKeys[this.model.orientation - 1] ??
-      this.model.base.frameKeys[0];
+    const frameKey = this.model.base.framesFor(this.model.orientation)[0];
 
     // Extract ground anchoring points from furniture sprite data. Authored
     // in raw atlas-pixel units by swf_to_furniture.py (same convention as
@@ -162,10 +178,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
    * Check if furniture has custom ground anchoring points defined
    */
   public hasCustomAnchorPoints(): boolean {
-    const frameKey =
-      this.model.base.frameKeys[this.model.orientation - 1] ??
-      this.model.base.frameKeys[0];
-      
+    const frameKey = this.model.base.framesFor(this.model.orientation)[0];
     const anchorPoints = this.model.base.spritesheet.frames[frameKey]?.points;
     return Array.isArray(anchorPoints) && anchorPoints.length > 0;
   }

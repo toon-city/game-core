@@ -2,7 +2,22 @@ import { Point } from "../core/types/Point";
 import { Wall } from "../core/models/Wall";
 import { Door } from "../core/models/Door";
 
-const WALL_THICKNESS = 20;
+/**
+ * Collision band width for a wall segment, in world px.
+ *
+ * The band is centred on the wall's own base line (see segmentToPolygon), so
+ * half of it sits on the floor side and that half is dead space nothing can
+ * enter: at 20 it kept furniture and avatars a visible 10px off every wall,
+ * and doubled for hidden walls that was 20px. Reported as "collision happens
+ * too early, I should be able to push things right up against the wall".
+ *
+ * 8 leaves a 4px inside margin — about a pixel on screen once the isometric
+ * foreshortening is applied, so a piece reads as touching the wall — while
+ * still being wider than a single movement step (GameCore.MOVE_INTERVAL
+ * advances the avatar by moveSpeed = 5px at most), so nothing can step over
+ * a band between two collision checks.
+ */
+const WALL_THICKNESS = 8;
 const DOOR_MARGIN = 8;
 
 export interface AABB {
