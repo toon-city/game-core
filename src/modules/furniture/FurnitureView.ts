@@ -109,9 +109,22 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
       this.model.base.frameKeys[this.model.orientation - 1] ??
       this.model.base.frameKeys[0];
 
-    // Extract ground anchoring points from furniture sprite data
-    const anchorPoints = (this.model.base.spritesheet.frames[frameKey]?.points ?? []) as Point[];
-    
+    // Extract ground anchoring points from furniture sprite data. Authored
+    // in raw atlas-pixel units by swf_to_furniture.py (same convention as
+    // the standard "frame" rect in a TexturePacker-style sheet) -- but
+    // unlike "frame", PixiJS has no idea "points" exists, so nothing
+    // normalizes it by the sheet's "scale" the way frame/texture sizing
+    // gets normalized automatically (confirmed live: this.sprite.width read
+    // 220.5 for a frame whose raw "frame".w is 441, i.e. already /2 for a
+    // scale:"2" sheet -- the sprite is resolution-independent, "points"
+    // was not, so world-space collision/selection footprints came out ~2x
+    // too big and offset from the visible sprite). Divide by the same
+    // scale before using them, so a "points" value matches the sprite's
+    // own already-normalized coordinate space.
+    const scale = Number(this.model.base.spritesheet.meta?.scale) || 1;
+    const rawAnchorPoints = (this.model.base.spritesheet.frames[frameKey]?.points ?? []) as Point[];
+    const anchorPoints = rawAnchorPoints.map(({ x, y }) => ({ x: x / scale, y: y / scale }));
+
     // If no specific anchor points defined, use sprite bounds as fallback
     const groundFootprint = anchorPoints.length
       ? anchorPoints
