@@ -109,7 +109,7 @@ const main = async () => {
   const avatar = gc.spawnAvatar('player', 100, 100, {
     showSocle: true,
     direction: 1,
-    skinColor: 0xf7ceaf,
+    skinColor: 0xffffff,
   });
 
   // ── Bind keyboard + touch input ──────────────────────────────────────────
