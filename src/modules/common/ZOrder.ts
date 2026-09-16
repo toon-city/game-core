@@ -1,3 +1,14 @@
+/**
+ * DUPLICATED at game-avatar/src/modules/common/ZOrder.ts, kept in manual
+ * sync — game-avatar can't import game-core (GameCore itself imports Avatar
+ * FROM game-avatar, so the reverse import would be circular), but Avatar's
+ * own updateZIndex() (used for every REMOTE player, driven by the socket-echo
+ * lerp ticker) needs the exact same depth formula as HouseView's, or a
+ * locally-controlled avatar and everyone else's copy of it disagree on where
+ * it sits relative to furniture. Confirmed this drifted for real: this file
+ * got the ISO_X_WEIGHT fix below, the game-avatar copy didn't, until caught
+ * by a direct diff. Any future change here must be copied there too.
+ */
 export enum ZPriority {
   WALL     = 0,
   FLOOR    = 1,

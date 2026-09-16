@@ -34,7 +34,7 @@ export class HouseView
     this.maxPoints = model.maxPoints;
     this.furnitureController = new FurnitureController(model, this, events);
     this.render();
-    this.wallPolygons = buildWallPolygons(model.walls, model.doors);
+    this.wallPolygons = buildWallPolygons(model.walls);
   }
 
   private render(): void {
