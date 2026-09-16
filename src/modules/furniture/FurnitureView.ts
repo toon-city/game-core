@@ -3,6 +3,7 @@ import { Container, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
 import { Furniture } from '../../core/models/Furniture';
 import { Drawable } from '../../core/abstract/Drawable';
 import { Point } from '../../core/types/Point';
+import { convexHull } from '../../utils/collision';
 import { IHasDepth } from '../common/abstract/IHasDepth';
 import { IHasDepthCalculator } from '../common/abstract/IHasDepthCalculator';
 import { PrecisionSprite } from '../common/sprites/PrecisionSprite';
@@ -135,8 +136,9 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
           { x: 0, y: this.sprite.height }, // Back-left ground
         ];
 
-    // Transform points to world coordinates
-    return groundFootprint.map(({ x, y }) => ({ x: this.x + x, y: this.y + y }));
+    // Transform points to world coordinates, in hull order — see convexHull's
+    // own comment for why the authored marker order can't be used as-is.
+    return convexHull(groundFootprint.map(({ x, y }) => ({ x: this.x + x, y: this.y + y })));
   }
 
   /**

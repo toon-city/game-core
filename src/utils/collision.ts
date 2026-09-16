@@ -81,6 +81,46 @@ export function polygonsIntersect(polyA: Point[], polyB: Point[]): boolean {
   return true;
 }
 
+/**
+ * Convex hull (monotone chain), returned in counter-clockwise order.
+ *
+ * `polygonsIntersect` is a SAT test, and SAT only holds if the polygon's
+ * points are given in hull order: it derives its candidate separating axes
+ * from each *consecutive* pair of points. Furniture ground-anchor points come
+ * out of the SWF in the artist's marker order ("pt1, pt2, ..." = the order the
+ * markers sit at in the Flash timeline's depth list), which is not a winding —
+ * on every jardin item checked it is top-right, top-left, bottom-right,
+ * bottom-left, i.e. a self-crossing bowtie. Walking that order hands SAT two
+ * diagonals instead of the quad's real left and right edges, so those two
+ * separating axes are never tested and pieces collide with walls/each other
+ * well before they actually touch. Re-ordering here fixes the axes without
+ * touching the authored data.
+ */
+export function convexHull(points: Point[]): Point[] {
+  if (points.length < 3) return points;
+
+  const pts = [...points].sort((a, b) => (a.x - b.x) || (a.y - b.y));
+  const cross = (o: Point, a: Point, b: Point) =>
+    (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+
+  const build = (seq: Point[]): Point[] => {
+    const chain: Point[] = [];
+    for (const p of seq) {
+      while (chain.length >= 2 && cross(chain[chain.length - 2], chain[chain.length - 1], p) <= 0) {
+        chain.pop();
+      }
+      chain.push(p);
+    }
+    chain.pop(); // shared with the other chain's first point
+    return chain;
+  };
+
+  const hull = [...build(pts), ...build([...pts].reverse())];
+  // Degenerate input (all points collinear) collapses to fewer than 3 points
+  // and would make SAT meaningless — keep the original set in that case.
+  return hull.length >= 3 ? hull : points;
+}
+
 export function isAnyPointOutside(polyA: Point[], polyB: Point[]): boolean {
   // Pour chaque point de polyA, vérifier s'il est à l'extérieur de polyB
   for (const point of polyA) {
