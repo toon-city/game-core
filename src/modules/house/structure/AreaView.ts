@@ -14,8 +14,15 @@ import {autorun} from 'mobx';
 
 export class AreaView extends Container implements Drawable {
   private texture: Texture;
+  /** Set by HouseView.setZoneEditMode — only selectable as a flooring target
+   *  while true (mirrors WallView/FurnitureView's editMode gate). */
+  private zoneInteractive = false;
 
-  constructor(private readonly model: Area) {
+  constructor(
+    private readonly model: Area,
+    /** Called with this area's own zone index on a tap while `interactive`. */
+    private readonly onClick?: (zoneIndex: number) => void
+  ) {
     super();
 
     this.texture = Texture.from(model.texture);
@@ -24,6 +31,13 @@ export class AreaView extends Container implements Drawable {
       this.texture = Texture.from(this.model.texture);
       this.draw();
     });
+  }
+
+  /** Toggle zone-click selection for flooring. */
+  setInteractionMode(interactive: boolean): void {
+    if (this.zoneInteractive === interactive) return;
+    this.zoneInteractive = interactive;
+    this.draw();
   }
 
   private createFloorMesh(
@@ -94,6 +108,23 @@ export class AreaView extends Container implements Drawable {
     mesh.geometry.getBuffer('aUV').update();
 
     mesh.mask = mask;
+
+    // Selectable only in zone-edit mode, and only for a real flooring target
+    // (Area.zoneIndex is always set today — every Area comes from a floorDef
+    // in HouseParser — but the check mirrors WallView's for symmetry and in
+    // case that ever changes). Hit-testing uses the mesh's own (rectangular)
+    // geometry bounds, not the mask's polygon — a click just outside the
+    // floor's actual shape but still inside its bounding mesh can register;
+    // acceptable for a click-to-select action, unlike a mis-placed visual.
+    const zoneIndex = this.model.zoneIndex;
+    if (this.zoneInteractive && zoneIndex !== undefined) {
+      mesh.eventMode = 'static';
+      mesh.cursor = 'pointer';
+      mesh.on('pointertap', (evt) => {
+        this.onClick?.(zoneIndex);
+        evt.stopPropagation();
+      });
+    }
 
     container.addChild(mesh, mask);
 

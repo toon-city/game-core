@@ -22,8 +22,15 @@ export class WallView {
   private readonly disposeAutorun: IReactionDisposer;
   private texture: Texture;
   private hasDoor = false;
+  /** Set by HouseView.setZoneEditMode — only selectable as a wallpaper target
+   *  while true (mirrors FurnitureView's editMode gate). */
+  private interactive = false;
 
-  constructor(private readonly model: Wall) {
+  constructor(
+    private readonly model: Wall,
+    /** Called with this wall's own zone index on a tap while `interactive`. */
+    private readonly onClick?: (zoneIndex: number) => void
+  ) {
     this.texture = Texture.from(model.texture);
 
     // React to texture changes (MobX observable on Wall model)
@@ -31,6 +38,19 @@ export class WallView {
       this.texture = Texture.from(this.model.texture);
       this.rebuild();
     });
+  }
+
+  /** Toggle zone-click selection for wallpaper. No-op (stays inert) for a
+   *  baseboard/hidden wall — see Wall.zoneIndex's own comment on why those
+   *  never get one. Rebuilds unconditionally rather than patching existing
+   *  segments in place: the pointertap listener is only ever attached at
+   *  segment-creation time (rebuild's own loop), so patching eventMode alone
+   *  here would leave a freshly-interactive wall with no listener until the
+   *  next unrelated texture change happened to rebuild it. */
+  setInteractionMode(interactive: boolean): void {
+    if (this.interactive === interactive) return;
+    this.interactive = interactive;
+    this.rebuild();
   }
 
   /** Add all wall slice containers as direct children of `parent`.
@@ -129,6 +149,19 @@ export class WallView {
         layer,
         offset: isBaseBoard ? 1 : 0,
       });
+      // Selectable only in zone-edit mode, and only for a real wallpaper
+      // target (see Wall.zoneIndex) — a baseboard/hidden wall's segments stay
+      // eventMode 'none' regardless of `this.interactive`.
+      const zoneIndex = this.model.zoneIndex;
+      if (this.interactive && zoneIndex !== undefined) {
+        seg.eventMode = 'static';
+        seg.cursor = 'pointer';
+        seg.on('pointertap', (evt) => {
+          this.onClick?.(zoneIndex);
+          evt.stopPropagation();
+        });
+      }
+
       seg.addChild(plane);
       this.parent.addChild(seg);
       this.segments.push(seg);

@@ -77,7 +77,7 @@ export class HouseParser {
       offsetY
     );
 
-    layout.floors.forEach((floorDef) => {
+    layout.floors.forEach((floorDef, floorIndex) => {
       const floorPts: {x: number; y: number}[] = [];
       floorDef.points.forEach((idx) => {
         const p = pts[idx];
@@ -86,12 +86,12 @@ export class HouseParser {
         }
       });
       house.addArea(
-        new Area(floorPts, house.maxPoints, 'assets/house/quizz_sol.jpg')
+        new Area(floorPts, house.maxPoints, 'assets/house/quizz_sol.jpg', floorIndex)
       );
     });
 
     // 7) Extraction des murs et portes (W)
-    layout.walls.forEach((wallDef) => {
+    layout.walls.forEach((wallDef, wallIndex) => {
       const iA = wallDef.ptA;
       const iB = wallDef.ptB;
       const h = wallDef.h;
@@ -101,7 +101,10 @@ export class HouseParser {
 
       const isBaseBoard = h == 10;
 
-      // Mur principal
+      // Mur principal — zoneIndex uniquement si sélectionnable comme cible
+      // wallpaper (pas caché : jamais dessiné, rien à sélectionner ; pas une
+      // simple plinthe h==10 : trop petite/anecdotique pour porter sa propre
+      // tapisserie indépendamment du vrai mur — voir Wall.zoneIndex).
       house.addWall(
         new Wall(
           {x: pA.projectedPoint.x, y: pA.projectedPoint.y},
@@ -112,7 +115,8 @@ export class HouseParser {
             ? 'assets/house/baseboard.png'
             : 'assets/house/base_wall.png',
           wallDef.hidden === true,
-          isBaseBoard
+          isBaseBoard,
+          !isBaseBoard && wallDef.hidden !== true ? wallIndex : undefined
         )
       );
 

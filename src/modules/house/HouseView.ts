@@ -22,8 +22,14 @@ export class HouseView
   private readonly furnitureController: FurnitureController;
   private wallPolygons: Point[][] = [];
   private wallViews: WallView[] = [];
+  private areaViews: AreaView[] = [];
   private doorViews: DoorView[] = [];
   private _editMode = false;
+  /** Separate from furniture edit mode on purpose — dragging furniture around
+   *  and picking wallpaper are different tasks a player does one at a time,
+   *  and letting furniture-drag clicks also land on the wall/floor behind it
+   *  would be a confusing double meaning for the same click. */
+  private _zoneEditMode = false;
 
   constructor(
     private readonly model: House,
@@ -43,11 +49,14 @@ export class HouseView
     for (const dv of this.doorViews) dv.destroy();
     this.wallViews = [];
     this.doorViews = [];
+    this.areaViews = [];
     this.removeChildren();
 
     for (const area of this.model.areas) {
-      const view = new AreaView(area);
+      const view = new AreaView(area, (zoneIndex) => this.events?.emit('zone:click', { zoneType: 'FLOOR', zoneIndex }));
+      view.setInteractionMode(this._zoneEditMode);
       this.addChild(view.draw());
+      this.areaViews.push(view);
     }
 
     for (const wall of this.model.walls) {
@@ -66,7 +75,8 @@ export class HouseView
         };
         return check(d.p1) && check(d.p2);
       });
-      const view = new WallView(wall);
+      const view = new WallView(wall, (zoneIndex) => this.events?.emit('zone:click', { zoneType: 'WALL', zoneIndex }));
+      view.setInteractionMode(this._zoneEditMode);
       view.addToContainer(this, hasDoor);
       this.wallViews.push(view);
     }
@@ -134,6 +144,37 @@ export class HouseView
 
   get editMode(): boolean {
     return this._editMode;
+  }
+
+  /** Toggle wall/floor zone selection — see `_zoneEditMode`'s own comment for
+   *  why this is independent from furniture's setEditMode. */
+  setZoneEditMode(enabled: boolean): void {
+    this._zoneEditMode = enabled;
+    for (const wv of this.wallViews) wv.setInteractionMode(enabled);
+    for (const av of this.areaViews) av.setInteractionMode(enabled);
+  }
+
+  get zoneEditMode(): boolean {
+    return this._zoneEditMode;
+  }
+
+  /** Apply a texture URL to a wall/floor zone — TextureStateService's
+   *  "applied" echo (own action or someone else's). No-op if the room's
+   *  layout has no zone at that index (stale event, e.g. after a layout
+   *  change — nothing to visually update, and nothing crashes either). */
+  applyZoneTexture(zoneType: 'WALL' | 'FLOOR', zoneIndex: number, url: string): void {
+    const target = zoneType === 'WALL'
+      ? this.model.getWallByZoneIndex(zoneIndex)
+      : this.model.getAreaByZoneIndex(zoneIndex);
+    target?.setTexture(url);
+  }
+
+  /** Back to the base texture — TextureStateService's "removed" echo. */
+  resetZoneTexture(zoneType: 'WALL' | 'FLOOR', zoneIndex: number): void {
+    const target = zoneType === 'WALL'
+      ? this.model.getWallByZoneIndex(zoneIndex)
+      : this.model.getAreaByZoneIndex(zoneIndex);
+    target?.resetTexture();
   }
 
   /** Expose the shared controller for programmatic furniture manipulation */

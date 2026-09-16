@@ -46,6 +46,15 @@ export class House {
     this.areas = this.areas.filter(x => x !== a);
   }
 
+  /** The wall selectable as wallpaper zone `zoneIndex`, if any — see Wall.zoneIndex. */
+  getWallByZoneIndex(zoneIndex: number): Wall | undefined {
+    return this.walls.find(w => w.zoneIndex === zoneIndex);
+  }
+  /** The floor area selectable as flooring zone `zoneIndex`, if any — see Area.zoneIndex. */
+  getAreaByZoneIndex(zoneIndex: number): Area | undefined {
+    return this.areas.find(a => a.zoneIndex === zoneIndex);
+  }
+
   addFurniture(f: Furniture): void {
     this.furnitures.push(f);
   }

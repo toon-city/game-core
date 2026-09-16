@@ -38,6 +38,9 @@ export interface GameEventMap {
   'avatar:click':       { avatar: Avatar; id: string };
   /** Furniture piece clicked/tapped outside edit mode — opens its preview panel. */
   'furniture:click':    { view: FurnitureView; instanceId: number };
+  /** A wall or floor zone was clicked/tapped while in zone-edit mode — opens
+   *  the wallpaper/floor picker (see HouseView.setZoneEditMode). */
+  'zone:click':          { zoneType: 'WALL' | 'FLOOR'; zoneIndex: number };
 }
 
 // ─── Typed callback ──────────────────────────────────────────────────────────

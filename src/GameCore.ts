@@ -3,7 +3,7 @@ import { Avatar, AvatarSpawnOptions, BaseTextureLoader, AssetBaseUrl } from '@to
 import { HouseView } from './modules/house/HouseView';
 import { HouseParser } from './modules/house/HouseParser';
 import { Furniture } from './core/models/Furniture';
-import { GameItemManager } from './game/textures/GameItemManager';
+import { GameItemManager, resolveFloorTextureUrl, resolveWallTextureUrl } from './game/textures/GameItemManager';
 import { FurnitureView } from './modules/furniture/FurnitureView';
 import { GameEvents, GameEventMap } from './GameEvents';
 import { InputController, KeyConfig, DEFAULT_KEYS } from './input/InputController';
@@ -248,6 +248,58 @@ export class GameCore {
     const view = this.houseView?.getFurnitureView(id);
     if (view) this.houseView!.getFurnitureController().removeFurnitureView(view);
   }
+
+  // ─── Wall/floor zone textures (wallpaper) ──────────────────────────────────────
+
+  /** Toggle wall/floor click-to-select — see HouseView.setZoneEditMode. */
+  setZoneEditMode(enabled: boolean): void {
+    this.houseView?.setZoneEditMode(enabled);
+  }
+
+  get zoneEditMode(): boolean {
+    return this.houseView?.zoneEditMode ?? false;
+  }
+
+  /**
+   * Apply a server-confirmed texture to a room zone — either one already
+   * applied (loaded from the join snapshot) or one just applied live by
+   * someone (a `texture-apply` broadcast). Mirrors spawnFurniture's own
+   * "id is the real placement identity" framing, minus the id itself: a
+   * texture has nothing per-instance to key on once applied (there's only
+   * ever one per zone, unlike furniture's many-instances-per-room), the
+   * zone it's on already is its identity.
+   *
+   * @param baseId  Catalog item id (`items.id`) — cached per-id by
+   *                GameItemManager, so re-applying the same wallpaper to a
+   *                different zone only loads its image once.
+   * @param file    The item's own `spritePath` — a flat image filename, NOT
+   *                furniture's `{spriteKey}/{spritePath}` shape (see
+   *                resolveWallTextureUrl/resolveFloorTextureUrl's own
+   *                comment: these are plain images, spriteKey isn't part of
+   *                the path).
+   */
+  async applyTexture(zoneType: 'WALL' | 'FLOOR', zoneIndex: number, baseId: number, file: string): Promise<void> {
+    if (!this.houseView) return;
+
+    const manager = GameItemManager.getInstance();
+    const texture = zoneType === 'WALL'
+      ? await manager.getWallTexture(baseId, file)
+      : await manager.getFloorTexture(baseId, file);
+    if (!texture) return;
+
+    // AreaView/WallView's own autorun resolves `model.texture` back into a
+    // Texture via `Texture.from(url)`, reading Pixi's Assets cache — using
+    // the exact same resolver the load above used is what makes that
+    // resolution actually hit the cache instead of re-fetching.
+    const url = zoneType === 'WALL' ? resolveWallTextureUrl(file) : resolveFloorTextureUrl(file);
+    this.houseView.applyZoneTexture(zoneType, zoneIndex, url);
+  }
+
+  /** Remove whatever texture currently covers a zone — back to the room's base look. */
+  resetTexture(zoneType: 'WALL' | 'FLOOR', zoneIndex: number): void {
+    this.houseView?.resetZoneTexture(zoneType, zoneIndex);
+  }
+
   // ─── Camera mode ─────────────────────────────────────────────────────────────
 
   /** Retourne le mode de caméra actif. */
