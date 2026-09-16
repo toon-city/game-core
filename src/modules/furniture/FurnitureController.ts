@@ -195,17 +195,53 @@ export class FurnitureController {
 
   /**
    * Change l'orientation d'un meuble.
+   *
+   * Rotating swaps in a DIFFERENT frame (different ground-anchor points, see
+   * FurnitureView.computePoints), so the footprint's own shape/size can
+   * change — a piece sitting fine at its current orientation can genuinely
+   * overlap a wall or another piece once rotated. This had zero validation
+   * at all before: any orientation was accepted unconditionally, so a
+   * rotate could silently drop a piece INTO a wall with no way to tell
+   * short of trying to walk into it. Same collision check drag/move already
+   * does (checkCollision against `view`, which reacts synchronously to the
+   * orientation change via MobX — same assumption updateDrag's own comment
+   * already relies on), reverted on failure rather than left half-applied.
+   *
+   * @param options.silent  True when applying an already-server-confirmed
+   *   rotation (the network echo) rather than a fresh local request — skips
+   *   the 'furniture:rotated' emit so GameCanvasComponent's send-to-network
+   *   listener doesn't fire again and ping-pong the same rotation back to
+   *   the server on every client that receives the broadcast.
    */
-  rotateFurniture(furniture: Furniture, orientation: number, view?: FurnitureView): FurnitureMoveResult {
+  rotateFurniture(
+    furniture: Furniture,
+    orientation: number,
+    view?: FurnitureView,
+    options: { silent?: boolean } = {}
+  ): FurnitureMoveResult {
     const validOrientations = [1, 2, 3, 4]; // Based on frameKeys length
     const targetOrientation = validOrientations.includes(orientation) ? orientation : 1;
-    
+    const previousOrientation = furniture.orientation;
+
+    if (targetOrientation === previousOrientation) {
+      return { success: true, message: 'Already at that orientation' };
+    }
+
     furniture.setOrientation(targetOrientation);
 
-    if (view) {
+    if (view && this.depthCalculator.checkCollision(view, null)) {
+      furniture.setOrientation(previousOrientation);
+      return {
+        success: false,
+        collision: true,
+        message: 'Rotation impossible : collision avec un mur ou un autre meuble',
+      };
+    }
+
+    if (view && !options.silent) {
       this.events?.emit('furniture:rotated', { view, orientation: targetOrientation });
     }
-    
+
     return {
       success: true,
       message: `Furniture rotated to orientation ${targetOrientation}`

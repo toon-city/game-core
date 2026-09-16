@@ -5,6 +5,7 @@ import { HouseParser } from './modules/house/HouseParser';
 import { Furniture } from './core/models/Furniture';
 import { GameItemManager, resolveFloorTextureUrl, resolveWallTextureUrl } from './game/textures/GameItemManager';
 import { FurnitureView } from './modules/furniture/FurnitureView';
+import { FurnitureMoveResult } from './modules/furniture/FurnitureController';
 import { GameEvents, GameEventMap } from './GameEvents';
 import { InputController, KeyConfig, DEFAULT_KEYS } from './input/InputController';
 import { Point } from './core/types/Point';
@@ -239,9 +240,31 @@ export class GameCore {
     if (view) this.houseView!.getFurnitureController().moveFurniture(view.model, x, y, { checkCollisions: false });
   }
 
-  rotateFurniture(id: number, orientation: number): void {
+  /**
+   * Rotate a piece by local, direct user intent (a UI action, not a network
+   * echo) — collision-checked and reverted on failure (see
+   * FurnitureController.rotateFurniture), and emits 'furniture:rotated' on
+   * success so GameCanvasComponent's listener sends it to the server. Used
+   * by both the right-click handler (FurnitureView, which calls the
+   * controller directly) and any Angular component acting on a piece it
+   * doesn't itself hold a FurnitureView for (the preview panel's rotate
+   * button — see FurniturePreviewService.gc).
+   */
+  rotateFurniture(id: number, orientation: number): FurnitureMoveResult {
     const view = this.houseView?.getFurnitureView(id);
-    if (view) this.houseView!.getFurnitureController().rotateFurniture(view.model, orientation, view);
+    if (!view || !this.houseView) return { success: false, message: 'Furniture not found' };
+    return this.houseView.getFurnitureController().rotateFurniture(view.model, orientation, view);
+  }
+
+  /**
+   * Apply a rotation the server already confirmed (a `furniture-rotate`
+   * broadcast, including the echo of our own request) — silent: does NOT
+   * re-emit 'furniture:rotated', or every client receiving this broadcast
+   * would immediately send it right back to the server on receipt.
+   */
+  applyRemoteFurnitureRotation(id: number, orientation: number): void {
+    const view = this.houseView?.getFurnitureView(id);
+    if (view) this.houseView!.getFurnitureController().rotateFurniture(view.model, orientation, view, { silent: true });
   }
 
   removeFurniture(id: number): void {
