@@ -484,6 +484,16 @@ export class GameCore {
   }
 
   /**
+   * Drive an avatar's movement directly from a direction bitmask — the
+   * entry point for an on-screen virtual joystick, alongside keyboard and
+   * touch-drag. Same DIR_LEFT/RIGHT/UP/DOWN bitmask, combine bits for
+   * diagonals.
+   */
+  setVirtualDirection(avatarId: string, mask: number): void {
+    this.input.setDirectionMask(avatarId, mask);
+  }
+
+  /**
    * Remove input binding for an avatar.
    */
   unbindPlayerInput(avatarId: string): void {

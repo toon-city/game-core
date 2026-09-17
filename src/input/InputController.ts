@@ -151,6 +151,22 @@ export class InputController {
   }
 
   /**
+   * Directly set the direction bitmask for an avatar, bypassing keyboard/
+   * touch-drag entirely — the entry point for an on-screen virtual joystick.
+   * Same edge-triggering as keyboard/touch: `onChange` only fires when the
+   * mask actually changes.
+   */
+  setDirectionMask(avatarId: string, mask: number): void {
+    const binding = this.bindings.get(avatarId);
+    if (!binding) return;
+    const next = mask & 0b1111;
+    if (next !== binding.arrows) {
+      binding.arrows = next;
+      binding.onChange(next);
+    }
+  }
+
+  /**
    * Remove all event listeners and clear all bindings.
    * Call this before destroying the game.
    */
