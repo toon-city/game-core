@@ -386,6 +386,7 @@ export class GameCore {
     });
 
     if (options.skinColor !== undefined) avatar.setSkinColor(options.skinColor);
+    if (options.hairColor !== undefined) avatar.setHairColor(options.hairColor);
     if (options.clothing) {
       for (const [cat, cId] of Object.entries(options.clothing)) {
         avatar.changeClothing(cat, cId);
