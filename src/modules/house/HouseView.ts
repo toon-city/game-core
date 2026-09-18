@@ -215,12 +215,38 @@ export class HouseView
 
     // ─── Vérification des collisions avec les murs et plinthes ────────────────
     // A wall-mounted piece (type 19 — fenêtre, etc.) is MEANT to overlap the
-    // wall it hangs on; testing it against wallPolygons the same as a normal
-    // floor-standing piece made it impossible to ever place one on a wall at
-    // all. See FurnitureView.updateDepthAndAppearance for the matching
-    // z-order fix (always rendered above the wall it overlaps).
+    // wall it hangs on, so testing it the same as a normal floor-standing
+    // piece (any wall overlap = invalid) made it impossible to ever place one
+    // at all. But it's not a free-floating piece either: it must actually be
+    // ON a wall to be valid — floating in open floor space is rejected the
+    // same as a normal piece crossing a wall would be. See
+    // FurnitureView.updateDepthAndAppearance for the matching z-order fix
+    // (always rendered above the wall it overlaps).
     const objectIsWallMounted = object instanceof FurnitureView && object.model.base.type === 19;
-    if (!objectIsWallMounted) {
+    if (objectIsWallMounted) {
+      // Exact polygon overlap doesn't work here: a wall-mounted sprite's own
+      // ground-anchor points (computePoints, same as any other piece) sit a
+      // little INTO the room from its visual mount line by design (same
+      // "anchor near the object's own base, not its full visual extent"
+      // convention every footprint marker uses) -- confirmed live: a window
+      // sitting right against the wall (model.y at the wall's own line) had
+      // points starting 6px past the wall's 8px-thick polygon band, never
+      // once actually overlapping it, at ANY reachable position. A fixed
+      // margin against the wall's AABB is the pragmatic fit for "mounted on
+      // this wall" that doesn't depend on knowing each sprite's exact anchor
+      // offset.
+      const WALL_MOUNT_MARGIN = 40;
+      let touchesAWall = false;
+      for (const wallPoly of this.wallPolygons) {
+        const aabbW = getAABB(wallPoly);
+        const inflated = {
+          minX: aabbW.minX - WALL_MOUNT_MARGIN, maxX: aabbW.maxX + WALL_MOUNT_MARGIN,
+          minY: aabbW.minY - WALL_MOUNT_MARGIN, maxY: aabbW.maxY + WALL_MOUNT_MARGIN,
+        };
+        if (aabbOverlap(aabbA, inflated)) { touchesAWall = true; break; }
+      }
+      if (!touchesAWall) return true;
+    } else {
       for (const wallPoly of this.wallPolygons) {
         const aabbW = getAABB(wallPoly);
         if (!aabbOverlap(aabbA, aabbW)) continue;
