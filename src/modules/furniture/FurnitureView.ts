@@ -84,10 +84,13 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
 
   private updateDepthAndAppearance(): void {
     const { base } = this.model;
+    // Ground footprint, for drag/collision/selection — generic sprite-bounds
+    // math (computePoints), not type-specific, so this now runs for every
+    // placed piece (was type===18-only, which meant a type 19/20 piece like
+    // Dancefloor had NO footprint at all once made interactive below).
+    this._points = this.computePoints();
 
     if (base.type === 18) {
-      this._points = this.computePoints();
-
       // Profondeur isométrique :
       //   - Primaire  : Y MAX des anchor points du sol (bord avant en vue iso)
       //   - Secondaire: X moyen des anchor points (départage gauche/droite,
@@ -184,17 +187,20 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   }
 
   /**
-   * Interactive only for type 18 (placeable pieces — same rule drag/rotate
-   * already followed). Edit mode picks which gesture a click means: drag+
-   * rotate while editing, a plain preview-panel tap otherwise — never both,
-   * so this also gates onPointerDown/onRightClick below.
+   * Interactive for every placed piece regardless of STYPE (18/19/20) — a
+   * FurnitureView only ever exists for a genuine placed Furniture (x/y/
+   * orientation in user_items, going through FurnitureStateService), never
+   * for an actual wall/floor TEXTURE (a separate TextureStateService/
+   * TextureView path entirely) — so there was never a real reason to
+   * exclude type 19/20 here. Confirmed via Dancefloor (STYPE 20, sub_type
+   * FLOOR): a real placed piece with its own x/y/orientation, reported as
+   * unclickable/undraggable despite behaving exactly like any other
+   * furniture server-side. Edit mode picks which gesture a click means:
+   * drag+rotate while editing, a plain preview-panel tap otherwise — never
+   * both, so this also gates onPointerDown/onRightClick below.
    */
   public setInteractionMode(editMode: boolean): void {
     this.editMode = editMode;
-    if (this.model.base.type !== 18) {
-      this.sprite.eventMode = 'none';
-      return;
-    }
     this.sprite.eventMode = 'dynamic';
     this.sprite.cursor = editMode ? 'grab' : 'pointer';
   }
@@ -206,13 +212,13 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   }
 
   private readonly onPointerTap = (evt: FederatedPointerEvent): void => {
-    if (this.model.base.type !== 18 || this.editMode) return;
+    if (this.editMode) return;
     this.controller.emitFurnitureClick(this);
     evt.stopPropagation();
   };
 
   private readonly onPointerDown = (evt: FederatedPointerEvent): void => {
-    if (this.model.base.type !== 18 || !this.editMode) return;
+    if (!this.editMode) return;
 
     if (this.controller.getDraggedFurniture() && this.controller.getDraggedFurniture() !== this) {
       return;
@@ -273,7 +279,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
   };
 
   private readonly onRightClick = (evt: FederatedPointerEvent): void => {
-    if (this.model.base.type !== 18 || !this.editMode) return;
+    if (!this.editMode) return;
 
     // Don't rotate if being dragged
     if (this.controller.getDraggedFurniture() === this) return;

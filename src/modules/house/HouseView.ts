@@ -221,17 +221,28 @@ export class HouseView
     }
 
     // ─── Vérification des collisions avec les meubles bloquants ───────────────
-    for (const child of this.children) {
-      if (object === child) continue;
+    // A floor piece (type 19/20 — Dancefloor et consorts) is never blocked
+    // BY furniture, same as it never blocks OTHERS below: furniture sitting
+    // on top of a rug is normal, not a conflict. Without this, giving floor
+    // pieces a real footprint (needed to make them draggable/rotatable at
+    // all, see FurnitureView.updateDepthAndAppearance) made a rug unable to
+    // move the instant anything was placed on it — which, in a furnished
+    // room, is immediately. Still checks walls above: a rug shouldn't drag
+    // outside the room.
+    const objectIsFloorPiece = object instanceof FurnitureView && object.model.base.type !== 18;
+    if (!objectIsFloorPiece) {
+      for (const child of this.children) {
+        if (object === child) continue;
 
-      if (child instanceof FurnitureView) {
-        if (child.model.base.type !== 18) continue;
+        if (child instanceof FurnitureView) {
+          if (child.model.base.type !== 18) continue;
 
-        const polyB = child.points;
-        const aabbB = getAABB(polyB);
+          const polyB = child.points;
+          const aabbB = getAABB(polyB);
 
-        if (!aabbOverlap(aabbA, aabbB)) continue;
-        if (polygonsIntersect(polyA, polyB)) return true;
+          if (!aabbOverlap(aabbA, aabbB)) continue;
+          if (polygonsIntersect(polyA, polyB)) return true;
+        }
       }
     }
 
