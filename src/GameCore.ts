@@ -669,13 +669,14 @@ export class GameCore {
       let finalY = avatar.y;
       let moved  = false;
 
-      // Edit mode only bypasses movement collision (walk through walls to
-      // reach any spot to place/inspect furniture from) — it does NOT touch
-      // FurnitureController's own placement collision check, a separate
-      // call site (checkCollisions option), so a piece still can't be
-      // dropped on a wall or outside the room.
-      if (this._editMode || !this.houseView.checkCollision(avatar, newPoints)) {
-        // No collision (or edit mode bypass) – move fully
+      // Edit mode used to bypass the avatar's own movement collision (walk
+      // through walls to reach any spot) — reported as unwanted: the
+      // character should stay subject to collision in edit mode same as
+      // normal play. FurnitureController's own placement collision check is
+      // a separate call site (checkCollisions option) and was never
+      // affected either way.
+      if (!this.houseView.checkCollision(avatar, newPoints)) {
+        // No collision – move fully
         finalX = newX;
         finalY = newY;
         moved  = true;
