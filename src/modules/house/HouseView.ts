@@ -214,10 +214,18 @@ export class HouseView
     const aabbA = getAABB(polyA);
 
     // ─── Vérification des collisions avec les murs et plinthes ────────────────
-    for (const wallPoly of this.wallPolygons) {
-      const aabbW = getAABB(wallPoly);
-      if (!aabbOverlap(aabbA, aabbW)) continue;
-      if (polygonsIntersect(polyA, wallPoly)) return true;
+    // A wall-mounted piece (type 19 — fenêtre, etc.) is MEANT to overlap the
+    // wall it hangs on; testing it against wallPolygons the same as a normal
+    // floor-standing piece made it impossible to ever place one on a wall at
+    // all. See FurnitureView.updateDepthAndAppearance for the matching
+    // z-order fix (always rendered above the wall it overlaps).
+    const objectIsWallMounted = object instanceof FurnitureView && object.model.base.type === 19;
+    if (!objectIsWallMounted) {
+      for (const wallPoly of this.wallPolygons) {
+        const aabbW = getAABB(wallPoly);
+        if (!aabbOverlap(aabbA, aabbW)) continue;
+        if (polygonsIntersect(polyA, wallPoly)) return true;
+      }
     }
 
     // ─── Vérification des collisions avec les meubles bloquants ───────────────

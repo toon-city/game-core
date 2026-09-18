@@ -90,7 +90,7 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
     // Dancefloor had NO footprint at all once made interactive below).
     this._points = this.computePoints();
 
-    if (base.type === 18) {
+    if (base.type === 18 || base.type === 19) {
       // Profondeur isométrique :
       //   - Primaire  : Y MAX des anchor points du sol (bord avant en vue iso)
       //   - Secondaire: X moyen des anchor points (départage gauche/droite,
@@ -107,7 +107,13 @@ export class FurnitureView extends Container implements Drawable, IHasDepth {
         x: groundAvgX,
         y: groundMaxY,
         layer: ZOrder.ZPriority.SCENE,
-        offset: 3  // meuble : même priorité que l'avatar, toujours devant la porte(2)
+        // type 19 (fenêtre, etc.) mounts flush against the wall it's placed
+        // on — its own ground depth ties the wall's (offset 0)/baseboard's
+        // (offset 1) at that exact spot, so without a higher offset here it
+        // could render BEHIND the wall it's supposed to hang in front of.
+        // 2 clears both while still losing ties to an avatar/meuble (3)
+        // standing at that same depth, same as before.
+        offset: base.type === 18 ? 3 : 2  // meuble/avatar(3) toujours devant mur mounté(2)
       });
     } else {
       // Éléments de sol : priorité plus basse
